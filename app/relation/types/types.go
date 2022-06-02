@@ -1,13 +1,13 @@
 package types
 
-type ActionReq struct {
+type FollowActionReq struct {
 	UserId     string `form:"user_id" json:"user_id" binding:"required"`
 	Token      string `form:"token" json:"token" binding:"required"`
 	ToUserId   string `form:"to_user_id" json:"to_user_id" binding:"required"`
 	ActionType string `form:"action_type" json:"action_type" binding:"required"`
 }
 
-type ActionResp struct {
+type FollowActionResp struct {
 	StatusCode int64  `json:"status_code"` // 状态码，0-成功，其他值-失败
 	StatusMsg  string `json:"status_msg"`  // 返回状态描述
 }
