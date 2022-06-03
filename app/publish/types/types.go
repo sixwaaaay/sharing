@@ -3,9 +3,9 @@ package types
 import "mime/multipart"
 
 type UploadReq struct {
-	Token string                `form:"token" json:"token"`
-	Title string                `form:"title" json:"title"`
-	File  *multipart.FileHeader `form:"file"`
+	Token string                `form:"token" json:"token" binding:"required"`
+	Title string                `form:"title" json:"title" binding:"required,min=1"`
+	File  *multipart.FileHeader `form:"file" binding:"required"`
 } // 经测试可以完成绑定
 
 type UploadResp struct {
