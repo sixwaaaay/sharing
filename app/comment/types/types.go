@@ -6,7 +6,7 @@ type CommentReq struct {
 	VideoId     int64  `form:"video_id" json:"video_id"`         // 视频id
 	ActionType  int8   `form:"action_type" json:"action_type"`   // 1- 发布评论 2- 删除
 	CommentText string `form:"comment_text" json:"comment_text"` // 评论内容
-	CommentID   string `form:"comment_id" json:"comment_id"`     // 评论id
+	CommentID   int64  `form:"comment_id" json:"comment_id"`     // 评论id
 }
 
 type CommentResp struct {
