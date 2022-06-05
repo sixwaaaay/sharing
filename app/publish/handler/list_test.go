@@ -3,6 +3,7 @@ package handler
 import (
 	"bytelite/app/publish/logic"
 	"bytelite/app/publish/types"
+	"bytelite/common/cotypes"
 	"bytelite/common/errorx"
 	"bytelite/common/testhelper"
 	"bytelite/service"
@@ -24,9 +25,9 @@ func TestPublishListHandler(t *testing.T) {
 			resp := &types.PubListResp{
 				StatusCode: 0,
 				StatusMsg:  nil,
-				VideoList: []types.Video{
+				VideoList: []cotypes.Video{
 					{
-						Author: types.User{
+						Author: cotypes.User{
 							FollowCount:   20,
 							FollowerCount: 35,
 							ID:            1110,

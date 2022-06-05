@@ -3,6 +3,7 @@ package handler
 import (
 	"bytelite/app/feed/logic"
 	"bytelite/app/feed/types"
+	"bytelite/common/cotypes"
 	"bytelite/common/errorx"
 	"bytelite/common/testhelper"
 	"bytelite/service"
@@ -57,7 +58,39 @@ func TestFeed(t *testing.T) {
 			Expected: `{"status_code":1001, "status_msg":"invalid params","video_list":null,"next_time":null}`,
 		},
 	}
-	logic.NewFeedLogic = feedLogicHook // 测试时，替换为测试逻辑
+	// 模拟逻辑层
+	logic.NewFeedLogic = func(ctx context.Context, appCtx *service.AppContext) logic.FeedLogic {
+		return func(req *types.FeedReq) (*types.FeedResp, error) {
+			var earliest int64 = 15897600
+			// 模拟逻辑异常
+			if *req.LatestTime < 500 {
+				return nil, errorx.NewDefaultError("time is too small")
+			}
+			return &types.FeedResp{
+				NextTime:   &earliest,
+				StatusCode: 0,
+				StatusMsg:  nil,
+				VideoList: []cotypes.Video{
+					{
+						CommentCount:  123,
+						CoverURL:      "this is cover url",
+						FavoriteCount: 322,
+						ID:            3413251,
+						IsFavorite:    false,
+						PlayURL:       "this is video url",
+						Title:         "this is video title",
+						Author: cotypes.User{
+							FollowCount:   3215,
+							FollowerCount: 512523,
+							ID:            53253216216,
+							IsFollow:      true,
+							Name:          "username",
+						},
+					},
+				},
+			}, nil
+		}
+	}
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
 	group := r.Group("/douyin")
@@ -69,39 +102,5 @@ func TestFeed(t *testing.T) {
 			assert.Equal(t, http.StatusOK, w.Code)
 			assert.JSONEq(t, testCase.Expected, w.Body.String())
 		})
-	}
-}
-
-// 模拟逻辑层
-func feedLogicHook(ctx context.Context, appCtx *service.AppContext) logic.FeedLogic {
-	return func(req *types.FeedReq) (*types.FeedResp, error) {
-		var earliest int64 = 15897600
-		// 模拟逻辑异常
-		if *req.LatestTime < 500 {
-			return nil, errorx.NewDefaultError("time is too small")
-		}
-		return &types.FeedResp{
-			NextTime:   &earliest,
-			StatusCode: 0,
-			StatusMsg:  nil,
-			VideoList: []types.Video{
-				{
-					CommentCount:  123,
-					CoverURL:      "this is cover url",
-					FavoriteCount: 322,
-					ID:            3413251,
-					IsFavorite:    false,
-					PlayURL:       "this is video url",
-					Title:         "this is video title",
-					Author: types.User{
-						FollowCount:   3215,
-						FollowerCount: 512523,
-						ID:            53253216216,
-						IsFollow:      true,
-						Name:          "username",
-					},
-				},
-			},
-		}, nil
 	}
 }
