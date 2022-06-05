@@ -3,6 +3,7 @@ package handler
 import (
 	"bytelite/app/comment/logic"
 	"bytelite/app/comment/types"
+	"bytelite/common/cotypes"
 	"bytelite/common/errorx"
 	"bytelite/common/testhelper"
 	"bytelite/service"
@@ -25,11 +26,11 @@ func TestCommentActionHandler(t *testing.T) {
 			resp := &types.CommentResp{
 				StatusCode: 0,
 				StatusMsg:  nil,
-				Comment: &types.Comment{
+				Comment: &cotypes.Comment{
 					Content:    "comment content",
 					CreateDate: "11-26",
 					ID:         123,
-					User: types.User{
+					User: cotypes.User{
 						FollowCount:   2,
 						FollowerCount: 3,
 						ID:            456,

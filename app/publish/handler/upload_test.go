@@ -37,7 +37,12 @@ func TestRequestBinding(t *testing.T) {
 	assert.Equal(t, videoFile.Filename, actual.File.Filename)
 	open, err := actual.File.Open()
 	assert.NoError(t, err)
-	defer open.Close()
+	defer func(open multipart.File) {
+		err := open.Close()
+		if err != nil {
+			t.Error(err)
+		}
+	}(open)
 	// 检查内容
 	content, err := ioutil.ReadAll(open)
 	assert.NoError(t, err)
