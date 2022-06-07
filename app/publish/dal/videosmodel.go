@@ -17,7 +17,6 @@ type (
 		videosModel
 		Delete(ctx context.Context, id int64) error
 
-		// todo: 所有的slice返回都不能用指针
 
 		FindMultiVideo(ctx context.Context, ids []int64) ([]*Videos, error)
 
