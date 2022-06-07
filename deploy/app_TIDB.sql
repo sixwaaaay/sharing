@@ -14,24 +14,25 @@ CREATE TABLE `users`
 alter table users
     add unique (username);
 
----
+--
 CREATE TABLE `videos`
 (
-    `id`             bigint PRIMARY KEY auto_random, -- 视频ID
-    `user_id`        bigint       not null,          -- 用户ID
-    `play_url`       varchar(255) not null,          -- 播放地址
-    `cover_url`      varchar(255) not null,          -- 封面地址
-    `favorite_count` int          not null,          -- 点赞数
-    `comment_count`  int          not null,          -- 评论数
-    `title`          varchar(255) not null,          -- 标题
-    `created_at`     timestamp    not null           -- 创建时间
+    `id`             bigint PRIMARY KEY auto_random,          -- 视频ID
+    `user_id`        bigint       not null,                   -- 用户ID
+    `play_url`       varchar(255) not null,                   -- 播放地址
+    `cover_url`      varchar(255) not null,                   -- 封面地址
+    `favorite_count` int          not null,                   -- 点赞数
+    `comment_count`  int          not null,                   -- 评论数
+    `title`          varchar(255) not null,                   -- 标题
+    `created_at`     timestamp    not null                    -- 创建时间
+        default current_timestamp on update current_timestamp
 );
 -- 查询用户投稿的视频，按时间排列
 CREATE INDEX `videos_user_id_created_at` ON `videos` (`user_id`, `created_at`);
 -- 按时间排序
 CREATE INDEX `videos_created_at` ON `videos` (`created_at`);
 
----
+--
 CREATE TABLE `favorites`
 (
     `id`        bigint PRIMARY KEY auto_random, -- 点赞记录ID
@@ -39,6 +40,7 @@ CREATE TABLE `favorites`
     `video_id`  bigint    not null,             -- 视频ID
     `action`    int       not null,             -- 操作类型，0：未点赞，1：点赞
     `update_at` timestamp not null              -- 更新时间
+        default current_timestamp on update current_timestamp
 );
 
 -- 通过用户点赞记录查询视频，按时间排序
@@ -47,7 +49,7 @@ create index `favorites_index_0` on `favorites` (`user_id`, `update_at`);
 alter table `favorites`
     add constraint `favorites_unique_0` unique (`user_id`, `video_id`);
 
----
+--
 CREATE TABLE `comments`
 (
     `id`         bigint PRIMARY KEY auto_random, -- 评论ID
@@ -55,6 +57,7 @@ CREATE TABLE `comments`
     `video_id`   bigint       not null,          -- 视频ID
     `content`    varchar(255) not null,          -- 评论内容
     `created_at` timestamp    not null           -- 创建时间
+        default current_timestamp on update current_timestamp
 );
 -- 查询视频的评论按时间排序
 create index comments_index_0 on comments (video_id, created_at);
@@ -62,14 +65,15 @@ create index comments_index_0 on comments (video_id, created_at);
 -- 查询评论视频的用户 （暂时没有需求
 -- 查询用户的评论的视频 （暂时没有需求
 
----
+--
 CREATE TABLE relations -- 指示关系边 follower -> followed
 (
     `id`        bigint PRIMARY KEY auto_random, -- 关系ID
     `follower`  bigint not null,                -- 粉丝ID
     `followed`  bigint not null,                -- 关注ID
     `status`    int,                            -- 关系状态，0：未关注，1：已关注
-    `update_at` timestamp                       -- 更新时间
+    `update_at` timestamp                       -- 更新时间;
+        default current_timestamp on update current_timestamp
 );
 -- 查询用户的关注，按时间排序
 create index relation_index_0 on relations (follower, update_at);
