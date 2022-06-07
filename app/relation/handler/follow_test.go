@@ -16,7 +16,7 @@ import (
 func TestFollowActionHandler(t *testing.T) {
 	logic.NewFollowActionLogic = func(ctx context.Context, appCtx *service.AppContext) logic.FollowLogic {
 		return func(req *types.FollowActionReq) (*types.FollowActionResp, error) {
-			if req.UserId == 101 {
+			if req.ToUserId == 101 {
 				//raise error
 				return nil, errorx.NewDefaultError("test error")
 			}
@@ -33,9 +33,8 @@ func TestFollowActionHandler(t *testing.T) {
 			Method: "POST",
 			Path:   "/douyin/relation/action/",
 			Form: url.Values{
-				"user_id":     {"100"},
 				"token":       {"token"},
-				"to_user_id":  {"101"},
+				"to_user_id":  {"100"},
 				"action_type": {"1"},
 			},
 			Expected: `{"status_code":0,"status_msg":"ok"}`,
@@ -45,7 +44,6 @@ func TestFollowActionHandler(t *testing.T) {
 			Method: "POST",
 			Path:   "/douyin/relation/action/",
 			Form: url.Values{
-				"user_id":     {"101"},
 				"token":       {"token"},
 				"to_user_id":  {"101"},
 				"action_type": {"1"},
@@ -57,9 +55,8 @@ func TestFollowActionHandler(t *testing.T) {
 			Method: "POST",
 			Path:   "/douyin/relation/action/",
 			Form: url.Values{
-				"user_id":     {"douyin"},
 				"token":       {"token"},
-				"to_user_id":  {"101"},
+				"to_user_id":  {"douyin"},
 				"action_type": {"1"},
 			},
 			Expected: `{"status_code":1001,"status_msg":"invalid params"}`,

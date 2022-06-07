@@ -3,7 +3,6 @@ package types
 import "bytelite/common/cotypes"
 
 type FollowActionReq struct {
-	UserId     int64  `form:"user_id" json:"user_id" binding:"required"`
 	Token      string `form:"token" json:"token" binding:"required"`
 	ToUserId   int64  `form:"to_user_id" json:"to_user_id" binding:"required"`
 	ActionType int64  `form:"action_type" json:"action_type" binding:"required"`
