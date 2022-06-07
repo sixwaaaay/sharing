@@ -17,14 +17,14 @@ alter table users
 --
 CREATE TABLE `videos`
 (
-    `id`             bigint PRIMARY KEY auto_random,          -- 视频ID
-    `user_id`        bigint       not null,                   -- 用户ID
-    `play_url`       varchar(255) not null,                   -- 播放地址
-    `cover_url`      varchar(255) not null,                   -- 封面地址
-    `favorite_count` int          not null,                   -- 点赞数
-    `comment_count`  int          not null,                   -- 评论数
-    `title`          varchar(255) not null,                   -- 标题
-    `created_at`     timestamp    not null                    -- 创建时间
+    `id`             bigint PRIMARY KEY auto_random, -- 视频ID
+    `user_id`        bigint       not null,          -- 用户ID
+    `play_url`       varchar(255) not null,          -- 播放地址
+    `cover_url`      varchar(255) not null,          -- 封面地址
+    `favorite_count` int          not null,          -- 点赞数
+    `comment_count`  int          not null,          -- 评论数
+    `title`          varchar(255) not null,          -- 标题
+    `created_at`     timestamp    not null           -- 创建时间
         default current_timestamp on update current_timestamp
 );
 -- 查询用户投稿的视频，按时间排列
@@ -69,10 +69,10 @@ create index comments_index_0 on comments (video_id, created_at);
 CREATE TABLE relations -- 指示关系边 follower -> followed
 (
     `id`        bigint PRIMARY KEY auto_random, -- 关系ID
-    `follower`  bigint not null,                -- 粉丝ID
-    `followed`  bigint not null,                -- 关注ID
-    `status`    int,                            -- 关系状态，0：未关注，1：已关注
-    `update_at` timestamp                       -- 更新时间;
+    `follower`  bigint    not null,             -- 粉丝ID
+    `followed`  bigint    not null,             -- 关注ID
+    `status`    int       not null,             -- 关系状态，0：未关注，1：已关注
+    `update_at` timestamp not null              -- 更新时间;
         default current_timestamp on update current_timestamp
 );
 -- 查询用户的关注，按时间排序
