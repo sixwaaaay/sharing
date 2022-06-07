@@ -133,7 +133,7 @@ func createPublishReq(t *testing.T, token *string, title *string, file MockFile,
 
 	// 写入测试文件
 	mw := multipart.NewWriter(&body)
-	fw, err := mw.CreateFormFile("file", file.Filename)
+	fw, err := mw.CreateFormFile("data", file.Filename)
 	assert.NoError(t, err)
 
 	n, err := fw.Write(file.Content)
