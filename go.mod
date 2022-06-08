@@ -9,7 +9,7 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/jinzhu/copier v0.3.5
 	github.com/stretchr/testify v1.7.1
-	github.com/zeromicro/go-zero v1.3.3
+	github.com/zeromicro/go-zero v1.3.4
 	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e
 	xorm.io/builder v0.3.11
 )
