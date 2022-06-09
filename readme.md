@@ -1,5 +1,51 @@
 # 服务端
 
+- common
+  通用的逻辑
+  - auth
+  jwt 签发及其测试
+  - cotypes
+  公用的传输类型
+  - errorx
+  错误类型定义
+  - covert
+  类型转化辅助函数及测试
+  - middleware
+  http中间件，处理token，鉴权等及测试
+  - secu
+  密码加密辅助函数及测试
+  - testhelper
+  测试辅助函数及其测试
+- app
+  - basic
+  基础的应用逻辑
+  - comment
+  评论接口相关逻辑
+  - feed
+  feed流逻辑
+  - relation
+  关注关系相关接口
+  - user
+  用户信息相关接口
+  - favorite
+  点赞相关接口
+
+    以点赞为例子，内部代码组织
+    - dal
+      数据库操作相关逻辑
+    - handler
+      处理点赞的handler
+    - logic
+      点赞相关接口的逻辑
+
+## 数据储存
+
+### 数据库设计
+
+参考deploy目录下的sql文件
+
+
+
 ## 用户服务
 
 路由前缀：/douyin/user
@@ -34,7 +80,3 @@ password: 密码，必须，最长不超过32个字符
 
 在 common 目录下的 errorx 包中，定义了包装了错误信息的结构体，并且定义了一些默认的错误码。
 同时也提供了自定义错误码的方式。
-
-
-
-
