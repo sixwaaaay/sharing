@@ -13,8 +13,6 @@ jobs:
       - image:  circleci/golang:1.17-buster-node-browsers-legacy
     steps:
       - go/test:
-          failfast: false 
-          parallel: '2' 
           verbose: true 
 
 workflows:
