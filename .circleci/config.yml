@@ -10,7 +10,7 @@ jobs:
   example-job:
     docker:
       # replace with your preferred image
-      - image: cimg/base:stable
+      - image:  circleci/golang:1.18
     steps:
       - go/test:
           failfast: false 
