@@ -18,7 +18,7 @@ jobs:
       - checkout
       - run: |
           go mod tidy
-          go test  -count=1 -coverprofile=cover-source   -p 1 -covermode=set -v ./... -coverpkg=./...
+          go test  -count=1   -p 1 -covermode=set -v ./... -coverpkg=./...
 
 workflows:
   my-custom-workflow:
