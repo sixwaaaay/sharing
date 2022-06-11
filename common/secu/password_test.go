@@ -1,6 +1,7 @@
 package secu
 
 import (
+	"github.com/stretchr/testify/require"
 	"golang.org/x/crypto/bcrypt"
 	"testing"
 )
@@ -35,4 +36,11 @@ func TestCompare(t *testing.T) {
 	if Compare(password, salt, hash) != true {
 		t.Errorf("hash compare error: %s", "password not match")
 	}
+}
+
+func TestGenHashedPassAndSalt(t *testing.T) {
+	password := "123456"
+	hash, salt := GenHashedPassAndSalt(password)
+	compare := Compare(salt, password, hash)
+	require.Equal(t, true, compare)
 }
