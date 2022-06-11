@@ -8,6 +8,7 @@ import (
 	"net/url"
 )
 
+// GenRequest mock 一个http请求并生成一个httptest.ResponseRecorder
 func GenRequest(r *gin.Engine, method, u string, body io.Reader, form url.Values) (*httptest.ResponseRecorder, *gin.Context) {
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)

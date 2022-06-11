@@ -6,6 +6,7 @@ import (
 	"strconv"
 )
 
+// Config 项目配置
 type Config struct {
 	rest.RestConf
 	DSN       string
@@ -21,6 +22,7 @@ type Config struct {
 	ContentBaseUrl string
 }
 
+// Addr 服务监听地址
 func (c *Config) Addr() string {
 	return c.Host + ":" + strconv.Itoa(c.Port)
 }
