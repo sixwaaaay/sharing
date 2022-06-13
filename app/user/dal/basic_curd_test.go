@@ -16,7 +16,7 @@ func builderModel() UsersModel {
 	var model UsersModel
 	once := sync.Once{}
 	once.Do(func() {
-		configFile := "etc/config_test.yaml"
+		configFile := "../../../etc/config_test.yaml"
 		var c etc.Config
 		conf.MustLoad(configFile, &c)
 		conn := sqlx.NewMysql(c.DSN)
