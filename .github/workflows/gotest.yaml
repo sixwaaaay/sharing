@@ -17,5 +17,7 @@ jobs:
           go-version: 1.18
 
       - name: Test
-        run: go test -v ./...
+        run: |
+          go mod tidy
+          go test  -count=1  -p 1 -covermode=set -v ./... -coverpkg=./...
 
