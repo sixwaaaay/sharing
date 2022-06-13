@@ -22,8 +22,8 @@ func main() {
 	group := r.Group("/douyin")
 	group.POST("/user/register/", user.Register(appCtx))
 	group.POST("/user/login/", user.Login(appCtx))
-	group.Use(middleware.VerifyToken(appCtx))
-	authHook := middleware.Authority(appCtx)
+	group.Use(middleware.VerifyToken(appCtx)) // 中间件验证token
+	authHook := middleware.Authority(appCtx)  // 中间件验证权限
 	group.GET("/user/", authHook, user.UserInfoHandler(appCtx))
 	feed.RegisterHandlers(group, appCtx)
 	group.Use(authHook)

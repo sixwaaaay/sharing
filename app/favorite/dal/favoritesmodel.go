@@ -96,7 +96,7 @@ func (c customFavoritesModel) DeleteUserFavorite(ctx context.Context, selfId, vi
 	// 缓存使用的 key
 	favoritesIdKey := fmt.Sprintf("%s%v", cacheFavoritesIdPrefix, videoId)
 	// 缓存框架执行回调顺带删除缓存
-	ret, err := c.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
+	_, err := c.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		// 仅能删除自己的评论
 		query, args, err := squirrel.Delete(c.table).Where(squirrel.Eq{
 			"user_id":  selfId,
@@ -109,11 +109,6 @@ func (c customFavoritesModel) DeleteUserFavorite(ctx context.Context, selfId, vi
 	}, favoritesIdKey)
 	if err != nil {
 		return err
-	}
-	if rowsAffected, err := ret.RowsAffected(); err != nil {
-		return err
-	} else if rowsAffected == 0 {
-		return errorx.NewDefaultError("no rows affected")
 	}
 	return nil
 }

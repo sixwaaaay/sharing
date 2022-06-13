@@ -1,7 +1,6 @@
 package dal
 
 import (
-	"bytelite/common/errorx"
 	"context"
 	"github.com/Masterminds/squirrel"
 	"github.com/zeromicro/go-zero/core/logx"
@@ -48,12 +47,9 @@ func (m customRelationsModel) DeleteUserRelation(ctx context.Context, selfId, us
 	if err != nil {
 		return err
 	}
-	result, err := m.ExecNoCacheCtx(ctx, query, args...)
+	_, err = m.ExecNoCacheCtx(ctx, query, args...)
 	if err != nil {
 		return err
-	}
-	if n, err := result.RowsAffected(); err != nil || n == 0 {
-		return errorx.NewDefaultError("delete user relation failed")
 	}
 	return nil
 }
