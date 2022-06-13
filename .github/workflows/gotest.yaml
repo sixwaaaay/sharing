@@ -1,0 +1,23 @@
+name: "go test"
+on:
+  push:
+    # only trigger on branches, not on tags
+    branches: '**'
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.18
+
+      - name: Test
+        run: |
+          go mod tidy
+          go test  -count=1  -p 1 -covermode=set -v ./... -coverpkg=./...
+
