@@ -118,7 +118,7 @@ CREATE TABLE relations -- 指示关系边 follower -> followed
 
     `status` int NOT NULL, -- 关系状态，0：未关注，1：已关注
 
-    `update_at` timestamp NOT NULL -- 更新时间;
+    `update_at` timestamp NOT NULL -- 更新时间
 
     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
