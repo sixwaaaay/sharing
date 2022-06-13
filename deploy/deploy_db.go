@@ -37,7 +37,7 @@ func MustLoadSqlScript(kind string) string {
 	return string(content)
 }
 
-var f = flag.String("conf", "etc/config.yaml", "config file")
+var f = flag.String("conf", "etc/config_test.yaml", "config file")
 var kind = flag.String("kind", "mysql", "mysql or TiDB")
 
 func main() {
