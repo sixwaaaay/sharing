@@ -137,4 +137,3 @@ CREATE INDEX relation_index_1 ON relations (followed, update_at);
 
 ALTER TABLE relations
     ADD CONSTRAINT relation_unique_0 UNIQUE (follower, followed);
-
