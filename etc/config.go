@@ -2,13 +2,13 @@ package etc
 
 import (
 	"github.com/zeromicro/go-zero/core/stores/cache"
-	"github.com/zeromicro/go-zero/rest"
 	"strconv"
 )
 
 // Config 项目配置
 type Config struct {
-	rest.RestConf
+	Host      string
+	Port      int
 	DSN       string
 	JWTSecret string
 	Cache     cache.CacheConf

@@ -1,0 +1,16 @@
+Host: 0.0.0.0
+Port: 8888
+DSN: root:123456@tcp(127.0.0.1:3006)/test?charset=utf8mb4&parseTime=True&loc=Local
+Redis:
+  Host: localhost:6379
+  Type: node
+
+JWTSecret: jwt_secret
+
+Minio:
+  Endpoint: localhost:44444
+  AccessKey: minioadmin
+  SecretKey: minioadmin
+  UseSSL: false
+  Bucket: oss
+

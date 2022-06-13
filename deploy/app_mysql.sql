@@ -1,4 +1,7 @@
 -- MySQL
+drop database if exists `test`;
+create database `test`;
+use `test`;
 
 -- 用户表
 CREATE TABLE `users`

@@ -1,0 +1,33 @@
+name: "test"
+on: [push, pull_request]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    services:
+      redis: # redis service
+        image: redis
+        ports:
+          - 6379:6379
+      mysql: # mysql service
+        image: mysql:5.7
+        env:
+          MYSQL_DATABASE: "test"
+          MYSQL_ROOT_PASSWORD: 123456
+        ports:
+          - 3306:3306
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.18
+
+      - name: Test
+        run: |
+          export CI=GITHUB
+          go run ./deploy/deploy_db.go -conf ./etc/config_test.yaml
+          go mod tidy
+          go test  -count=1  -p 1 -covermode=set -v ./... -coverpkg=$(go list ./...)
+
