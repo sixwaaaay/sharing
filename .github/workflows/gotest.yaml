@@ -27,7 +27,7 @@ jobs:
       - name: Test
         run: |
           export CI=GITHUB
-          go run ./deploy/deploy_db.go -conf ./etc/config_test.yaml
           go mod tidy
+          go run ./deploy/deploy_db.go -conf ./etc/config_test.yaml
           go test  -count=1  -p 1 -covermode=set -v ./... -coverpkg=$(go list ./...)
 
