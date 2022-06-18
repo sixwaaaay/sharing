@@ -16,7 +16,7 @@ func builderModel() UsersModel {
 	var model UsersModel
 	once := sync.Once{}
 	once.Do(func() {
-		configFile := "../../../etc/config_test.yaml"
+		configFile := os.Getenv("CONFIG_FILE")
 		var c etc.Config
 		conf.MustLoad(configFile, &c)
 		conn := sqlx.NewMysql(c.DSN)
@@ -40,4 +40,14 @@ func TestBasicInsert(t *testing.T) {
 	lastInsertId, err := result.LastInsertId()
 	require.NoError(t, err)
 	require.NotZero(t, lastInsertId)
+	t.Run("test find one", func(t *testing.T) {
+		u, err := model.FindOne(context.Background(), lastInsertId)
+		require.NoError(t, err)
+		// ensure make sure find one record
+		require.NotNil(t, u)
+		// ensure find the right one
+		require.Equal(t, lastInsertId, u.Id)
+		// ensure no password text exits
+		require.NotContains(t, u.Password, "123456")
+	})
 }

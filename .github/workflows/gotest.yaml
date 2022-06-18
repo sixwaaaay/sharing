@@ -23,11 +23,14 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: 1.18
-
       - name: Test
         run: |
           export CI=GITHUB
+          export CONFIG_FILE="`pwd`/etc/config_test.yaml"
           go mod tidy
           go run ./deploy/deploy_db.go -conf ./etc/config_test.yaml
-          go test  -count=1  -p 1 -covermode=set -v ./... -coverpkg=$(go list ./...)
-
+          go test ./... -race -coverprofile=coverage.txt -covermode=atomic
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: coverage.txt
