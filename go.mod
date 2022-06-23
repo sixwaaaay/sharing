@@ -10,7 +10,7 @@ require (
 	github.com/minio/minio-go/v7 v7.0.29
 	github.com/stretchr/testify v1.7.4
 	github.com/zeromicro/go-zero v1.3.4
-	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e
+	golang.org/x/crypto 05595931fe9d
 )
 
 require (
