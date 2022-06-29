@@ -8,7 +8,7 @@ require (
 	github.com/golang-jwt/jwt/v4 v4.4.2
 	github.com/jinzhu/copier v0.3.5
 	github.com/minio/minio-go/v7 v7.0.30
-	github.com/stretchr/testify v1.7.5
+	github.com/stretchr/testify v1.8.0
 	github.com/zeromicro/go-zero v1.3.4
 	golang.org/x/crypto 05595931fe9d
 )
