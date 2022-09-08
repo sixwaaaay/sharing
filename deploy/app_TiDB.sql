@@ -6,7 +6,6 @@ CREATE TABLE `users`
     `id`             BIGINT PRIMARY KEY auto_random, -- 用户ID
     `username`       varchar(32)  not null,          -- 用户名
     `password`       varchar(255) not null,          -- 密码
-    `salt`           char(6)      not null,          -- 密码盐
     `followed_count` int          not null,          -- 关注数
     `follower_count` int          not null           -- 粉丝数
 );
