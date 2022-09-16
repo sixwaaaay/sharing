@@ -27,8 +27,7 @@ func newRegisterLogic(ctx context.Context, appCtx *service.AppContext) RegisterL
 		}
 		var user dal.User
 		user.Username = req.Username
-		user.Salt = secu.GenSalt(6)
-		user.Password, user.Salt = secu.GenHashedPassAndSalt(req.Password)
+		user.Password = secu.Hash(req.Password)
 		// 写入数据库
 		ret, err := appCtx.UsersModel.Insert(ctx, &user)
 		if err != nil {
