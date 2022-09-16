@@ -43,6 +43,7 @@ type (
 		Id            int64  `db:"id"`
 		Username      string `db:"username"`
 		Password      string `db:"password"`
+		Salt          string `db:"salt"`
 		FollowedCount int64  `db:"followed_count"`
 		FollowerCount int64  `db:"follower_count"`
 	}
@@ -59,8 +60,8 @@ func (m *defaultUsersModel) Insert(ctx context.Context, data *User) (sql.Result,
 	usersIdKey := fmt.Sprintf("%s%v", cacheUsersIdPrefix, data.Id)
 	usersUsernameKey := fmt.Sprintf("%s%v", cacheUsersUsernamePrefix, data.Username)
 	ret, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
-		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?)", m.table, usersRowsExpectAutoSet)
-		return conn.ExecCtx(ctx, query, data.Id, data.Username, data.Password, data.FollowedCount, data.FollowerCount)
+		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?)", m.table, usersRowsExpectAutoSet)
+		return conn.ExecCtx(ctx, query, data.Id, data.Username, data.Password, data.Salt, data.FollowedCount, data.FollowerCount)
 	}, usersIdKey, usersUsernameKey)
 	return ret, err
 }
@@ -107,7 +108,7 @@ func (m *defaultUsersModel) Update(ctx context.Context, data *User) error {
 	usersUsernameKey := fmt.Sprintf("%s%v", cacheUsersUsernamePrefix, data.Username)
 	_, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, usersRowsWithPlaceHolder)
-		return conn.ExecCtx(ctx, query, data.Username, data.Password, data.FollowedCount, data.FollowerCount, data.Id)
+		return conn.ExecCtx(ctx, query, data.Username, data.Password, data.Salt, data.FollowedCount, data.FollowerCount, data.Id)
 	}, usersIdKey, usersUsernameKey)
 	return err
 }

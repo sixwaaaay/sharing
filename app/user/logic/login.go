@@ -31,7 +31,7 @@ func newLoginLogic(ctx context.Context, appCtx *service.AppContext) LoginLogic {
 			return nil, errorx.NewDefaultCodeErr("user not found")
 		}
 		// 校验密码
-		if compare := secu.Compare(req.Password, user.Password); compare != true {
+		if compare := secu.Compare(user.Salt, req.Password, user.Password); compare != true {
 			return nil, errorx.NewDefaultError("password is not correct")
 		}
 		// 生成token

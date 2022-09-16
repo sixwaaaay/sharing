@@ -1,15 +1,15 @@
 module bytelite
 
-go 1.18
+go 1.19
 
 require (
 	github.com/Masterminds/squirrel v1.5.3
 	github.com/gin-gonic/gin v1.8.1
 	github.com/golang-jwt/jwt/v4 v4.4.2
 	github.com/jinzhu/copier v0.3.5
-	github.com/minio/minio-go/v7 v7.0.35
+	github.com/minio/minio-go/v7 v7.0.32
 	github.com/stretchr/testify v1.8.0
-	github.com/zeromicro/go-zero v1.4.0
+	github.com/zeromicro/go-zero v1.3.5
 	golang.org/x/crypto 05595931fe9d
 )
 

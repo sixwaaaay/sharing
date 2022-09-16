@@ -25,21 +25,21 @@ func GenSalt(n int) string {
 	return builder.String()
 }
 
-// Hash function to hash a password (bcrypt algo)
-func Hash(password string) string {
-	fromPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+// Hash function to hash a password with a salt
+func Hash(salt, password string) string {
+	fromPassword, err := bcrypt.GenerateFromPassword([]byte(salt+password), bcrypt.DefaultCost)
 	if err != nil {
 		panic(err)
 	}
 	return string(fromPassword)
 }
 
-func Compare(password, hash string) bool {
-	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password)) == nil
+func Compare(salt, password, hash string) bool {
+	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(salt+password)) == nil
 }
 
 func GenHashedPassAndSalt(password string) (string, string) {
 	salt := GenSalt(6)
-	hash := Hash(password)
+	hash := Hash(salt, password)
 	return hash, salt
 }
