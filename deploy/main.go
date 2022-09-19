@@ -10,14 +10,26 @@ import (
 	"bytelite/common/middleware"
 	"bytelite/etc"
 	"bytelite/service"
+	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/zeromicro/go-zero/core/conf"
+	"go.uber.org/zap"
+	"time"
 )
 
 func main() {
 	var c etc.Config
 	conf.MustLoad("etc/config.yaml", &c)
-	r := gin.Default()
+	r := gin.New()
+
+	logger, err := zap.NewProduction()
+	if err != nil {
+		logger.Fatal(err.Error())
+	}
+	r.Use(ginzap.Ginzap(logger, time.RFC3339, true))
+
+	r.Use(ginzap.RecoveryWithZap(logger, true))
+
 	appCtx := service.NewAppContext(&c)
 	group := r.Group("/douyin")
 	group.POST("/user/register/", user.Register(appCtx))
@@ -31,7 +43,7 @@ func main() {
 	comment.RegisterHandlers(group, appCtx)
 	favorite.RegisterHandlers(group, appCtx)
 	relation.Register(group, appCtx)
-	err := r.Run(c.Addr())
+	err = r.Run(c.Addr())
 	if err != nil {
 		panic(err)
 	}
