@@ -1,8 +1,6 @@
 name: "go test"
-on:
-  push:
-    # only trigger on branches, not on tags
-    branches: '**'
+
+on: [ push ]
 
 jobs:
 
@@ -19,5 +17,10 @@ jobs:
       - name: Test
         run: |
           go mod tidy
-          go test  -count=1  -p 1 -covermode=set -v ./... -coverpkg=./...
+          go test ./... -race -coverprofile=coverage.txt -covermode=atomic
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: coverage.txt
 
