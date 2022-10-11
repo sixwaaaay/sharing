@@ -4,69 +4,47 @@ import (
 	"bytelite/app/comment/dal"
 	"bytelite/common/cotypes"
 	"bytelite/common/covert"
+	"bytelite/common/errorx"
+	"bytelite/common/itertool"
 	"bytelite/service"
 	"context"
-	"github.com/zeromicro/go-zero/core/logx"
-	"time"
 )
 
 // RemoveComment 移除评论
-func RemoveComment(ctx context.Context, appCtx *service.AppContext, selfId, commentId, videoId int64) error {
+func RemoveComment(ctx context.Context, appCtx *service.AppContext, selfId, commentId, _ int64) error {
 	err := appCtx.CommentsModel.DeleteUserComment(ctx, selfId, commentId)
 	if err != nil {
 		return err
 	}
-	defer func() {
-		if err != nil {
-			return
-		}
-		err = UpdateVideoCommentCount(ctx, appCtx, videoId, -1)
-		if err != nil {
-			logx.WithContext(ctx).Errorf("update video comment count failed, videoId: %d, err: %v", 0, err)
-		}
-	}()
 	return err
 }
 
 // AddComment 添加评论
 func AddComment(ctx context.Context, appCtx *service.AppContext, userId int64, videoId int64, content string) (*cotypes.Comment, error) {
 	comment := &dal.Comments{
-		UserId:    userId,
-		VideoId:   videoId,
-		Content:   content,
-		CreatedAt: time.Now(),
+		UserId:  userId,
+		VideoId: videoId,
+		Content: content,
 	}
 	ret, err := appCtx.CommentsModel.Insert(ctx, comment)
 	if err != nil {
-		return nil, err
+		return nil, errorx.NewDefaultError("comment failed")
 	}
-	// 添加视频的评论数量,可以失败，因此使用defer
-	defer func() {
-		if err != nil {
-			return
-		}
-		err = UpdateVideoCommentCount(ctx, appCtx, videoId, 1)
-		if err != nil {
-			logx.WithContext(ctx).Errorf("update video comment count failed, videoId: %d, err: %v", videoId, err)
-		}
-	}()
-	commentId, err := ret.LastInsertId()
+	comment.Id, err = ret.LastInsertId()
 	if err != nil {
-		return nil, err
+		return nil, errorx.NewDefaultError("server busy")
 	}
-
-	comment.Id = commentId
-
 	return toComment(comment), nil
 }
 
+// QueryVideoComment 查询视频的评论
 func QueryVideoComment(ctx context.Context, appCtx *service.AppContext, selfId, videoId int64) ([]cotypes.Comment, error) {
 	commentsList, err := appCtx.CommentsModel.FindCommentsByVideoID(ctx, videoId)
 	if err != nil {
-		return nil, err
+		return nil, errorx.NewDefaultError("query failed, server busy")
 	}
 	// 查询用户信息
-	multiUserInfo, err := QueryMultiUserInfo(ctx, appCtx, selfId, commentsToUids(commentsList))
+	multiUserInfo, err := QueryMultiUserInfo(ctx, appCtx, selfId, commentsToUserIds(commentsList))
 	userMap := UserMap(multiUserInfo)
 	comments := toComments(commentsList)
 	// 填充评论的用户信息
@@ -87,19 +65,15 @@ func toComment(comment *dal.Comments) *cotypes.Comment {
 }
 
 func toComments(comments []*dal.Comments) []cotypes.Comment {
-	ret := make([]cotypes.Comment, 0, len(comments))
-	for _, comment := range comments {
-		ret = append(ret, *toComment(comment))
-	}
-	return ret
+	return itertool.Reduce(comments, func(agg []cotypes.Comment, item *dal.Comments, _ int) []cotypes.Comment {
+		return append(agg, *toComment(item))
+	}, []cotypes.Comment{})
 }
 
-func commentsToUids(comments []*dal.Comments) []int64 {
-	ids := make([]int64, 0, len(comments))
-	for _, c := range comments {
-		ids = append(ids, c.UserId)
-	}
-	return ids
+func commentsToUserIds(comments []*dal.Comments) []int64 {
+	return itertool.Reduce(comments, func(agg []int64, item *dal.Comments, _ int) []int64 {
+		return append(agg, item.UserId)
+	}, []int64{})
 }
 
 func UserMap(users []cotypes.User) map[int64]cotypes.User {

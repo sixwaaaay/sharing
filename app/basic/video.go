@@ -4,32 +4,27 @@ import (
 	"bytelite/app/publish/dal"
 	"bytelite/common/cotypes"
 	"bytelite/common/covert"
+	"bytelite/common/errorx"
+	"bytelite/common/itertool"
 	"bytelite/service"
 	"context"
 	"fmt"
-	"github.com/zeromicro/go-zero/core/logx"
 	"math"
 )
 
 // FetchField 填充相关字段
 func FetchField(ctx context.Context, appCtx *service.AppContext, videoList []*dal.Videos, selfId int64) ([]cotypes.Video, error) {
-	logger := logx.WithContext(ctx)
-	ids := videoToUids(videoList)
-	multiUserInfo, err := QueryMultiUserInfo(ctx, appCtx, selfId, ids)
+	multiUserInfo, err := QueryMultiUserInfo(ctx, appCtx, selfId, videoToUids(videoList))
 	if err != nil {
-		logger.Errorf("QueryMultiUserInfo error: %v", err)
-		return nil, err
+		return nil, errorx.NewDefaultError("server error, query failed")
 	}
-	userMap := covert.UserMap(multiUserInfo)
-	logx.Infof("userMap: %v", userMap)
-	videos := toVideos(videoList)
 	favorites, err := QueryVideoFavorites(ctx, appCtx, selfId, vIds(videoList))
 	if err != nil {
-		logger.Errorf("QueryVideoFavorites error: %v", err)
-		return nil, err
+		return nil, errorx.NewDefaultError("error to query data")
 	}
-
-	favoriteMap := covert.Int64SliceToMap(favorites)
+	userMap := covert.UserMap(multiUserInfo)         // 用于join
+	videos := toVideos(videoList)                    // 转换为所需类型
+	favoriteMap := covert.Int64SliceToMap(favorites) // 点赞结果
 	for i := 0; i < len(videoList); i++ {
 		if user, ok := userMap[videoList[i].UserId]; ok {
 			videos[i].Author = user
@@ -78,16 +73,6 @@ func QueryByTimestamp(ctx context.Context, appCtx *service.AppContext, selfId in
 	return latestTime, videos, err
 }
 
-func UpdateVideoCommentCount(ctx context.Context, appCtx *service.AppContext, videoId int64, count int64) error {
-	_, err := appCtx.VideoModel.UpdateCommentCount(ctx, videoId, count)
-	return err
-}
-
-func UpdateVideoFavoriteCount(ctx context.Context, appCtx *service.AppContext, videoId int64, count int64) error {
-	_, err := appCtx.VideoModel.UpdateFavoriteCount(ctx, videoId, count)
-	return err
-}
-
 func toVideo(video *dal.Videos) *cotypes.Video {
 	return &cotypes.Video{
 		CommentCount:  video.CommentCount,
@@ -100,26 +85,21 @@ func toVideo(video *dal.Videos) *cotypes.Video {
 }
 
 func toVideos(videos []*dal.Videos) []cotypes.Video {
-	var videoList []cotypes.Video
-	for _, video := range videos {
-		videoList = append(videoList, *toVideo(video))
-	}
-	return videoList
+	return itertool.Reduce(videos,
+		func(agg []cotypes.Video, item *dal.Videos, _ int) []cotypes.Video {
+			return append(agg, *toVideo(item))
+		}, []cotypes.Video{})
 }
 
 func videoToUids(videos []*dal.Videos) []int64 {
-	ids := make([]int64, 0, len(videos))
-	for _, c := range videos {
-		ids = append(ids, c.UserId)
-	}
-	return ids
+	return itertool.Reduce(videos, func(agg []int64, v *dal.Videos, i2 int) []int64 {
+		return append(agg, v.UserId)
+	}, nil)
 }
 
 // vIds 获取视频id列表
 func vIds(videos []*dal.Videos) []int64 {
-	ids := make([]int64, 0, len(videos))
-	for _, c := range videos {
-		ids = append(ids, c.Id)
-	}
-	return ids
+	return itertool.Reduce(videos, func(agg []int64, it *dal.Videos, _ int) []int64 {
+		return append(agg, it.Id)
+	}, make([]int64, 0, len(videos)))
 }
