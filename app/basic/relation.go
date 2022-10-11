@@ -2,6 +2,7 @@ package basic
 
 import (
 	"bytelite/app/relation/dal"
+	"bytelite/common/errorx"
 	"bytelite/service"
 	"context"
 	"time"
@@ -15,12 +16,8 @@ func FollowUser(ctx context.Context, appCtx *service.AppContext, selfId, userId,
 		UpdateAt: time.Now(),
 	}
 	_, err := appCtx.RelationModel.Insert(ctx, relations)
-	defer func() {
-		_ = UpdateFollowRelationCount(ctx, appCtx, selfId, userId)
-	}()
-
 	if err != nil {
-		return err
+		return errorx.NewDefaultError("unsupported operation")
 	}
 	return nil
 }
@@ -28,18 +25,23 @@ func FollowUser(ctx context.Context, appCtx *service.AppContext, selfId, userId,
 func UnFollowUser(ctx context.Context, appCtx *service.AppContext, selfId, userId int64) error {
 	err := appCtx.RelationModel.DeleteUserRelation(ctx, selfId, userId)
 	if err != nil {
-		return err
+		return errorx.NewDefaultError("an unsupported operation")
 	}
-	defer func() {
-		_ = UpdateUnFollowRelationCount(ctx, appCtx, selfId, userId)
-	}()
 	return nil
 }
 
 func QueryFollowedUser(ctx context.Context, appCtx *service.AppContext, selfId int64, userIds []int64) ([]int64, error) {
-	return appCtx.RelationModel.FindFollowRelation(ctx, selfId, userIds)
+	relation, err := appCtx.RelationModel.FindFollowRelation(ctx, selfId, userIds)
+	if err != nil {
+		return nil, errorx.NewDefaultError("query failed")
+	}
+	return relation, nil
 }
 
 func QueryIsFollowed(ctx context.Context, appCtx *service.AppContext, selfId, userId int64) (bool, error) {
-	return appCtx.RelationModel.FindRelationEdge(ctx, selfId, userId)
+	followed, err := appCtx.RelationModel.FindRelationEdge(ctx, selfId, userId)
+	if err != nil {
+		return false, errorx.NewDefaultError("query follow relation failed")
+	}
+	return followed, nil
 }

@@ -9,7 +9,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/minio/minio-go/v7"
-	"github.com/zeromicro/go-zero/core/logx"
 	"strings"
 	"time"
 )
@@ -20,17 +19,14 @@ var NewUploadLogic = newUploadLogic
 
 func newUploadLogic(ctx context.Context, appCtx *service.AppContext) UploadLogic {
 	return func(req *types.UploadReq) (*types.UploadResp, error) {
-		logger := logx.WithContext(ctx)
 		selfId, _ := ctx.Value(middleware.UserClaimsKey).(int64)
 		open, err := req.File.Open()
 		if err != nil {
 			return nil, errorx.NewDefaultError("open file error")
 		}
 		defer open.Close()
-		// 生成文件名, 是否要加上文件后缀?
 		suffix, err := getFileType(req.File.Filename)
 		if err != nil {
-			logger.Errorf("get file type error: %v", err)
 			return nil, errorx.NewDefaultError("get file type error")
 		}
 		name := fmt.Sprintf("%d%d.%s", selfId, time.Now().UnixMilli(), suffix)
@@ -42,11 +38,10 @@ func newUploadLogic(ctx context.Context, appCtx *service.AppContext) UploadLogic
 		// 写入数据库
 		_, err = appCtx.VideoModel.Insert(ctx,
 			&dal.Videos{
-				UserId:   selfId,
-				PlayUrl:  fmt.Sprintf("/%s/%s", appCtx.MinioBucket, name),
-				CoverUrl: appCtx.DefaultCoverUrl(), // default
-				Title:    req.Title,
-				// todo: 时间要设置自动启用默认值
+				UserId:    selfId,
+				PlayUrl:   fmt.Sprintf("/%s/%s", appCtx.MinioBucket, name),
+				CoverUrl:  appCtx.DefaultCoverUrl(), // default
+				Title:     req.Title,
 				CreatedAt: time.Now(),
 			},
 		)

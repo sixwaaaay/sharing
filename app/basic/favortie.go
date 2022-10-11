@@ -1,35 +1,24 @@
 package basic
 
 import (
+	"bytelite/common/errorx"
 	"bytelite/service"
 	"context"
 )
 
 func AddFavorite(ctx context.Context, appCtx *service.AppContext, selfId, videoId, actionType int64) error {
-
 	err := appCtx.FavoriteModel.UpdateUserFavorite(ctx, selfId, videoId, actionType)
 	if err != nil {
 		return err
 	}
-	defer func() {
-		if err != nil {
-			_ = UpdateVideoFavoriteCount(ctx, appCtx, videoId, 1)
-		}
-	}()
 	return nil
 }
 
 func RemoveFavorite(ctx context.Context, appCtx *service.AppContext, selfId, videoId int64) error {
 	err := appCtx.FavoriteModel.DeleteUserFavorite(ctx, selfId, videoId)
 	if err != nil {
-		return err
+		return errorx.NewDefaultError("delete failed, please try later")
 	}
-	defer func() {
-		if err != nil {
-			return
-		}
-		_ = UpdateVideoFavoriteCount(ctx, appCtx, videoId, -1)
-	}()
 	return nil
 }
 
