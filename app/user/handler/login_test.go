@@ -14,11 +14,12 @@ import (
 )
 
 func TestLogin(t *testing.T) {
+	const path = "/douyin/user/login/"
 	var testCases = []testhelper.TestCase{
 		{
 			Name:   "login,biz logic success", // 测试登录，业务逻辑成功
 			Method: "POST",
-			Path:   "/douyin/user/login/",
+			Path:   path,
 			Form: url.Values{
 				"username": {"test"},
 				"password": {"123456"},
@@ -28,7 +29,7 @@ func TestLogin(t *testing.T) {
 		{
 			Name:   "login,biz logic fail", // 测试登录，业务逻辑失败, 返回错误信息
 			Method: "POST",
-			Path:   "/douyin/user/login/",
+			Path:   path,
 			Form: url.Values{
 				"username": {"fail"},
 				"password": {"fail"},
@@ -38,7 +39,7 @@ func TestLogin(t *testing.T) {
 		{
 			Name:   "login,params error", // 参数错误
 			Method: "POST",
-			Path:   "/douyin/user/login/",
+			Path:   path,
 			Form: url.Values{
 				"username": {"test"},
 			},
@@ -57,10 +58,10 @@ func TestLogin(t *testing.T) {
 }
 
 /*
-	替换依赖的业务逻辑
-	用于验证 handler 层的正确和错误分支
+替换依赖的业务逻辑
+用于验证 handler 层的正确和错误分支
 */
-func loginHookFunc(ctx context.Context, appCtx *service.AppContext) logic.LoginLogic {
+func loginHookFunc(_ context.Context, _ *service.AppContext) logic.LoginLogic {
 	return func(req *types.UserReq) (resp *types.UserResp, err error) {
 		if req.Username == "fail" && req.Password == "fail" {
 			return nil, errorx.NewDefaultCodeErr("fail to login")

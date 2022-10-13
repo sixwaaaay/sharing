@@ -16,11 +16,12 @@ import (
 )
 
 func TestFeed(t *testing.T) {
+	const path = "/douyin/feed/"
 	var testCases = []testhelper.TestCase{
 		{
 			Name:   "logic success", // 业务逻辑成功
 			Method: "GET",
-			Path:   "/douyin/feed/",
+			Path:   path,
 			Body:   nil,
 			Form: url.Values{
 				"latest_time": {"15897600"},
@@ -40,7 +41,7 @@ func TestFeed(t *testing.T) {
 		{
 			Name:   "logic fail", //业务逻辑失败
 			Method: "GET",
-			Path:   "/douyin/feed/",
+			Path:   path,
 			Body:   nil,
 			Form: url.Values{
 				"latest_time": {"6"},
@@ -50,7 +51,7 @@ func TestFeed(t *testing.T) {
 		{
 			Name:   "param fail", // 参数异常
 			Method: "GET",
-			Path:   "/douyin/feed/",
+			Path:   path,
 			Body:   nil,
 			Form: url.Values{
 				"latest_time": {"aaa"}, // 非数字

@@ -14,11 +14,12 @@ import (
 )
 
 func TestRegister(t *testing.T) {
+	const path = "/douyin/user/register/"
 	var testCases = []testhelper.TestCase{
 		{
 			Name:   "register, biz success", // 测试注册，业务逻辑成功
 			Method: "POST",
-			Path:   "/douyin/user/register/",
+			Path:   path,
 			Form: url.Values{
 				"username": {"test"},
 				"password": {"123456"},
@@ -28,7 +29,7 @@ func TestRegister(t *testing.T) {
 		{
 			Name:   "register, biz error", // 测试注册，业务逻辑失败，返回错误信息
 			Method: "POST",
-			Path:   "/douyin/user/register/",
+			Path:   path,
 			Form: url.Values{
 				"username": {"fail"},
 				"password": {"fail"},
@@ -38,7 +39,7 @@ func TestRegister(t *testing.T) {
 		{
 			Name:   "register, param error", // 请求参数错误
 			Method: "POST",
-			Path:   "/douyin/user/register/",
+			Path:   path,
 			Form: url.Values{
 				"username": {"test"},
 			},
@@ -57,10 +58,10 @@ func TestRegister(t *testing.T) {
 }
 
 /*
-	替换依赖的业务逻辑
-	用于验证 handler 层的正确和错误分支
+替换依赖的业务逻辑
+用于验证 handler 层的正确和错误分支
 */
-func registerHookFunc(ctx context.Context, appCtx *service.AppContext) logic.RegisterLogic {
+func registerHookFunc(_ context.Context, _ *service.AppContext) logic.RegisterLogic {
 	return func(req *types.UserReq) (resp *types.UserResp, err error) {
 		if req.Username == "fail" && req.Password == "fail" {
 			return nil, errorx.NewDefaultCodeErr("fail to register")

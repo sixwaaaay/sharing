@@ -32,11 +32,12 @@ func TestFavoriteListHandler(t *testing.T) {
 		}
 	}
 
+	const path = "/douyin/favorite/list/"
 	var testCases = []testhelper.TestCase{
 		{
 			Name:   "biz logic success", // 测试点赞列表，业务逻辑成功
 			Method: "GET",
-			Path:   "/douyin/favorite/list/",
+			Path:   path,
 			Form: url.Values{
 				"user_id": {"100"},
 				"token":   {"token"},
@@ -46,7 +47,7 @@ func TestFavoriteListHandler(t *testing.T) {
 		{
 			Name:   "biz logic fail", // 测试点赞列表，业务逻辑失败, 返回错误信息
 			Method: "GET",
-			Path:   "/douyin/favorite/list/",
+			Path:   path,
 			Form: url.Values{
 				"user_id": {"101"},
 				"token":   {"token"},
@@ -56,7 +57,7 @@ func TestFavoriteListHandler(t *testing.T) {
 		{
 			Name:   "params error", // 参数错误
 			Method: "GET",
-			Path:   "/douyin/favorite/list/",
+			Path:   path,
 			Form: url.Values{
 				"user_id": {"douyin"},
 			},

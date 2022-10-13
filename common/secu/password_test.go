@@ -22,31 +22,31 @@ func TestGenSalt(t *testing.T) {
 }
 
 func TestHash(t *testing.T) {
-	password := "123456"
-	hash := Hash(password)
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	testPwd := "123456"
+	hash := Hash(testPwd)
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(testPwd))
 	if err != nil {
 		t.Errorf("hash compare error: %s", err)
 	}
 }
 func TestCompare(t *testing.T) {
-	password := "123456"
-	hash := Hash(password)
-	if Compare(password, hash) != true {
+	testPwd := "123456"
+	hash := Hash(testPwd)
+	if Compare(testPwd, hash) != true {
 		t.Errorf("hash compare error: %s", "password not match")
 	}
 }
 
 func TestGenHashedPassAndSalt(t *testing.T) {
-	password := "123456"
-	hash := Hash(password)
-	compare := Compare(password, hash)
+	testPwd := "123456"
+	hash := Hash(testPwd)
+	compare := Compare(testPwd, hash)
 	require.Equal(t, true, compare)
 }
 
 func TestBCrypt(t *testing.T) {
-	password := "123"
-	fromPassword, err := bcrypt.GenerateFromPassword([]byte(password), 2)
+	testPwd := "123"
+	bytes, err := bcrypt.GenerateFromPassword([]byte(testPwd), 2)
 	_ = err
-	fmt.Println(bcrypt.CompareHashAndPassword(fromPassword, []byte(password)))
+	fmt.Println(bcrypt.CompareHashAndPassword(bytes, []byte(testPwd)))
 }
