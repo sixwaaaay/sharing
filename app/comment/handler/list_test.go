@@ -41,11 +41,12 @@ func TestCommentListHandler(t *testing.T) {
 		}
 	}
 
+	const path = "/douyin/comment/list/"
 	var testCases = []testhelper.TestCase{
 		{
 			Name:   "biz logic success", // 测试获取评论列表，业务逻辑成功
 			Method: "GET",
-			Path:   "/douyin/comment/list/",
+			Path:   path,
 			Form: url.Values{
 				"video_id": {"100"},
 				"token":    {"token"},
@@ -55,7 +56,7 @@ func TestCommentListHandler(t *testing.T) {
 		{
 			Name:   "biz logic fail", // 测试获取评论列表，业务逻辑失败, 返回错误信息
 			Method: "GET",
-			Path:   "/douyin/comment/list/",
+			Path:   path,
 			Form: url.Values{
 				"video_id": {"321"},
 				"token":    {"token"},
@@ -65,7 +66,7 @@ func TestCommentListHandler(t *testing.T) {
 		{
 			Name:   "params error", // 参数错误
 			Method: "GET",
-			Path:   "/douyin/comment/list/",
+			Path:   path,
 			Form: url.Values{
 				"video_id": {"douyin"}, //非 ID 正确的数据类型
 			},

@@ -29,16 +29,16 @@ func newRegisterLogic(ctx context.Context, appCtx *service.AppContext) RegisterL
 		// 写入数据库
 		ret, err := appCtx.UsersModel.Insert(ctx, &user)
 		if err != nil {
-			return nil, errorx.NewDefaultError("register failed")
+			return nil, errorx.NewDefaultError("register failed, server error")
 		}
 		userId, err := ret.LastInsertId() // move to time increasingly unique id
 		if err != nil {
-			return nil, errorx.NewDefaultError("register failed")
+			return nil, errorx.NewDefaultError("server busy, try later")
 		}
 		// 生成token
 		token, err := appCtx.JWTSigner.GenerateToken(userId, 60*60*24*7)
 		if err != nil {
-			return nil, errorx.NewDefaultError("register failed")
+			return nil, errorx.NewDefaultError("server busy, please login manual")
 		}
 		return &types.UserResp{
 			StatusCode: 0,

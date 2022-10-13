@@ -9,7 +9,7 @@ import (
 	"context"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
+	"io"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
@@ -44,7 +44,7 @@ func TestRequestBinding(t *testing.T) {
 		}
 	}(open)
 	// 检查内容
-	content, err := ioutil.ReadAll(open)
+	content, err := io.ReadAll(open)
 	assert.NoError(t, err)
 	assert.Equal(t, videoFile.Content, content)
 }
@@ -74,41 +74,37 @@ func TestUploadHandler(t *testing.T) {
 	token := "testToken"
 	title := "testTitle"
 	errorTitle := "error"
+	const path = "/douyin/publish/action/"
+	mockFile := MockFile{
+		Filename: "video.mp4",
+		Content:  []byte("video content"),
+	} // 模拟上传的文件内容
 	cases := []PublishTestCase{
 		{
-			Name:   "success", // 业务逻辑正常
-			Method: "POST",
-			Path:   "/douyin/publish/action/",
-			Token:  &token,
-			Title:  &title,
-			File: MockFile{
-				Filename: "video.mp4",
-				Content:  []byte("video content"), // 模拟上传的文件内容
-			},
+			Name:     "success", // 业务逻辑正常
+			Method:   "POST",
+			Path:     path,
+			Token:    &token,
+			Title:    &title,
+			File:     mockFile,
 			Expected: `{"status_code":0,"status_msg":null}`,
 		},
 		{
-			Name:   "logic error", // 业务逻辑错误，返回错误信息
-			Method: "POST",
-			Path:   "/douyin/publish/action/",
-			Token:  &token,
-			Title:  &errorTitle,
-			File: MockFile{
-				Filename: "video.mp4",
-				Content:  []byte("video content"), // 模拟上传的文件内容
-			},
+			Name:     "logic error", // 业务逻辑错误，返回错误信息
+			Method:   "POST",
+			Path:     path,
+			Token:    &token,
+			Title:    &errorTitle,
+			File:     mockFile,
 			Expected: `{"status_code":1001,"status_msg":"error"}`,
 		},
 		{
-			Name:   "param error", // 参数错误
-			Method: "POST",
-			Path:   "/douyin/publish/action/",
-			Token:  nil,
-			Title:  &title,
-			File: MockFile{
-				Filename: "video.mp4",
-				Content:  []byte("video content"), // 模拟上传的文件内容
-			},
+			Name:     "param error", // 参数错误
+			Method:   "POST",
+			Path:     path,
+			Token:    nil,
+			Title:    &title,
+			File:     mockFile,
 			Expected: `{"status_code":1001,"status_msg":"invalid params"}`,
 		},
 	}

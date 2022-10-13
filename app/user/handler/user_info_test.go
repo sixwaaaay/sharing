@@ -15,11 +15,12 @@ import (
 )
 
 func TestUserInfo(t *testing.T) {
+	const path = "/douyin/user/"
 	var testCases = []testhelper.TestCase{
 		{
 			Name:   "user info,biz logic success", // 业务逻辑成功
 			Method: "GET",
-			Path:   "/douyin/user/",
+			Path:   path,
 			Form: url.Values{
 				"user_id": {"12345"},
 				"token":   {"token"},
@@ -29,7 +30,7 @@ func TestUserInfo(t *testing.T) {
 		{
 			Name:   "user info,biz logic fail", // 业务逻辑失败，返回错误信息
 			Method: "GET",
-			Path:   "/douyin/user/",
+			Path:   path,
 			Form: url.Values{
 				"user_id": {"987"},
 				"token":   {"token"},
@@ -39,7 +40,7 @@ func TestUserInfo(t *testing.T) {
 		{
 			Name:     "user info, param error", // 参数错误
 			Method:   "GET",
-			Path:     "/douyin/user/",
+			Path:     path,
 			Form:     url.Values{},
 			Expected: `{"status_code":1001,"status_msg":"invalid params"}`,
 		},

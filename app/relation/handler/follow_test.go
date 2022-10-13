@@ -27,11 +27,12 @@ func TestFollowActionHandler(t *testing.T) {
 			return resp, nil
 		}
 	}
+	const path = "/douyin/relation/action/"
 	var testCase = []testhelper.TestCase{
 		{
 			Name:   "biz logic success", // 测试关注，业务逻辑成功
 			Method: "POST",
-			Path:   "/douyin/relation/action/",
+			Path:   path,
 			Form: url.Values{
 				"token":       {"token"},
 				"to_user_id":  {"100"},
@@ -42,7 +43,7 @@ func TestFollowActionHandler(t *testing.T) {
 		{
 			Name:   "biz logic fail", // 测试关注，业务逻辑失败, 返回错误信息
 			Method: "POST",
-			Path:   "/douyin/relation/action/",
+			Path:   path,
 			Form: url.Values{
 				"token":       {"token"},
 				"to_user_id":  {"101"},
@@ -53,7 +54,7 @@ func TestFollowActionHandler(t *testing.T) {
 		{
 			Name:   "params error", // 参数错误
 			Method: "POST",
-			Path:   "/douyin/relation/action/",
+			Path:   path,
 			Form: url.Values{
 				"token":       {"token"},
 				"to_user_id":  {"douyin"},
