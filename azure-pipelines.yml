@@ -4,19 +4,19 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/go
 
 trigger:
-- master
+  - master
 
 pool:
   vmImage: ubuntu-latest
 
 steps:
-- task: GoTool@0
-  inputs:
-    version: '1.19'
-- script: |
-    go version
-    go mod tidy
-    cd deploy
-    go build -v .
-  workingDirectory: '$(System.DefaultWorkingDirectory)'
-  displayName: 'Get dependencies, then build'
+  - task: GoTool@0
+    inputs:
+      version: "1.19"
+  - script: |
+      go version
+      go mod tidy
+      cd deploy
+      go build -v .
+    workingDirectory: "$(System.DefaultWorkingDirectory)"
+    displayName: "Get dependencies, then build"
