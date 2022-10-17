@@ -4,15 +4,15 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/go
 
 trigger:
-- task: GoTool@0
-  inputs:
-    version: '1.19'
 - master
 
 pool:
   vmImage: ubuntu-latest
 
 steps:
+- task: GoTool@0
+  inputs:
+    version: '1.19'
 - script: |
     go version
     go mod tidy
