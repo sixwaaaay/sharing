@@ -9,7 +9,7 @@ require (
 	github.com/jinzhu/copier v0.3.5
 	github.com/minio/minio-go/v7 v7.0.42
 	github.com/stretchr/testify v1.8.1
-	github.com/zeromicro/go-zero v1.4.1
+	github.com/zeromicro/go-zero v1.4.2
 	golang.org/x/crypto 05595931fe9d
 )
 
