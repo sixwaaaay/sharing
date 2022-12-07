@@ -4,7 +4,7 @@ version: 2.1
 executors:
   my-custom-executor:
     docker:
-      - image: cimg/go:1.19.3
+      - image: cimg/go:1.19.4
         auth:
           # ensure you have first added these secrets
           # visit app.circleci.com/settings/project/github/sixwaaaay/bytelite/environment-variables
