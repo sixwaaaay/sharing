@@ -5,9 +5,12 @@ import (
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/sixwaaaay/sharing/configs"
+	_ "github.com/sixwaaaay/sharing/docs"
 	"github.com/sixwaaaay/sharing/pkg/app/handler"
 	"github.com/sixwaaaay/sharing/pkg/app/service"
 	"github.com/sixwaaaay/sharing/pkg/common/middleware"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/zeromicro/go-zero/core/conf"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxevent"
@@ -16,6 +19,14 @@ import (
 	"time"
 )
 
+// @title sharing
+// @version 1.0
+// @description a simple short-form, video-sharing app backend
+// @contact.name sixwaaaay
+// @contact.url  https://github.com/sixwaaaay
+// @license.name Apache 2.0
+// @license.url https://github.com/sixwaaaay/sharing/blob/master/LICENSE
+// @host localhost:8080
 func main() {
 	fx.New(fx.WithLogger(func(logger *zap.Logger) fxevent.Logger {
 		return &fxevent.ZapLogger{Logger: logger}
@@ -58,6 +69,7 @@ func NewServer(lc fx.Lifecycle, r *gin.Engine, c *configs.Config) {
 }
 
 func Register(e *gin.Engine, appCtx *service.AppContext) {
+	e.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	r := e.Group("/douyin")
 	r.POST("/user/register/", handler.Register(appCtx))
 	r.POST("/user/login/", handler.Login(appCtx))

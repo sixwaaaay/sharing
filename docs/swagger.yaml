@@ -1,0 +1,77 @@
+definitions:
+  types.UserResp:
+    properties:
+      status_code:
+        description: 状态码，0-成功，其他值-失败
+        type: integer
+      status_msg:
+        description: 返回状态描述
+        type: string
+      token:
+        description: 用户鉴权token
+        type: string
+      user_id:
+        description: 用户id
+        type: integer
+    type: object
+host: localhost:8080
+info:
+  contact:
+    name: sixwaaaay
+    url: https://github.com/sixwaaaay
+  description: a simple short-form, video-sharing app backend
+  license:
+    name: Apache 2.0
+    url: https://github.com/sixwaaaay/sharing/blob/master/LICENSE
+  title: sharing
+  version: "1.0"
+paths:
+  /douyin/user/login/:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: 用户登陆
+      parameters:
+      - in: formData
+        name: password
+        required: true
+        type: string
+      - in: formData
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.UserResp'
+      summary: 用户登陆
+      tags:
+      - 用户
+  /douyin/user/register/:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: 用户注册
+      parameters:
+      - in: formData
+        name: password
+        required: true
+        type: string
+      - in: formData
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.UserResp'
+      summary: 用户注册
+      tags:
+      - 用户
+swagger: "2.0"
