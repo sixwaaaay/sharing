@@ -1,9 +1,9 @@
 package middleware
 
 import (
-	"bytelite/service"
 	"context"
 	"github.com/gin-gonic/gin"
+	"github.com/sixwaaaay/sharing/pkg/app/service"
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
