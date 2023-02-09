@@ -1,9 +1,11 @@
 package covert
 
-import "bytelite/common/cotypes"
+import (
+	"github.com/sixwaaaay/sharing/pkg/app/types"
+)
 
-func UserMap(users []cotypes.User) map[int64]cotypes.User {
-	userMap := make(map[int64]cotypes.User, len(users))
+func UserMap(users []types.User) map[int64]types.User {
+	userMap := make(map[int64]types.User, len(users))
 	for _, u := range users {
 		userMap[u.ID] = u
 	}

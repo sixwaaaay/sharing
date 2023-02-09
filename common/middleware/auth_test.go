@@ -1,10 +1,10 @@
 package middleware
 
 import (
-	"bytelite/common/auth"
-	"bytelite/common/testhelper"
-	"bytelite/service"
 	"github.com/gin-gonic/gin"
+	"github.com/sixwaaaay/sharing/common/auth"
+	"github.com/sixwaaaay/sharing/common/testhelper"
+	"github.com/sixwaaaay/sharing/pkg/app/service"
 	"github.com/stretchr/testify/require"
 	"net/url"
 	"testing"

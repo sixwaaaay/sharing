@@ -1,8 +1,8 @@
 package auth
 
 import (
-	"bytelite/common/errorx"
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/sixwaaaay/sharing/common/errorx"
 	"time"
 )
 

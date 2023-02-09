@@ -1,17 +1,12 @@
 package main
 
 import (
-	comment "bytelite/app/comment/handler"
-	favorite "bytelite/app/favorite/handler"
-	feed "bytelite/app/feed/handler"
-	publish "bytelite/app/publish/handler"
-	relation "bytelite/app/relation/handler"
-	user "bytelite/app/user/handler"
-	"bytelite/common/middleware"
-	"bytelite/etc"
-	"bytelite/service"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
+	"github.com/sixwaaaay/sharing/common/middleware"
+	"github.com/sixwaaaay/sharing/etc"
+	"github.com/sixwaaaay/sharing/pkg/app/handler"
+	"github.com/sixwaaaay/sharing/pkg/app/service"
 	"github.com/zeromicro/go-zero/core/conf"
 	"go.uber.org/zap"
 	"time"
@@ -32,17 +27,17 @@ func main() {
 
 	appCtx := service.NewAppContext(&c)
 	group := r.Group("/douyin")
-	group.POST("/user/register/", user.Register(appCtx))
-	group.POST("/user/login/", user.Login(appCtx))
+	group.POST("/user/register/", handler.Register(appCtx))
+	group.POST("/user/login/", handler.Login(appCtx))
 	group.Use(middleware.VerifyToken(appCtx)) // 中间件验证token
 	authHook := middleware.Authority(appCtx)  // 中间件验证权限
-	group.GET("/user/", authHook, user.UserInfoHandler(appCtx))
-	feed.RegisterHandlers(group, appCtx)
+	group.GET("/user/", authHook, handler.UserInfoHandler(appCtx))
+	handler.RegisterFeedHandlers(group, appCtx)
 	group.Use(authHook)
-	publish.RegisterHandlers(group, appCtx)
-	comment.RegisterHandlers(group, appCtx)
-	favorite.RegisterHandlers(group, appCtx)
-	relation.Register(group, appCtx)
+	handler.RegisterPublishHandlers(group, appCtx)
+	handler.RegisterCommentHandlers(group, appCtx)
+	handler.RegisterFavorHandlers(group, appCtx)
+	handler.RegisterRelationHandlers(group, appCtx)
 	err = r.Run(c.Addr())
 	if err != nil {
 		panic(err)

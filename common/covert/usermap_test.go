@@ -1,15 +1,15 @@
 package covert
 
 import (
-	"bytelite/common/cotypes"
+	"github.com/sixwaaaay/sharing/pkg/app/types"
 	"strconv"
 	"testing"
 )
 
 func TestUserMap(t *testing.T) {
-	var userSlice []cotypes.User
+	var userSlice []types.User
 	for i := 0; i < 10; i++ {
-		userSlice = append(userSlice, cotypes.User{
+		userSlice = append(userSlice, types.User{
 			ID:   int64(i),
 			Name: "name" + strconv.Itoa(i),
 		})
