@@ -18,15 +18,9 @@
     "/douyin/user/login/": {
       "post": {
         "description": "用户登陆",
-        "consumes": [
-          "application/x-www-form-urlencoded"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "用户"
-        ],
+        "consumes": ["application/x-www-form-urlencoded"],
+        "produces": ["application/json"],
+        "tags": ["用户"],
         "summary": "用户登陆",
         "parameters": [
           {
@@ -55,15 +49,9 @@
     "/douyin/user/register/": {
       "post": {
         "description": "用户注册",
-        "consumes": [
-          "application/x-www-form-urlencoded"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "用户"
-        ],
+        "consumes": ["application/x-www-form-urlencoded"],
+        "produces": ["application/json"],
+        "tags": ["用户"],
         "summary": "用户注册",
         "parameters": [
           {
