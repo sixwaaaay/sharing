@@ -2,11 +2,11 @@ package handler
 
 import (
 	"context"
-	"github.com/sixwaaaay/sharing/common/errorx"
-	"github.com/sixwaaaay/sharing/common/testhelper"
 	"github.com/sixwaaaay/sharing/pkg/app/logic"
 	"github.com/sixwaaaay/sharing/pkg/app/service"
 	"github.com/sixwaaaay/sharing/pkg/app/types"
+	"github.com/sixwaaaay/sharing/pkg/common/errorx"
+	testhelper2 "github.com/sixwaaaay/sharing/pkg/common/testhelper"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/url"
@@ -15,7 +15,7 @@ import (
 
 func TestLogin(t *testing.T) {
 	const path = "/douyin/user/login/"
-	var testCases = []testhelper.TestCase{
+	var testCases = []testhelper2.TestCase{
 		{
 			Name:   "login,biz logic success", // 测试登录，业务逻辑成功
 			Method: "POST",
@@ -50,7 +50,7 @@ func TestLogin(t *testing.T) {
 	logic.NewLoginLogic = loginHookFunc
 	for _, testCase := range testCases {
 		t.Run(testCase.Name+" "+testCase.Method+" "+testCase.Path, func(t *testing.T) {
-			w, _ := testhelper.GenRequest(r, testCase.Method, testCase.Path, testCase.Body, testCase.Form)
+			w, _ := testhelper2.GenRequest(r, testCase.Method, testCase.Path, testCase.Body, testCase.Form)
 			assert.Equal(t, http.StatusOK, w.Code)
 			assert.JSONEq(t, testCase.Expected, w.Body.String())
 		})

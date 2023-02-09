@@ -3,12 +3,12 @@ package logic
 import (
 	"context"
 	"fmt"
-	"github.com/sixwaaaay/sharing/common/covert"
-	"github.com/sixwaaaay/sharing/common/errorx"
-	"github.com/sixwaaaay/sharing/common/itertool"
 	"github.com/sixwaaaay/sharing/pkg/app/dal"
 	"github.com/sixwaaaay/sharing/pkg/app/service"
 	"github.com/sixwaaaay/sharing/pkg/app/types"
+	covert2 "github.com/sixwaaaay/sharing/pkg/common/covert"
+	"github.com/sixwaaaay/sharing/pkg/common/errorx"
+	"github.com/sixwaaaay/sharing/pkg/common/itertool"
 	"math"
 )
 
@@ -22,9 +22,9 @@ func FetchField(ctx context.Context, appCtx *service.AppContext, videoList []*da
 	if err != nil {
 		return nil, errorx.NewDefaultError("error to query data")
 	}
-	userMap := covert.UserMap(multiUserInfo)         // 用于join
-	videos := toVideos(videoList)                    // 转换为所需类型
-	favoriteMap := covert.Int64SliceToMap(favorites) // 点赞结果
+	userMap := covert2.UserMap(multiUserInfo)         // 用于join
+	videos := toVideos(videoList)                     // 转换为所需类型
+	favoriteMap := covert2.Int64SliceToMap(favorites) // 点赞结果
 	for i := 0; i < len(videoList); i++ {
 		if user, ok := userMap[videoList[i].UserId]; ok {
 			videos[i].Author = user

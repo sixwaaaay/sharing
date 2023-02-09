@@ -5,10 +5,10 @@ import (
 	"github.com/sixwaaaay/sharing/pkg/app/logic"
 	"github.com/sixwaaaay/sharing/pkg/app/service"
 	"github.com/sixwaaaay/sharing/pkg/app/types"
+	"github.com/sixwaaaay/sharing/pkg/common/errorx"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/copier"
-	"github.com/sixwaaaay/sharing/common/errorx"
 )
 
 func WrapHandler[Req any, Resp any](appContext *service.AppContext, builder func(context.Context, *service.AppContext) func(*Req) (*Resp, error)) gin.HandlerFunc {

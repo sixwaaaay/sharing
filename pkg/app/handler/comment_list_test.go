@@ -4,10 +4,10 @@ import (
 	"github.com/sixwaaaay/sharing/pkg/app/logic"
 	"github.com/sixwaaaay/sharing/pkg/app/service"
 	"github.com/sixwaaaay/sharing/pkg/app/types"
+	"github.com/sixwaaaay/sharing/pkg/common/errorx"
+	testhelper2 "github.com/sixwaaaay/sharing/pkg/common/testhelper"
 
 	"context"
-	"github.com/sixwaaaay/sharing/common/errorx"
-	"github.com/sixwaaaay/sharing/common/testhelper"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/url"
@@ -42,7 +42,7 @@ func TestCommentListHandler(t *testing.T) {
 	}
 
 	const path = "/douyin/comment/list/"
-	var testCases = []testhelper.TestCase{
+	var testCases = []testhelper2.TestCase{
 		{
 			Name:   "biz logic success", // 测试获取评论列表，业务逻辑成功
 			Method: "GET",
@@ -75,7 +75,7 @@ func TestCommentListHandler(t *testing.T) {
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.Name+" "+testCase.Method+" "+testCase.Path, func(t *testing.T) {
-			w, _ := testhelper.GenRequest(r, testCase.Method, testCase.Path, testCase.Body, testCase.Form)
+			w, _ := testhelper2.GenRequest(r, testCase.Method, testCase.Path, testCase.Body, testCase.Form)
 			assert.Equal(t, http.StatusOK, w.Code)
 			assert.JSONEq(t, testCase.Expected, w.Body.String())
 			t.Logf("%s", w.Body.String())

@@ -2,12 +2,12 @@ package logic
 
 import (
 	"context"
-	"github.com/sixwaaaay/sharing/common/covert"
-	"github.com/sixwaaaay/sharing/common/errorx"
-	"github.com/sixwaaaay/sharing/common/itertool"
 	"github.com/sixwaaaay/sharing/pkg/app/dal"
 	"github.com/sixwaaaay/sharing/pkg/app/service"
 	"github.com/sixwaaaay/sharing/pkg/app/types"
+	"github.com/sixwaaaay/sharing/pkg/common/covert"
+	"github.com/sixwaaaay/sharing/pkg/common/errorx"
+	"github.com/sixwaaaay/sharing/pkg/common/itertool"
 )
 
 // RemoveComment 移除评论

@@ -3,9 +3,9 @@ package logic
 import (
 	"github.com/sixwaaaay/sharing/pkg/app/service"
 	"github.com/sixwaaaay/sharing/pkg/app/types"
+	"github.com/sixwaaaay/sharing/pkg/common/middleware"
 
 	"context"
-	"github.com/sixwaaaay/sharing/common/middleware"
 )
 
 type CommentListLogic func(req *types.CommentListReq) (*types.CommentListResp, error)

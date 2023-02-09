@@ -2,11 +2,11 @@ package handler
 
 import (
 	"context"
-	"github.com/sixwaaaay/sharing/common/errorx"
-	"github.com/sixwaaaay/sharing/common/testhelper"
 	"github.com/sixwaaaay/sharing/pkg/app/logic"
 	"github.com/sixwaaaay/sharing/pkg/app/service"
 	"github.com/sixwaaaay/sharing/pkg/app/types"
+	"github.com/sixwaaaay/sharing/pkg/common/errorx"
+	testhelper2 "github.com/sixwaaaay/sharing/pkg/common/testhelper"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/url"
@@ -15,7 +15,7 @@ import (
 
 func TestRegister(t *testing.T) {
 	const path = "/douyin/user/register/"
-	var testCases = []testhelper.TestCase{
+	var testCases = []testhelper2.TestCase{
 		{
 			Name:   "register, biz success", // 测试注册，业务逻辑成功
 			Method: "POST",
@@ -50,7 +50,7 @@ func TestRegister(t *testing.T) {
 	logic.NewRegisterLogic = registerHookFunc
 	for _, c := range testCases {
 		t.Run(c.Name, func(t *testing.T) {
-			w, _ := testhelper.GenRequest(r, c.Method, c.Path, nil, c.Form)
+			w, _ := testhelper2.GenRequest(r, c.Method, c.Path, nil, c.Form)
 			require.Equal(t, http.StatusOK, w.Code)
 			require.Equal(t, c.Expected, w.Body.String())
 		})

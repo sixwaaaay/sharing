@@ -4,11 +4,11 @@ import (
 	"github.com/sixwaaaay/sharing/pkg/app/logic"
 	"github.com/sixwaaaay/sharing/pkg/app/service"
 	"github.com/sixwaaaay/sharing/pkg/app/types"
+	"github.com/sixwaaaay/sharing/pkg/common/errorx"
 
 	"bytes"
 	"context"
 	"github.com/gin-gonic/gin/binding"
-	"github.com/sixwaaaay/sharing/common/errorx"
 	"github.com/stretchr/testify/assert"
 	"io"
 	"mime/multipart"
