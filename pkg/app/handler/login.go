@@ -9,6 +9,14 @@ import (
 )
 
 // Login 生成用户注册的handler
+// @Summary 用户登陆
+// @Description 用户登陆
+// @Tags 用户
+// @Accept x-www-form-urlencoded
+// @Produce  json
+// @Param user formData types.UserReq true "用户信息"
+// @Success 200 {object} types.UserResp
+// @Router /douyin/user/login/ [post]
 func Login(appCtx *service.AppContext) gin.HandlerFunc {
 	return WrapHandler[types.UserReq, types.UserResp](appCtx, func(ctx context.Context, context *service.AppContext) func(*types.UserReq) (*types.UserResp, error) {
 		return logic.NewLoginLogic(ctx, context)
