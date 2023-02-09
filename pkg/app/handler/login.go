@@ -1,9 +1,8 @@
 package handler
 
 import (
+	"context"
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/copier"
-	"github.com/sixwaaaay/sharing/common/errorx"
 	"github.com/sixwaaaay/sharing/pkg/app/logic"
 	"github.com/sixwaaaay/sharing/pkg/app/service"
 	"github.com/sixwaaaay/sharing/pkg/app/types"
@@ -11,24 +10,7 @@ import (
 
 // Login 生成用户注册的handler
 func Login(appCtx *service.AppContext) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		var req types.UserReq
-		if err := c.ShouldBind(&req); err != nil {
-			codeError := errorx.NewDefaultCodeErr("invalid params")
-			resp := &types.UserResp{}
-			copier.Copy(resp, codeError)
-			c.JSON(200, resp)
-			return
-		}
-		loginLogic := logic.NewLoginLogic(c.Request.Context(), appCtx)
-		resp, err := loginLogic(&req)
-		if err != nil {
-			codeError := err.(*errorx.CodeError)
-			resp = &types.UserResp{}
-			copier.Copy(resp, codeError)
-			c.JSON(200, resp)
-		} else {
-			c.JSON(200, resp)
-		}
-	}
+	return WrapHandler[types.UserReq, types.UserResp](appCtx, func(ctx context.Context, context *service.AppContext) func(*types.UserReq) (*types.UserResp, error) {
+		return logic.NewLoginLogic(ctx, context)
+	})
 }
