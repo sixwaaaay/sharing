@@ -86,4 +86,3 @@ CREATE INDEX relation_index_1 ON relations (followed, update_at);
 --    - 查询指定 (follower, followed) 的状态
 ALTER TABLE relations
     ADD CONSTRAINT relation_unique_0 UNIQUE (follower, followed);
-
