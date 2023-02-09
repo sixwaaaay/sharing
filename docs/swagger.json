@@ -1,116 +1,104 @@
 {
-    "swagger": "2.0",
-    "info": {
-        "description": "a simple short-form, video-sharing app backend",
-        "title": "sharing",
-        "contact": {
-            "name": "sixwaaaay",
-            "url": "https://github.com/sixwaaaay"
-        },
-        "license": {
-            "name": "Apache 2.0",
-            "url": "https://github.com/sixwaaaay/sharing/blob/master/LICENSE"
-        },
-        "version": "1.0"
+  "swagger": "2.0",
+  "info": {
+    "description": "a simple short-form, video-sharing app backend",
+    "title": "sharing",
+    "contact": {
+      "name": "sixwaaaay",
+      "url": "https://github.com/sixwaaaay"
     },
-    "host": "localhost:8080",
-    "paths": {
-        "/douyin/user/login/": {
-            "post": {
-                "description": "用户登陆",
-                "consumes": [
-                    "application/x-www-form-urlencoded"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "用户"
-                ],
-                "summary": "用户登陆",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "name": "password",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "name": "username",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/types.UserResp"
-                        }
-                    }
-                }
-            }
-        },
-        "/douyin/user/register/": {
-            "post": {
-                "description": "用户注册",
-                "consumes": [
-                    "application/x-www-form-urlencoded"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "用户"
-                ],
-                "summary": "用户注册",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "name": "password",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "name": "username",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/types.UserResp"
-                        }
-                    }
-                }
-            }
-        }
+    "license": {
+      "name": "Apache 2.0",
+      "url": "https://github.com/sixwaaaay/sharing/blob/master/LICENSE"
     },
-    "definitions": {
-        "types.UserResp": {
-            "type": "object",
-            "properties": {
-                "status_code": {
-                    "description": "状态码，0-成功，其他值-失败",
-                    "type": "integer"
-                },
-                "status_msg": {
-                    "description": "返回状态描述",
-                    "type": "string"
-                },
-                "token": {
-                    "description": "用户鉴权token",
-                    "type": "string"
-                },
-                "user_id": {
-                    "description": "用户id",
-                    "type": "integer"
-                }
+    "version": "1.0"
+  },
+  "host": "localhost:8080",
+  "paths": {
+    "/douyin/user/login/": {
+      "post": {
+        "description": "用户登陆",
+        "consumes": ["application/x-www-form-urlencoded"],
+        "produces": ["application/json"],
+        "tags": ["用户"],
+        "summary": "用户登陆",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "password",
+            "in": "formData",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "username",
+            "in": "formData",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/types.UserResp"
             }
+          }
         }
+      }
+    },
+    "/douyin/user/register/": {
+      "post": {
+        "description": "用户注册",
+        "consumes": ["application/x-www-form-urlencoded"],
+        "produces": ["application/json"],
+        "tags": ["用户"],
+        "summary": "用户注册",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "password",
+            "in": "formData",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "username",
+            "in": "formData",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/types.UserResp"
+            }
+          }
+        }
+      }
     }
+  },
+  "definitions": {
+    "types.UserResp": {
+      "type": "object",
+      "properties": {
+        "status_code": {
+          "description": "状态码，0-成功，其他值-失败",
+          "type": "integer"
+        },
+        "status_msg": {
+          "description": "返回状态描述",
+          "type": "string"
+        },
+        "token": {
+          "description": "用户鉴权token",
+          "type": "string"
+        },
+        "user_id": {
+          "description": "用户id",
+          "type": "integer"
+        }
+      }
+    }
+  }
 }
