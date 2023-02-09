@@ -1,35 +1,15 @@
 package handler
 
 import (
+	"context"
+	"github.com/gin-gonic/gin"
 	"github.com/sixwaaaay/sharing/pkg/app/logic"
 	"github.com/sixwaaaay/sharing/pkg/app/service"
 	"github.com/sixwaaaay/sharing/pkg/app/types"
-
-	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/copier"
-	"github.com/sixwaaaay/sharing/common/errorx"
 )
 
 func FollowerListHandler(appCtx *service.AppContext) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		var req types.RelationReq
-		if err := c.ShouldBind(&req); err != nil {
-			codeError := errorx.NewDefaultCodeErr("invalid params")
-			resp := &types.FollowerListResp{}
-			copier.Copy(resp, codeError)
-			c.JSON(200, resp)
-			return
-		}
-
-		followerListLogic := logic.NewFollowerListLogic(c.Request.Context(), appCtx)
-		resp, err := followerListLogic(&req)
-		if err != nil {
-			codeError := err.(*errorx.CodeError)
-			resp = &types.FollowerListResp{}
-			copier.Copy(resp, codeError)
-			c.JSON(200, resp)
-		} else {
-			c.JSON(200, resp)
-		}
-	}
+	return WrapHandler[types.RelationReq, types.FollowerListResp](appCtx, func(ctx context.Context, context *service.AppContext) func(*types.RelationReq) (*types.FollowerListResp, error) {
+		return logic.NewFollowerListLogic(ctx, context)
+	})
 }
