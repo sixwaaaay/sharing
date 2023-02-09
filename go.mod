@@ -11,6 +11,7 @@ require (
 	github.com/minio/minio-go/v7 v7.0.47
 	github.com/stretchr/testify v1.8.1
 	github.com/zeromicro/go-zero v1.4.4
+	go.uber.org/fx v1.19.1
 	go.uber.org/zap v1.24.0
 	golang.org/x/crypto v0.6.0
 )
@@ -73,6 +74,7 @@ require (
 	go.opentelemetry.io/proto/otlp v0.19.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/automaxprocs v1.5.1 // indirect
+	go.uber.org/dig v1.16.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
 	golang.org/x/net v0.6.0 // indirect
 	golang.org/x/sys v0.5.0 // indirect
