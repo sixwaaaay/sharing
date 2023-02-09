@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/sixwaaaay/sharing/configs"
@@ -8,38 +9,65 @@ import (
 	"github.com/sixwaaaay/sharing/pkg/app/service"
 	"github.com/sixwaaaay/sharing/pkg/common/middleware"
 	"github.com/zeromicro/go-zero/core/conf"
+	"go.uber.org/fx"
+	"go.uber.org/fx/fxevent"
 	"go.uber.org/zap"
+	"net/http"
 	"time"
 )
 
 func main() {
-	var c configs.Config
-	conf.MustLoad("configs/config.yaml", &c)
+	fx.New(fx.WithLogger(func(logger *zap.Logger) fxevent.Logger {
+		return &fxevent.ZapLogger{Logger: logger}
+	}), fx.Provide(
+		NewConfig,
+		service.NewAppContext,
+		NewEngine,
+		NewLogger),
+		fx.Invoke(Register, NewServer)) //.Run()
+}
+func NewConfig() *configs.Config {
+	c := new(configs.Config)
+	conf.MustLoad("configs/config.yaml", c)
+	return c
+}
+
+func NewLogger() (*zap.Logger, error) {
+	return zap.NewProduction()
+}
+
+func NewEngine(logger *zap.Logger) *gin.Engine {
 	r := gin.New()
-
-	logger, err := zap.NewProduction()
-	if err != nil {
-		logger.Fatal(err.Error())
-	}
 	r.Use(ginzap.Ginzap(logger, time.RFC3339, true))
-
 	r.Use(ginzap.RecoveryWithZap(logger, true))
+	return r
+}
 
-	appCtx := service.NewAppContext(&c)
-	group := r.Group("/douyin")
-	group.POST("/user/register/", handler.Register(appCtx))
-	group.POST("/user/login/", handler.Login(appCtx))
-	group.Use(middleware.VerifyToken(appCtx)) // 中间件验证token
-	authHook := middleware.Authority(appCtx)  // 中间件验证权限
-	group.GET("/user/", authHook, handler.UserInfoHandler(appCtx))
-	handler.RegisterFeedHandlers(group, appCtx)
-	group.Use(authHook)
-	handler.RegisterPublishHandlers(group, appCtx)
-	handler.RegisterCommentHandlers(group, appCtx)
-	handler.RegisterFavorHandlers(group, appCtx)
-	handler.RegisterRelationHandlers(group, appCtx)
-	err = r.Run(c.Addr())
-	if err != nil {
-		panic(err)
-	}
+func NewServer(lc fx.Lifecycle, r *gin.Engine, c *configs.Config) {
+	srv := &http.Server{Addr: c.Addr(), Handler: r}
+	lc.Append(fx.Hook{OnStart: func(ctx context.Context) error {
+		go func() {
+			if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+				panic(err)
+			}
+		}()
+		return nil
+	}, OnStop: func(ctx context.Context) error {
+		return srv.Shutdown(ctx)
+	}})
+}
+
+func Register(e *gin.Engine, appCtx *service.AppContext) {
+	r := e.Group("/douyin")
+	r.POST("/user/register/", handler.Register(appCtx))
+	r.POST("/user/login/", handler.Login(appCtx))
+	r.Use(middleware.VerifyToken(appCtx))    // 中间件验证token
+	authHook := middleware.Authority(appCtx) // 中间件验证权限
+	r.GET("/user/", authHook, handler.UserInfoHandler(appCtx))
+	handler.RegisterFeedHandlers(r, appCtx)
+	r.Use(authHook)
+	handler.RegisterPublishHandlers(r, appCtx)
+	handler.RegisterCommentHandlers(r, appCtx)
+	handler.RegisterFavorHandlers(r, appCtx)
+	handler.RegisterRelationHandlers(r, appCtx)
 }
