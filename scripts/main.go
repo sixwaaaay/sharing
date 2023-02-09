@@ -3,18 +3,18 @@ package main
 import (
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
-	"github.com/sixwaaaay/sharing/common/middleware"
-	"github.com/sixwaaaay/sharing/etc"
+	"github.com/sixwaaaay/sharing/configs"
 	"github.com/sixwaaaay/sharing/pkg/app/handler"
 	"github.com/sixwaaaay/sharing/pkg/app/service"
+	"github.com/sixwaaaay/sharing/pkg/common/middleware"
 	"github.com/zeromicro/go-zero/core/conf"
 	"go.uber.org/zap"
 	"time"
 )
 
 func main() {
-	var c etc.Config
-	conf.MustLoad("etc/config.yaml", &c)
+	var c configs.Config
+	conf.MustLoad("configs/config.yaml", &c)
 	r := gin.New()
 
 	logger, err := zap.NewProduction()

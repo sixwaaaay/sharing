@@ -2,23 +2,23 @@ package auth
 
 import (
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/sixwaaaay/sharing/common/errorx"
+	"github.com/sixwaaaay/sharing/pkg/common/errorx"
 	"time"
 )
 
-type customClaims struct {
+type CustomClaims struct {
 	UserID    int64 `json:"user_id"`
 	ExpiredAt int64 `json:"expired_at"`
 }
 
-func NewCustomClaims(userID int64, expiredTime int64) *customClaims {
-	return &customClaims{
+func NewCustomClaims(userID int64, expiredTime int64) *CustomClaims {
+	return &CustomClaims{
 		UserID:    userID,
 		ExpiredAt: time.Now().Unix() + expiredTime,
 	}
 }
 
-func (c *customClaims) Valid() error {
+func (c *CustomClaims) Valid() error {
 	if time.Now().Unix() > c.ExpiredAt {
 		return errorx.NewDefaultError("token expired")
 	}
@@ -45,13 +45,13 @@ func (j *JWTSigner) GenerateToken(userID int64, expiryTime int64) (string, error
 func (j *JWTSigner) ValidateToken(tokenString string) (int64, error) {
 	// validate the token whether is valid or not
 	// if valid, return the user_id
-	token, err := jwt.ParseWithClaims(tokenString, &customClaims{}, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return j.hmacSampleSecret, nil
 	})
 	if err != nil {
 		return 0, err
 	}
-	if claims, ok := token.Claims.(*customClaims); ok && token.Valid {
+	if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid {
 		return claims.UserID, nil
 	}
 	return 0, errorx.NewDefaultError("invalid token")

@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
-	"github.com/sixwaaaay/sharing/common/auth"
-	"github.com/sixwaaaay/sharing/etc"
+	"github.com/sixwaaaay/sharing/configs"
 	"github.com/sixwaaaay/sharing/pkg/app/dal"
+	"github.com/sixwaaaay/sharing/pkg/common/auth"
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
 )
 
@@ -22,7 +22,7 @@ type AppContext struct {
 	ContentBaseUrl string
 }
 
-func NewAppContext(c *etc.Config) *AppContext {
+func NewAppContext(c *configs.Config) *AppContext {
 	sqlConn := sqlx.NewMysql(c.DSN)
 	client, err := minio.New(c.Minio.Endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(c.Minio.AccessKey, c.Minio.SecretKey, ""),

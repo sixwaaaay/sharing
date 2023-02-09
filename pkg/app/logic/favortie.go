@@ -2,8 +2,8 @@ package logic
 
 import (
 	"context"
-	"github.com/sixwaaaay/sharing/common/errorx"
 	"github.com/sixwaaaay/sharing/pkg/app/service"
+	"github.com/sixwaaaay/sharing/pkg/common/errorx"
 )
 
 func AddFavorite(ctx context.Context, appCtx *service.AppContext, selfId, videoId, actionType int64) error {

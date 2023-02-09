@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/Masterminds/squirrel"
-	"github.com/sixwaaaay/sharing/common/errorx"
+	"github.com/sixwaaaay/sharing/pkg/common/errorx"
 	"github.com/zeromicro/go-zero/core/stores/cache"
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
 )

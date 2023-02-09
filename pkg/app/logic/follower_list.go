@@ -3,10 +3,10 @@ package logic
 import (
 	"github.com/sixwaaaay/sharing/pkg/app/service"
 	"github.com/sixwaaaay/sharing/pkg/app/types"
+	"github.com/sixwaaaay/sharing/pkg/common/errorx"
 
 	"context"
 	"github.com/jinzhu/copier"
-	"github.com/sixwaaaay/sharing/common/errorx"
 )
 
 type FollowerListLogic func(req *types.RelationReq) (*types.FollowerListResp, error)

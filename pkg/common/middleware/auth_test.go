@@ -2,9 +2,9 @@ package middleware
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/sixwaaaay/sharing/common/auth"
-	"github.com/sixwaaaay/sharing/common/testhelper"
 	"github.com/sixwaaaay/sharing/pkg/app/service"
+	"github.com/sixwaaaay/sharing/pkg/common/auth"
+	"github.com/sixwaaaay/sharing/pkg/common/testhelper"
 	"github.com/stretchr/testify/require"
 	"net/url"
 	"testing"

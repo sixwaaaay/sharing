@@ -1,4 +1,4 @@
-package etc
+package configs
 
 import (
 	"github.com/zeromicro/go-zero/core/stores/cache"

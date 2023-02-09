@@ -4,11 +4,11 @@ import (
 	"github.com/sixwaaaay/sharing/pkg/app/logic"
 	"github.com/sixwaaaay/sharing/pkg/app/service"
 	"github.com/sixwaaaay/sharing/pkg/app/types"
+	"github.com/sixwaaaay/sharing/pkg/common/errorx"
+	testhelper2 "github.com/sixwaaaay/sharing/pkg/common/testhelper"
 
 	"context"
 	"github.com/gin-gonic/gin"
-	"github.com/sixwaaaay/sharing/common/errorx"
-	"github.com/sixwaaaay/sharing/common/testhelper"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/url"
@@ -17,7 +17,7 @@ import (
 
 func TestFeed(t *testing.T) {
 	const path = "/douyin/feed/"
-	var testCases = []testhelper.TestCase{
+	var testCases = []testhelper2.TestCase{
 		{
 			Name:   "logic success", // 业务逻辑成功
 			Method: "GET",
@@ -99,7 +99,7 @@ func TestFeed(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.Name, func(t *testing.T) {
-			w, _ := testhelper.GenRequest(r, testCase.Method, testCase.Path, testCase.Body, testCase.Form)
+			w, _ := testhelper2.GenRequest(r, testCase.Method, testCase.Path, testCase.Body, testCase.Form)
 			assert.Equal(t, http.StatusOK, w.Code)
 			assert.JSONEq(t, testCase.Expected, w.Body.String())
 		})
