@@ -35,7 +35,8 @@ func main() {
 		service.NewAppContext,
 		NewEngine,
 		NewLogger),
-		fx.Invoke(Register, NewServer)) //.Run()
+		handler.HandlerMoudle,
+		fx.Invoke(Register, NewServer)).Run()
 }
 func NewConfig() *configs.Config {
 	c := new(configs.Config)
@@ -68,18 +69,28 @@ func NewServer(lc fx.Lifecycle, r *gin.Engine, c *configs.Config) {
 	}})
 }
 
-func Register(e *gin.Engine, appCtx *service.AppContext) {
-	e.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	r := e.Group("/douyin")
-	r.POST("/user/register/", handler.Register(appCtx))
-	r.POST("/user/login/", handler.Login(appCtx))
-	r.Use(middleware.VerifyToken(appCtx))    // 中间件验证token
-	authHook := middleware.Authority(appCtx) // 中间件验证权限
-	r.GET("/user/", authHook, handler.UserInfoHandler(appCtx))
-	handler.RegisterFeedHandlers(r, appCtx)
+type RouterOption struct {
+	fx.In
+	E      *gin.Engine
+	AppCtx *service.AppContext
+	Pubs   []handler.Handler `group:"public"`
+	Opt    []handler.Handler `group:"option"`
+	Pri    []handler.Handler `group:"private"`
+}
+
+func Register(opt RouterOption) {
+	opt.E.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	r := opt.E.Group("/douyin")
+	for _, h := range opt.Pubs {
+		r.Handle(h.Method, h.Path, h.Handler)
+	}
+	r.Use(middleware.VerifyToken(opt.AppCtx))    // 中间件验证token
+	authHook := middleware.Authority(opt.AppCtx) // 中间件验证权限
+	for _, h := range opt.Opt {
+		r.Handle(h.Method, h.Path, authHook, h.Handler)
+	}
 	r.Use(authHook)
-	handler.RegisterPublishHandlers(r, appCtx)
-	handler.RegisterCommentHandlers(r, appCtx)
-	handler.RegisterFavorHandlers(r, appCtx)
-	handler.RegisterRelationHandlers(r, appCtx)
+	for _, h := range opt.Pri {
+		r.Handle(h.Method, h.Path, authHook, h.Handler)
+	}
 }

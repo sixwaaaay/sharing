@@ -22,3 +22,11 @@ func Login(appCtx *service.AppContext) gin.HandlerFunc {
 		return logic.NewLoginLogic(ctx, context)
 	})
 }
+
+func NewLogin(appCtx *service.AppContext) *Handler {
+	return &Handler{
+		Handler: Login(appCtx),
+		Path:    "/user/login/",
+		Method:  "POST",
+	}
+}

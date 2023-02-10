@@ -22,3 +22,11 @@ func Register(appCtx *service.AppContext) gin.HandlerFunc {
 		return logic.NewRegisterLogic(ctx, context)
 	})
 }
+
+func NewRegister(appCtx *service.AppContext) *Handler {
+	return &Handler{
+		Handler: Register(appCtx),
+		Path:    "/user/register/",
+		Method:  "POST",
+	}
+}

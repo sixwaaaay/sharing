@@ -13,3 +13,11 @@ func UploadHandler(appCtx *service.AppContext) gin.HandlerFunc {
 		return logic.NewUploadLogic(ctx, context)
 	})
 }
+
+func NewUploadHandler(appCtx *service.AppContext) *Handler {
+	return &Handler{
+		Handler: UploadHandler(appCtx),
+		Path:    "/publish/action/",
+		Method:  "POST",
+	}
+}

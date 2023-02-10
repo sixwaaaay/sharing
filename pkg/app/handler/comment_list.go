@@ -14,3 +14,11 @@ func CommentListHandler(appCtx *service.AppContext) gin.HandlerFunc {
 		return logic.NewCommentListLogic(ctx, appCtx)
 	})
 }
+
+func NewCommentListHandler(appCtx *service.AppContext) *Handler {
+	return &Handler{
+		Handler: CommentListHandler(appCtx),
+		Path:    "/comment/list/",
+		Method:  "GET",
+	}
+}

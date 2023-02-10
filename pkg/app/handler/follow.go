@@ -14,3 +14,11 @@ func FollowActionHandler(appCtx *service.AppContext) gin.HandlerFunc {
 		return logic.NewFollowActionLogic(ctx, context)
 	})
 }
+
+func NewFollowActionHandler(appCtx *service.AppContext) *Handler {
+	return &Handler{
+		Handler: FollowActionHandler(appCtx),
+		Path:    "/follow/action/",
+		Method:  "POST",
+	}
+}

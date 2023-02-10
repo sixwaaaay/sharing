@@ -14,3 +14,11 @@ func FavoriteActionHandler(appCtx *service.AppContext) gin.HandlerFunc {
 		return logic.NewFavoriteLogic(ctx, appCtx)
 	})
 }
+
+func NewFavoriteActionHandler(appCtx *service.AppContext) *Handler {
+	return &Handler{
+		Handler: FavoriteActionHandler(appCtx),
+		Path:    "/favorite/action/",
+		Method:  "POST",
+	}
+}
