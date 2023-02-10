@@ -14,3 +14,11 @@ func UserInfoHandler(appCtx *service.AppContext) gin.HandlerFunc {
 		return logic.NewUserInfoLogic(ctx, context)
 	})
 }
+
+func NewUserInfoHandler(appCtx *service.AppContext) *Handler {
+	return &Handler{
+		Handler: UserInfoHandler(appCtx),
+		Path:    "/user/info/",
+		Method:  "GET",
+	}
+}

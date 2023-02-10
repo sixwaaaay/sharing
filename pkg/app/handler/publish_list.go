@@ -13,3 +13,11 @@ func PublishListHandler(appCtx *service.AppContext) gin.HandlerFunc {
 		return logic.NewPublishListLogic(ctx, context)
 	})
 }
+
+func NewPublishListHandler(appCtx *service.AppContext) *Handler {
+	return &Handler{
+		Handler: PublishListHandler(appCtx),
+		Path:    "/publish/list/",
+		Method:  "GET",
+	}
+}

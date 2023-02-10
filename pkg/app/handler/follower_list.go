@@ -13,3 +13,11 @@ func FollowerListHandler(appCtx *service.AppContext) gin.HandlerFunc {
 		return logic.NewFollowerListLogic(ctx, context)
 	})
 }
+
+func NewFollowerListHandler(appCtx *service.AppContext) *Handler {
+	return &Handler{
+		Handler: FollowerListHandler(appCtx),
+		Path:    "/relation/follower/list/",
+		Method:  "GET",
+	}
+}

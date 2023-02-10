@@ -15,3 +15,11 @@ func FavoriteListHandler(appCtx *service.AppContext) gin.HandlerFunc {
 		return logic.NewFavoriteListLogic(ctx, appCtx)
 	})
 }
+
+func NewFavoriteListHandler(appCtx *service.AppContext) *Handler {
+	return &Handler{
+		Handler: FavoriteListHandler(appCtx),
+		Path:    "/favorite/list/",
+		Method:  "GET",
+	}
+}

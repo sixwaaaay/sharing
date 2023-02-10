@@ -14,3 +14,13 @@ func Feed(appCtx *service.AppContext) gin.HandlerFunc {
 		return logic.NewFeedLogic(ctx, context)
 	})
 }
+
+// NewFeed
+
+func NewFeed(appCtx *service.AppContext) *Handler {
+	return &Handler{
+		Handler: Feed(appCtx),
+		Path:    "/feed/",
+		Method:  "GET",
+	}
+}
