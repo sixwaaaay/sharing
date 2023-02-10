@@ -73,9 +73,9 @@ type RouterOption struct {
 	fx.In
 	E      *gin.Engine
 	AppCtx *service.AppContext
-	Pubs   []handler.Handler `group:"public"`
-	Opt    []handler.Handler `group:"option"`
-	Pri    []handler.Handler `group:"private"`
+	Pubs   []*handler.Handler `group:"public"`
+	Opt    []*handler.Handler `group:"option"`
+	Pri    []*handler.Handler `group:"private"`
 }
 
 func Register(opt RouterOption) {
