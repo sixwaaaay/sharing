@@ -1,0 +1,31 @@
+name: "build"
+
+on:
+  pull_request:
+  push:
+    tags:
+      - '*'
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      - name: Build sharing Binary Executable
+        run: |
+          go mod tidy
+          go build -ldflags="-s -w" -o sharing scripts/main.go
+
+      - name: Build sharing Container Image
+        run: |
+          docker build -t sixwaaaay/sharing -f scripts/Dockerfile .
+
