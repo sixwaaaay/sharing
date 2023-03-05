@@ -16,7 +16,7 @@ require (
 	github.com/zeromicro/go-zero v1.4.4
 	go.uber.org/fx v1.19.2
 	go.uber.org/zap v1.24.0
-	golang.org/x/crypto v0.6.0
+	golang.org/x/crypto v0.7.0
 )
 
 require (
@@ -92,10 +92,10 @@ require (
 	go.uber.org/dig v1.16.1 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
 	golang.org/x/arch v0.0.0-20210923205945-b76863e36670 // indirect
-	golang.org/x/net v0.7.0 // indirect
-	golang.org/x/sys v0.5.0 // indirect
-	golang.org/x/text v0.7.0 // indirect
-	golang.org/x/tools v0.1.12 // indirect
+	golang.org/x/net v0.8.0 // indirect
+	golang.org/x/sys v0.6.0 // indirect
+	golang.org/x/text v0.8.0 // indirect
+	golang.org/x/tools v0.6.0 // indirect
 	google.golang.org/genproto v0.0.0-20221111202108-142d8a6fa32e // indirect
 	google.golang.org/grpc v1.50.1 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
