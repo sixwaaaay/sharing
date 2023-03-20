@@ -10,7 +10,7 @@ require (
 	github.com/jinzhu/copier v0.3.5
 	github.com/minio/minio-go/v7 v7.0.49
 	github.com/stretchr/testify v1.8.2
-	github.com/swaggo/files v1.0.0
+	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.5.3
 	github.com/swaggo/swag v1.8.10
 	github.com/zeromicro/go-zero v1.4.4
