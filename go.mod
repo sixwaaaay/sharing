@@ -10,8 +10,8 @@ require (
 	github.com/jinzhu/copier v0.3.5
 	github.com/minio/minio-go/v7 v7.0.50
 	github.com/stretchr/testify v1.8.2
-	github.com/swaggo/files v1.0.0
-	github.com/swaggo/gin-swagger v1.5.3
+	github.com/swaggo/files v1.0.1
+	github.com/swaggo/gin-swagger v1.6.0
 	github.com/swaggo/swag v1.8.12
 	github.com/zeromicro/go-zero v1.4.4
 	go.uber.org/fx v1.19.2
