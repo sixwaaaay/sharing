@@ -1,6 +1,6 @@
 ListenOn: :8080
-mysql:
-  dsn: mysql_user:mysql@tcp(localhost:3306)/users?charset=utf8mb4&parseTime=True&loc=Local&allowNativePasswords=true
-  replicas: [ ] # support multiple mysql replicas dsn
+MySQL:
+  DSN: mysql_user:mysql@tcp(localhost:3306)/users?charset=utf8mb4&parseTime=True&loc=Local&allowNativePasswords=true
+  Replicas: [ ] # support multiple mysql replicas dsn
 DefaultLimit: 20
 MaxLimit: 100
