@@ -15,7 +15,6 @@ package config
 
 import (
 	"github.com/spf13/viper"
-	"log"
 )
 
 type Config struct {
@@ -40,7 +39,5 @@ func NewConfig(p string) (Config, error) {
 	if err := viper.Unmarshal(&config); err != nil {
 		return config, err
 	}
-	log.Println("config file loaded", viper.AllKeys())
-	log.Println("configs are: ", config)
 	return config, nil
 }
