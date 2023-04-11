@@ -1,0 +1,28 @@
+name: account-ci
+# work on path /cmd/account
+on:
+  push:
+    paths:
+      - 'cmd/account/**'
+      - '.github/workflows/account-ci.yaml'
+  pull_request:
+    paths:
+      - 'cmd/account/**'
+      - '.github/workflows/account-ci.yaml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.19
+
+      - name: Build account Binary Executable
+        run: |
+          go mod tidy
+          cd cmd/account
+          go mod tidy
+          go build -ldflags="-s -w" -o account
