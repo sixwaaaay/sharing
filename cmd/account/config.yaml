@@ -1,0 +1,6 @@
+ListenOn: :8080
+UserService:
+  Address: shauser:8080
+JWT:
+  SECRET: $JWT_SECRET
+  TTL: 1296000 # 15day 15 * 24 * 60 * 60
