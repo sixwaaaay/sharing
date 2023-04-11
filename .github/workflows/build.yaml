@@ -1,13 +1,9 @@
 name: "build"
 
 on:
-  pull_request:
   push:
     tags:
       - '*'
-  schedule:
-    - cron: '0 0 * * *'
-
 jobs:
 
   build:
