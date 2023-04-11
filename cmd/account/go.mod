@@ -1,6 +1,6 @@
 module account
 
-go 1.20
+go 1.19
 
 require (
 	github.com/labstack/echo/v4 v4.10.2
