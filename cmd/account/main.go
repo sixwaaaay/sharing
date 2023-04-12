@@ -52,8 +52,8 @@ func main() {
 
 	// Start server
 	go func() {
-		if err := e.Start("0.0.0.0:8080"); err != nil && err != http.ErrServerClosed {
-			e.Logger.Fatal("shutting down the server")
+		if err := e.Start(config.ListenOn); err != nil && err != http.ErrServerClosed {
+			e.Logger.Fatal(err)
 		}
 	}()
 
