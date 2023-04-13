@@ -111,6 +111,18 @@ message GetFriendsReply {
   repeated User users = 1;
 }
 
+message UpdateUserRequest {
+  int64 user_id = 1;
+  string name = 2;
+  string bio = 3;
+  string avatar_url = 4;
+  string bg_url = 5;
+}
+
+message UpdateUserReply {
+  User user = 1;
+}
+
 service UserService {
   rpc GetUser(GetUserRequest) returns (GetUserReply);
   rpc GetUsers(GetUsersRequest) returns (GetUsersReply);
@@ -120,4 +132,5 @@ service UserService {
   rpc GetFollowers(GetFollowersRequest) returns (GetFollowersReply);
   rpc GetFollowings(GetFollowingsRequest) returns (GetFollowingsReply);
   rpc GetFriends(GetFriendsRequest) returns (GetFriendsReply);
+  rpc UpdateUser(UpdateUserRequest) returns (UpdateUserReply);
 }
