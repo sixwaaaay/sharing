@@ -19,6 +19,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
+	"github.com/sixwaaaay/sharing/cmd/userapi/api"
 	"github.com/sixwaaaay/sharing/pkg/blobstore"
 	"github.com/sixwaaaay/sharing/pkg/configs"
 	"github.com/sixwaaaay/sharing/pkg/rpc"
@@ -27,7 +28,6 @@ import (
 	"os"
 	"os/signal"
 	"time"
-	"userapi/api"
 )
 
 type Config struct {

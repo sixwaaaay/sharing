@@ -1,4 +1,4 @@
-module userapi
+module github.com/sixwaaaay/sharing/cmd/userapi
 
 go 1.19
 
@@ -7,7 +7,7 @@ require (
 	github.com/labstack/echo/v4 v4.10.2
 	github.com/labstack/gommon v0.4.0
 	github.com/minio/minio-go/v7 v7.0.52
-	github.com/sixwaaaay/sharing v0.0.0
+	github.com/sixwaaaay/sharing v0.5.1-alpha
 )
 
 require (
@@ -50,5 +50,3 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/sixwaaaay/sharing => ../../

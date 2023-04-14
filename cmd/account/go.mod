@@ -1,14 +1,12 @@
-module account
+module github.com/sixwaaaay/sharing/cmd/account
 
 go 1.19
 
 require (
 	github.com/labstack/echo/v4 v4.10.2
 	github.com/labstack/gommon v0.4.0
-	github.com/sixwaaaay/sharing v0.0.0
+	github.com/sixwaaaay/sharing v0.5.1-alpha
 )
-
-replace github.com/sixwaaaay/sharing => ../../
 
 require (
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
