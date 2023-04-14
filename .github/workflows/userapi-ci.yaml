@@ -1,5 +1,5 @@
-name: account-ci
-# work on path /cmd/account
+name: userapi-ci
+# work on path /cmd/userapi
 on:
   push:
     paths:
