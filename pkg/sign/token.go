@@ -14,7 +14,10 @@
 package sign
 
 import (
+	"context"
+	"fmt"
 	"github.com/golang-jwt/jwt/v4"
+	"net/http"
 	"strconv"
 	"time"
 )
@@ -50,4 +53,85 @@ func GenSignedToken(option SignOption) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	// Generate encoded token
 	return token.SignedString(option.Secret)
+}
+
+//func parseToken(token string) (*customClaims, error) {
+//	// Trim the "Bearer " prefix
+//	token = strings.TrimPrefix(token, "Bearer ")
+//	tokenClaims, err := jwt.ParseWithClaims(token, &customClaims{}, func(token *jwt.Token) (interface{}, error) {
+//		return []byte("golang"), nil
+//	})
+//	if err != nil {
+//		return nil, err
+//	}
+//	if tokenClaims != nil {
+//		if claims, ok := tokenClaims.Claims.(*customClaims); ok && tokenClaims.Valid {
+//			return claims, nil
+//		}
+//	}
+//	return nil, err
+//}
+//
+//func ExtractSubjectId(token string) string {
+//	claims, err := parseToken(token)
+//	if err != nil {
+//		return ""
+//	}
+//	return claims.UserID
+//}
+
+func Middleware(secret []byte, requireToken bool) func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		// 将 http.HandlerFunc 转换为 http.Handler
+
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			tokenString := r.Header.Get("Authorization")
+
+			if tokenString == "" {
+				w.WriteHeader(http.StatusUnauthorized)
+				// If a token is not required, just pass through
+				if !requireToken {
+					r = withID(r, "0")
+					next.ServeHTTP(w, r)
+					return
+				}
+				return
+			}
+
+			// Parse the JWT token
+			token, err := jwt.ParseWithClaims(tokenString, &customClaims{}, func(token *jwt.Token) (interface{}, error) {
+				// Use your secret key or public key here to verify the signature
+				return secret, nil
+			})
+
+			if err != nil {
+				w.WriteHeader(http.StatusUnauthorized)
+				fmt.Fprintln(w, "Invalid Authorization Token")
+				return
+			}
+
+			// Check if the token is valid
+			if _, ok := token.Claims.(*customClaims); !ok || !token.Valid {
+				w.WriteHeader(http.StatusUnauthorized)
+				fmt.Fprintln(w, "Invalid Authorization Token")
+				return
+			}
+
+			// Get the subject ID from the token
+			id := token.Claims.(*customClaims).UserID
+
+			// Pass the subject ID to the next handler
+			r = withID(r, id)
+
+			// Call the next handler
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+func withID(r *http.Request, id string) *http.Request {
+	ctx := r.Context()
+	ctx = context.WithValue(ctx, "x-id", id)
+	r = r.WithContext(ctx)
+	return r
 }
