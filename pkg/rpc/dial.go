@@ -27,6 +27,14 @@ func NewUserClient(conf GrpcConfig) (pb.UserServiceClient, error) {
 	}
 }
 
+func NewCommentClient(conf GrpcConfig) (pb.CommentServiceClient, error) {
+	if conn, err := dial(conf); err != nil {
+		return nil, err
+	} else {
+		return pb.NewCommentServiceClient(conn), nil
+	}
+}
+
 func dial(conf GrpcConfig) (*grpc.ClientConn, error) {
 	conn, err := grpc.Dial(conf.Address,
 		grpc.WithTransportCredentials(
