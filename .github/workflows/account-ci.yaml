@@ -5,6 +5,8 @@ on:
     paths:
       - 'cmd/account/**'
       - '.github/workflows/account-ci.yaml'
+    branches:
+      - main
   pull_request:
     paths:
       - 'cmd/account/**'
