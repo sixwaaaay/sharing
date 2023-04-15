@@ -89,9 +89,6 @@ func main() {
 	handleErr(err)
 	e := newServer()
 	client, err := rpc.NewCommentClient(config.CommentService)
-	if err != nil {
-		panic(err)
-	}
 	handleErr(err)
 	handler := NewHandler(client, config.Secret)
 	handler.Update(e)

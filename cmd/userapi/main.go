@@ -46,9 +46,7 @@ func main() {
 	handleErr(err)
 	e := newServer()
 	client, err := rpc.NewUserClient(config.UserService)
-	if err != nil {
-		panic(err)
-	}
+	handleErr(err)
 	mc, err := blobstore.NewMinioClient(config.MinIO)
 	handleErr(err)
 	handler := api.NewUserApi(mc, client, config.ImageBuket, config.JWTSecret)

@@ -35,6 +35,14 @@ func NewCommentClient(conf GrpcConfig) (pb.CommentServiceClient, error) {
 	}
 }
 
+func NewVideoClient(conf GrpcConfig) (pb.VideoServiceClient, error) {
+	if conn, err := dial(conf); err != nil {
+		return nil, err
+	} else {
+		return pb.NewVideoServiceClient(conn), nil
+	}
+}
+
 func dial(conf GrpcConfig) (*grpc.ClientConn, error) {
 	conn, err := grpc.Dial(conf.Address,
 		grpc.WithTransportCredentials(
