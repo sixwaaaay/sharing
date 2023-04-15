@@ -1,0 +1,45 @@
+name: followapi-ci
+# work on path /cmd/followapi
+on:
+  push:
+    paths:
+      - 'cmd/followapi/**'
+      - '.github/workflows/followapi-ci.yaml'
+    branches:
+      - main
+  pull_request:
+    paths:
+      - 'cmd/followapi/**'
+      - '.github/workflows/followapi-ci.yaml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.19
+
+      - name: Build followapi Binary Executable
+        run: |
+          go mod tidy
+          cd cmd/followapi
+          go mod tidy
+          go build -ldflags="-s -w" -o followapi
+
+      - name: Login to DockerHub
+        if: github.ref == 'refs/heads/main'
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: ./cmd/followapi
+          file: ./cmd/followapi/Dockerfile
+          push: ${{ github.ref == 'refs/heads/main' }}
+          tags: ${{ secrets.DOCKERHUB_USERNAME || 'followapi' }}/followapi:latest
