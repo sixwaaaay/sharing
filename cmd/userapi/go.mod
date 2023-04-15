@@ -7,7 +7,7 @@ require (
 	github.com/labstack/echo/v4 v4.10.2
 	github.com/labstack/gommon v0.4.0
 	github.com/minio/minio-go/v7 v7.0.52
-	github.com/sixwaaaay/sharing v0.5.1-alpha
+	github.com/sixwaaaay/sharing v0.5.2
 )
 
 require (
