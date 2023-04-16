@@ -34,8 +34,8 @@ func NewAccountHandler(client pb.UserServiceClient, jwt sign.JWT) *AccountHandle
 }
 
 func (h *AccountHandler) Update(e *echo.Echo) {
-	e.POST("/login", h.Login)
-	e.POST("/register", h.Register)
+	e.POST("/sign/in", h.Login)
+	e.POST("/sign/up", h.Register)
 }
 
 type LoginRequest struct {

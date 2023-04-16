@@ -19,6 +19,7 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -55,38 +56,11 @@ func GenSignedToken(option SignOption) (string, error) {
 	return token.SignedString(option.Secret)
 }
 
-//func parseToken(token string) (*customClaims, error) {
-//	// Trim the "Bearer " prefix
-//	token = strings.TrimPrefix(token, "Bearer ")
-//	tokenClaims, err := jwt.ParseWithClaims(token, &customClaims{}, func(token *jwt.Token) (interface{}, error) {
-//		return []byte("golang"), nil
-//	})
-//	if err != nil {
-//		return nil, err
-//	}
-//	if tokenClaims != nil {
-//		if claims, ok := tokenClaims.Claims.(*customClaims); ok && tokenClaims.Valid {
-//			return claims, nil
-//		}
-//	}
-//	return nil, err
-//}
-//
-//func ExtractSubjectId(token string) string {
-//	claims, err := parseToken(token)
-//	if err != nil {
-//		return ""
-//	}
-//	return claims.UserID
-//}
-
 func Middleware(secret []byte, requireToken bool) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		// 将 http.HandlerFunc 转换为 http.Handler
-
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			tokenString := r.Header.Get("Authorization")
-
 			if tokenString == "" {
 				w.WriteHeader(http.StatusUnauthorized)
 				// If a token is not required, just pass through
@@ -97,7 +71,7 @@ func Middleware(secret []byte, requireToken bool) func(next http.Handler) http.H
 				}
 				return
 			}
-
+			tokenString = strings.TrimPrefix(tokenString, "Bearer ")
 			// Parse the JWT token
 			token, err := jwt.ParseWithClaims(tokenString, &customClaims{}, func(token *jwt.Token) (interface{}, error) {
 				// Use your secret key or public key here to verify the signature
