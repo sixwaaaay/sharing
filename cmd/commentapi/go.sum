@@ -165,6 +165,8 @@ github.com/rogpeppe/go-internal v1.3.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFR
 github.com/rogpeppe/go-internal v1.6.1 h1:/FiVV8dS/e+YqF2JvO3yXRFbBLTIuSDkuC7aBOAvL+k=
 github.com/sixwaaaay/sharing v0.5.2 h1:7FECXbiZ7S1jFqRtn6dtF5nybaha1JgU5CdAGpPqMjM=
 github.com/sixwaaaay/sharing v0.5.2/go.mod h1:ICwRv9cH9A4OBLmUrxaApQz7vh+VrPokWOJlEegXNA0=
+github.com/sixwaaaay/sharing v0.6.1 h1:yPD87Y+gINmumTQrD5Eh5ggq00SIstJziaeY/beADM8=
+github.com/sixwaaaay/sharing v0.6.1/go.mod h1:ICwRv9cH9A4OBLmUrxaApQz7vh+VrPokWOJlEegXNA0=
 github.com/spf13/afero v1.9.3 h1:41FoI0fD7OR7mGcKE/aOiLkGreyf8ifIOQmJANWogMk=
 github.com/spf13/afero v1.9.3/go.mod h1:iUV7ddyEEZPO5gA3zD4fJt6iStLlL+Lg4m2cihcDf8Y=
 github.com/spf13/cast v1.5.0 h1:rj3WzYc11XZaIZMPKmwP96zkFEnnAmV8s6XbB2aY32w=
