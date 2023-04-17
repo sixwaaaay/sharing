@@ -18,6 +18,7 @@ type UserServiceServer struct {
 	GetFollowersLogic  *logic.GetFollowersLogic
 	GetFollowingsLogic *logic.GetFollowingsLogic
 	GetFriendsLogic    *logic.GetFriendsLogic
+	UpdateUserLogic    *logic.UpdateUserLogic
 	user.UnimplementedUserServiceServer
 }
 
@@ -30,6 +31,7 @@ type ServerOption struct {
 	GetFollowersLogic  *logic.GetFollowersLogic
 	GetFollowingsLogic *logic.GetFollowingsLogic
 	GetFriendsLogic    *logic.GetFriendsLogic
+	UpdateUserLogic    *logic.UpdateUserLogic
 }
 
 func NewUserServiceServer(opt ServerOption) *UserServiceServer {
@@ -42,6 +44,7 @@ func NewUserServiceServer(opt ServerOption) *UserServiceServer {
 		GetFollowersLogic:  opt.GetFollowersLogic,
 		GetFollowingsLogic: opt.GetFollowingsLogic,
 		GetFriendsLogic:    opt.GetFriendsLogic,
+		UpdateUserLogic:    opt.UpdateUserLogic,
 	}
 }
 
@@ -75,4 +78,8 @@ func (s *UserServiceServer) GetFollowings(ctx context.Context, in *user.GetFollo
 
 func (s *UserServiceServer) GetFriends(ctx context.Context, in *user.GetFriendsRequest) (*user.GetFriendsReply, error) {
 	return s.GetFriendsLogic.GetFriends(ctx, in)
+}
+
+func (s *UserServiceServer) UpdateUser(ctx context.Context, in *user.UpdateUserRequest) (*user.UpdateUserReply, error) {
+	return s.UpdateUserLogic.UpdateUser(ctx, in)
 }

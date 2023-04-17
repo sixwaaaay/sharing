@@ -24,6 +24,8 @@ type (
 	LoginRequest         = user.LoginRequest
 	RegisterReply        = user.RegisterReply
 	RegisterRequest      = user.RegisterRequest
+	UpdateUserReply      = user.UpdateUserReply
+	UpdateUserRequest    = user.UpdateUserRequest
 	User                 = user.User
 )
 
