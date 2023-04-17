@@ -39,6 +39,7 @@ func NewUpdateUserLogic(opt UpdateUserLogicOption) *UpdateUserLogic {
 
 func (l *UpdateUserLogic) UpdateUser(ctx context.Context, in *user.UpdateUserRequest) (*user.UpdateUserReply, error) {
 	var u data.User
+	u.ID = in.UserId
 	u.Username = in.Name
 	u.Bio = in.Bio
 	u.AvatarURL = in.AvatarUrl
@@ -46,5 +47,13 @@ func (l *UpdateUserLogic) UpdateUser(ctx context.Context, in *user.UpdateUserReq
 	if err := l.userCommand.UpdateUser(ctx, &u); err != nil {
 		return nil, err
 	}
-	return &user.UpdateUserReply{}, nil
+	return &user.UpdateUserReply{
+		User: &user.User{
+			Id:        u.ID,
+			Name:      u.Username,
+			Bio:       u.Bio,
+			AvatarUrl: u.AvatarURL,
+			BgUrl:     u.BgURL,
+		},
+	}, nil
 }
