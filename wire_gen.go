@@ -66,6 +66,11 @@ func NewServer(config2 *config.Config, db *gorm.DB) *server.UserServiceServer {
 		FollowQ: followQuery,
 	}
 	getFriendsLogic := logic.NewGetFriendsLogic(getFriendsLogicOption)
+	updateUserLogicOption := logic.UpdateUserLogicOption{
+		Config:      config2,
+		UserCommand: userCommand,
+	}
+	updateUserLogic := logic.NewUpdateUserLogic(updateUserLogicOption)
 	serverOption := server.ServerOption{
 		GetUserLogic:       getUserLogic,
 		GetUsersLogic:      getUsersLogic,
@@ -75,6 +80,7 @@ func NewServer(config2 *config.Config, db *gorm.DB) *server.UserServiceServer {
 		GetFollowersLogic:  getFollowersLogic,
 		GetFollowingsLogic: getFollowingsLogic,
 		GetFriendsLogic:    getFriendsLogic,
+		UpdateUserLogic:    updateUserLogic,
 	}
 	userServiceServer := server.NewUserServiceServer(serverOption)
 	return userServiceServer

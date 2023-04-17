@@ -43,6 +43,8 @@ func NewServer(config *config.Config, db *gorm.DB) *server.UserServiceServer {
 		logic.NewRegisterLogic,
 		wire.Struct(new(logic.LoginLogicOption), "*"),
 		logic.NewLoginLogic,
+		logic.NewUpdateUserLogic,
+		wire.Struct(new(logic.UpdateUserLogicOption), "*"),
 		data.NewUserQuery,
 		data.NewFollowQuery,
 		data.NewFollowCommand,

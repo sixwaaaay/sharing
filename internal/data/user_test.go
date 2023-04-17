@@ -66,6 +66,18 @@ func TestUserFind(t *testing.T) {
 		assertions.NoError(err)
 		assertions.Len(users, 0)
 	})
+
+	user := &User{
+		ID:        1111,
+		AvatarURL: "https://www.baidu.com",
+		Username:  "test",
+		BgURL:     "https://www.baidu.com",
+	}
+	tx := gormDB.WithContext(context.Background()).Table("users").Where("id = ?", 1111).Updates(user)
+	//	generate sql
+	s := tx.Statement.SQL.String()
+	t.Log(s)
+
 }
 
 func mockDB(t *testing.T) (sqlmock.Sqlmock, *gorm.DB) {
