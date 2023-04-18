@@ -18,6 +18,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/minio/minio-go/v7"
+	"github.com/sixwaaaay/sharing/pkg/encoder"
 	"github.com/sixwaaaay/sharing/pkg/pb"
 	"mime/multipart"
 	"strconv"
@@ -45,22 +46,20 @@ func (u *UserApi) UpdateProfile(ctx echo.Context) error {
 	if !ok {
 		return echo.NewHTTPError(403, "token is not valid")
 	}
-	req.UserId = ctx.FormValue("id")
-	if subjectId != req.UserId {
-		return echo.NewHTTPError(403, "token is not valid")
-	}
+	req.UserId = subjectId
 	if req.Avatar, err = ctx.FormFile("avatar"); err != nil {
-		return err
 	}
-	if req.Bg, err = ctx.FormFile("bg"); err != nil {
-		return err
+	if req.Bg, err = ctx.FormFile("background"); err != nil {
 	}
+	req.Name = ctx.FormValue("name")
+	req.Bio = ctx.FormValue("bio")
 	if req.Avatar != nil {
 		req.AvatarUrl, err = u.uploadFile(ctx.Request().Context(), req.Avatar)
 		if err != nil {
 			return echo.NewHTTPError(500, err)
 		}
 	}
+	//"github.com/golang/protobuf/jsonpb"
 	if req.Bg != nil {
 		req.BgUrl, err = u.uploadFile(ctx.Request().Context(), req.Bg)
 		if err != nil {
@@ -72,11 +71,10 @@ func (u *UserApi) UpdateProfile(ctx echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(500, err)
 	}
-	resp := UpdateProfileResponse{Profile: r}
-	return ctx.JSON(200, resp)
+	return encoder.Marshal(ctx.Response(), r)
 }
 
-func (u *UserApi) updateUser(ctx context.Context, req *UpdateProfileRequest) (*pb.User, error) {
+func (u *UserApi) updateUser(ctx context.Context, req *UpdateProfileRequest) (*pb.UpdateUserReply, error) {
 	id, err := strconv.ParseInt(req.UserId, 10, 64)
 	if err != nil {
 		return nil, err
@@ -88,8 +86,10 @@ func (u *UserApi) updateUser(ctx context.Context, req *UpdateProfileRequest) (*p
 		AvatarUrl: req.AvatarUrl,
 		BgUrl:     req.BgUrl,
 	})
-
-	return reply.User, err
+	if err != nil {
+		return nil, err
+	}
+	return reply, err
 }
 
 func (u *UserApi) uploadFile(ctx context.Context, avatar *multipart.FileHeader) (string, error) {
@@ -101,11 +101,11 @@ func (u *UserApi) uploadFile(ctx context.Context, avatar *multipart.FileHeader) 
 		return "", err
 	}
 	defer src.Close()
-	// write to minio todo: bucket name
-	_, err = u.mc.PutObject(ctx, u.bucket, id, src, -1, minio.PutObjectOptions{})
+	_, err = u.mc.PutObject(ctx, u.bucket, id, src, -1, minio.PutObjectOptions{
+		ContentType: avatar.Header.Get("Content-Type"),
+	})
 	if err != nil {
 		return "", err
 	}
-
 	return id, nil
 }

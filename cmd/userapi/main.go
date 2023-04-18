@@ -36,7 +36,7 @@ type Config struct {
 	Jwt         sign.JWT
 	MinIO       blobstore.MinioConfig
 	ImageBuket  string
-	JWTSecret   string
+	Secret      string
 }
 
 var configFile = flag.String("f", "config.yaml", "the config file")
@@ -49,7 +49,7 @@ func main() {
 	handleErr(err)
 	mc, err := blobstore.NewMinioClient(config.MinIO)
 	handleErr(err)
-	handler := api.NewUserApi(mc, client, config.ImageBuket, config.JWTSecret)
+	handler := api.NewUserApi(mc, client, config.ImageBuket, config.Secret)
 
 	handler.Update(e)
 

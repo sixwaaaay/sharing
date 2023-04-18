@@ -18,7 +18,7 @@ import (
 	"flag"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/sixwaaaay/sharing/cmd/userapi/api"
+	"github.com/sixwaaaay/sharing/cmd/followapi/api"
 	"github.com/sixwaaaay/sharing/pkg/configs"
 	"github.com/sixwaaaay/sharing/pkg/rpc"
 	"net/http"
@@ -30,7 +30,7 @@ import (
 type Config struct {
 	ListenOn    string
 	UserService rpc.GrpcConfig
-	JWTSecret   string
+	Secret      string
 }
 
 var configFile = flag.String("f", "config.yaml", "the config file")
@@ -41,7 +41,7 @@ func main() {
 	e := newServer()
 	client, err := rpc.NewUserClient(config.UserService)
 	handleErr(err)
-	handler := api.NewFollowApi(client, config.JWTSecret)
+	handler := api.NewFollowApi(client, config.Secret)
 
 	handler.Update(e)
 

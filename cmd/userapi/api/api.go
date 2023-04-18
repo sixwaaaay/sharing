@@ -38,5 +38,5 @@ func NewUserApi(mc *minio.Client, uc pb.UserServiceClient, bucket string, secret
 
 func (u *UserApi) Update(e *echo.Echo) {
 	e.GET("/users/:id", u.Profile, echo.WrapMiddleware(sign.Middleware(u.secret, false)))
-	e.PATCH("/users", u.UpdateProfile, echo.WrapMiddleware(sign.Middleware(u.secret, false)))
+	e.PATCH("/users", u.UpdateProfile, echo.WrapMiddleware(sign.Middleware(u.secret, true)))
 }

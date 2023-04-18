@@ -14,8 +14,8 @@
 package api
 
 import (
-	"encoding/json"
 	"github.com/labstack/echo/v4"
+	"github.com/sixwaaaay/sharing/pkg/encoder"
 	"github.com/sixwaaaay/sharing/pkg/pb"
 )
 
@@ -43,27 +43,18 @@ type GetFollowersReply struct {
 }
 
 func (u *FollowApi) Followers(c echo.Context) error {
-	var req GetFollowersRequest
-	if err := json.NewDecoder(c.Request().Body).Decode(&req); err != nil {
+	var req pb.GetFollowersRequest
+	if err := encoder.Unmarshal(c.Request().Body, &req); err != nil {
 		return echo.NewHTTPError(403, "invalid request")
-	}
-	if err := req.Validate(); err != nil {
-		return err
 	}
 	id, err := u.subjectId(c)
 	if err != nil {
 		return echo.NewHTTPError(403, "invalid token")
 	}
-	reply, err := u.uc.GetFollowers(c.Request().Context(), &pb.GetFollowersRequest{
-		UserId:    req.UserId,
-		SubjectId: id,
-		Limit:     req.Limit,
-		Token:     req.Token,
-	})
+	req.SubjectId = id
+	reply, err := u.uc.GetFollowers(c.Request().Context(), &req)
 	if err != nil {
 		return echo.NewHTTPError(500, "internal error")
 	}
-	return c.JSON(200, GetFollowersReply{
-		Users: reply.Users,
-	})
+	return encoder.Marshal(c.Response().Writer, reply)
 }
