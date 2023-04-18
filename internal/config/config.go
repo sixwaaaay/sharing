@@ -19,8 +19,8 @@ import (
 
 type Config struct {
 	ListenOn     string // ListenOn is the address to listen on
-	DefaultLimit int64  // DefaultLimit is the default limit of the query
-	MaxLimit     int64  // MaxLimit is the max limit of the query
+	DefaultLimit int32  // DefaultLimit is the default limit of the query
+	MaxLimit     int32  // MaxLimit is the max limit of the query
 	MySQL        struct {
 		DSN      string   // MySQLDSN is the DSN of the MySQL database
 		Replicas []string // MySQLDSN is the replicas database dsn of the MySQL database
