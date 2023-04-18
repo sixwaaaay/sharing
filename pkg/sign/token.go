@@ -62,13 +62,14 @@ func Middleware(secret []byte, requireToken bool) func(next http.Handler) http.H
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			tokenString := r.Header.Get("Authorization")
 			if tokenString == "" {
-				w.WriteHeader(http.StatusUnauthorized)
 				// If a token is not required, just pass through
 				if !requireToken {
 					r = withID(r, "0")
 					next.ServeHTTP(w, r)
 					return
 				}
+				// Otherwise, return an error
+				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
 			tokenString = strings.TrimPrefix(tokenString, "Bearer ")
