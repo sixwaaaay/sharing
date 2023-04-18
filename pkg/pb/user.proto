@@ -73,8 +73,6 @@ message FollowActionRequest {
   int32 action = 3;
 }
 
-
-
 message FollowActionReply {
 }
 
@@ -82,7 +80,7 @@ message GetFollowersRequest {
   int64 user_id = 1;
   int64 subject_id = 2;
   int64 token = 3;
-  int64 limit = 4;
+  int32 limit = 4;
 }
 
 message GetFollowersReply {
@@ -92,7 +90,7 @@ message GetFollowersReply {
 message GetFollowingsRequest {
   int64 user_id = 1;
   int64 subject_id = 2;
-  int64 limit = 3;
+  int32 limit = 3;
   int64 token = 4;
 }
 
@@ -101,10 +99,9 @@ message GetFollowingsReply {
 }
 
 message GetFriendsRequest {
-  int64 user_id = 1;
-  int64 subject_id = 2;
-  int64 limit = 3;
-  int64 token = 4;
+  int64 subject_id = 1;
+  int32 limit = 2;
+  int64 token = 3;
 }
 
 message GetFriendsReply {
