@@ -120,7 +120,7 @@ message UpdateUserRequest {
 }
 
 message UpdateUserReply {
-  User user = 1;
+  User profile = 1;
 }
 
 service UserService {
