@@ -15,6 +15,7 @@ package api
 
 import (
 	"github.com/labstack/echo/v4"
+	"github.com/sixwaaaay/sharing/pkg/encoder"
 	"github.com/sixwaaaay/sharing/pkg/pb"
 	"github.com/sixwaaaay/sharing/pkg/sign"
 	"strconv"
@@ -35,10 +36,46 @@ func NewFollowApi(uc pb.UserServiceClient, secret string) *FollowApi {
 func (u *FollowApi) Update(e *echo.Echo) {
 	e.POST("/follow/following", u.Following, echo.WrapMiddleware(sign.Middleware(u.secret, false)))
 	e.POST("/follow/followers", u.Followers, echo.WrapMiddleware(sign.Middleware(u.secret, false)))
+	e.POST("/follow", u.Follow, echo.WrapMiddleware(sign.Middleware(u.secret, true)))
+	e.POST("/follow/friends", u.Friends, echo.WrapMiddleware(sign.Middleware(u.secret, true)))
 }
 
 func (h *FollowApi) subjectId(ctx echo.Context) (int64, error) {
 	subjectID, _ := ctx.Request().Context().Value("x-id").(string)
 	id, err := strconv.ParseInt(subjectID, 10, 64)
 	return id, err
+}
+
+func (u *FollowApi) Follow(c echo.Context) error {
+	var req pb.FollowActionRequest
+	if err := encoder.Unmarshal(c.Request().Body, &req); err != nil {
+		return echo.NewHTTPError(403, "invalid request")
+	}
+	id, err := u.subjectId(c)
+	if err != nil {
+		return echo.NewHTTPError(403, "invalid token")
+	}
+	req.SubjectId = id
+	reply, err := u.uc.FollowAction(c.Request().Context(), &req)
+	if err != nil {
+		return echo.NewHTTPError(403, err.Error())
+	}
+	return encoder.Marshal(c.Response().Writer, reply)
+}
+
+func (u *FollowApi) Friends(c echo.Context) error {
+	var req pb.GetFriendsRequest
+	if err := encoder.Unmarshal(c.Request().Body, &req); err != nil {
+		return echo.NewHTTPError(403, "invalid request")
+	}
+	id, err := u.subjectId(c)
+	if err != nil {
+		return echo.NewHTTPError(403, "invalid token")
+	}
+	req.SubjectId = id
+	reply, err := u.uc.GetFriends(c.Request().Context(), &req)
+	if err != nil {
+		return echo.NewHTTPError(403, err.Error())
+	}
+	return encoder.Marshal(c.Response().Writer, reply)
 }
