@@ -35,7 +35,7 @@ type Config struct {
 	UserService rpc.GrpcConfig
 	Jwt         sign.JWT
 	MinIO       blobstore.MinioConfig
-	ImageBuket  string
+	ImageBucket string
 	Secret      string
 }
 
@@ -49,7 +49,7 @@ func main() {
 	handleErr(err)
 	mc, err := blobstore.NewMinioClient(config.MinIO)
 	handleErr(err)
-	handler := api.NewUserApi(mc, client, config.ImageBuket, config.Secret)
+	handler := api.NewUserApi(mc, client, config.ImageBucket, config.Secret)
 
 	handler.Update(e)
 
