@@ -15,6 +15,7 @@ package main
 
 import (
 	"github.com/labstack/echo/v4"
+	"github.com/sixwaaaay/sharing/pkg/encoder"
 	"github.com/sixwaaaay/sharing/pkg/pb"
 	"github.com/sixwaaaay/sharing/pkg/sign"
 	"regexp"
@@ -64,11 +65,6 @@ func (r LoginRequest) Validate() error {
 	return nil
 }
 
-type LoginReply struct {
-	Account *pb.User `json:"account"`
-	Token   string   `json:"token"`
-}
-
 func (h *AccountHandler) Login(ctx echo.Context) error {
 	// fluent binding
 	var req LoginRequest
@@ -99,22 +95,17 @@ func (h *AccountHandler) Login(ctx echo.Context) error {
 		return ctx.JSON(400, err)
 	}
 
-	resp := &LoginReply{
+	resp := &pb.JSONLoginReply{
 		Account: u,
 		Token:   token,
 	}
-	return ctx.JSON(200, resp)
+	return encoder.Marshal(ctx.Response(), resp)
 }
 
 type RegisterRequest struct {
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required"`
 	Username string `json:"name" validate:"required"`
-}
-
-type RegisterReply struct {
-	Account *pb.User `json:"account"`
-	Token   string   `json:"token"`
 }
 
 func (r *RegisterRequest) Validate() error {
@@ -125,7 +116,7 @@ func (r *RegisterRequest) Validate() error {
 		return echo.NewHTTPError(400, "invalid password")
 	}
 	if len(r.Username) < 3 || len(r.Username) > 20 {
-		return echo.NewHTTPError(400, "invalid username")
+		return echo.NewHTTPError(400, "username length should be between 3 and 20")
 	}
 	return nil
 }
@@ -159,9 +150,9 @@ func (h *AccountHandler) Register(ctx echo.Context) error {
 		return ctx.JSON(400, err)
 	}
 
-	resp := &RegisterReply{
+	resp := &pb.JSONLoginReply{
 		Account: u,
 		Token:   token,
 	}
-	return ctx.JSON(200, resp)
+	return encoder.Marshal(ctx.Response(), resp)
 }
