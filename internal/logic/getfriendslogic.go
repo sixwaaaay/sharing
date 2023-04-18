@@ -47,7 +47,7 @@ func (l *GetFriendsLogic) GetFriends(ctx context.Context, in *user.GetFriendsReq
 	if in.Limit == 0 || in.Limit > l.conf.MaxLimit {
 		in.Limit = l.conf.DefaultLimit
 	}
-	list, err := l.followQ.FindFriends(ctx, in.UserId, in.Token, int(in.Limit))
+	list, err := l.followQ.FindFriends(ctx, in.SubjectId, in.Token, int(in.Limit))
 	if err != nil {
 		return nil, status.Errorf(codes.NotFound, "users not found")
 	}
