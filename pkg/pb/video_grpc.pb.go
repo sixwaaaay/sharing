@@ -27,6 +27,8 @@ type VideoServiceClient interface {
 	LikeAction(ctx context.Context, in *LikeActionRequest, opts ...grpc.CallOption) (*LikeActionReply, error)
 	GetLikedVideos(ctx context.Context, in *GetLikedVideosRequest, opts ...grpc.CallOption) (*GetLikedVideosReply, error)
 	GetUserVideos(ctx context.Context, in *GetUserVideosRequest, opts ...grpc.CallOption) (*GetUserVideosReply, error)
+	CreateVideo(ctx context.Context, in *CreateVideoRequest, opts ...grpc.CallOption) (*CreateVideoReply, error)
+	GetRecentVideo(ctx context.Context, in *GetRecentVideoReq, opts ...grpc.CallOption) (*GetRecentVideoResp, error)
 }
 
 type videoServiceClient struct {
@@ -82,6 +84,24 @@ func (c *videoServiceClient) GetUserVideos(ctx context.Context, in *GetUserVideo
 	return out, nil
 }
 
+func (c *videoServiceClient) CreateVideo(ctx context.Context, in *CreateVideoRequest, opts ...grpc.CallOption) (*CreateVideoReply, error) {
+	out := new(CreateVideoReply)
+	err := c.cc.Invoke(ctx, "/sixwaaaay.video.VideoService/CreateVideo", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *videoServiceClient) GetRecentVideo(ctx context.Context, in *GetRecentVideoReq, opts ...grpc.CallOption) (*GetRecentVideoResp, error) {
+	out := new(GetRecentVideoResp)
+	err := c.cc.Invoke(ctx, "/sixwaaaay.video.VideoService/GetRecentVideo", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // VideoServiceServer is the server API for VideoService service.
 // All implementations must embed UnimplementedVideoServiceServer
 // for forward compatibility
@@ -91,6 +111,8 @@ type VideoServiceServer interface {
 	LikeAction(context.Context, *LikeActionRequest) (*LikeActionReply, error)
 	GetLikedVideos(context.Context, *GetLikedVideosRequest) (*GetLikedVideosReply, error)
 	GetUserVideos(context.Context, *GetUserVideosRequest) (*GetUserVideosReply, error)
+	CreateVideo(context.Context, *CreateVideoRequest) (*CreateVideoReply, error)
+	GetRecentVideo(context.Context, *GetRecentVideoReq) (*GetRecentVideoResp, error)
 	mustEmbedUnimplementedVideoServiceServer()
 }
 
@@ -112,6 +134,12 @@ func (UnimplementedVideoServiceServer) GetLikedVideos(context.Context, *GetLiked
 }
 func (UnimplementedVideoServiceServer) GetUserVideos(context.Context, *GetUserVideosRequest) (*GetUserVideosReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserVideos not implemented")
+}
+func (UnimplementedVideoServiceServer) CreateVideo(context.Context, *CreateVideoRequest) (*CreateVideoReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateVideo not implemented")
+}
+func (UnimplementedVideoServiceServer) GetRecentVideo(context.Context, *GetRecentVideoReq) (*GetRecentVideoResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetRecentVideo not implemented")
 }
 func (UnimplementedVideoServiceServer) mustEmbedUnimplementedVideoServiceServer() {}
 
@@ -216,6 +244,42 @@ func _VideoService_GetUserVideos_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _VideoService_CreateVideo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateVideoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(VideoServiceServer).CreateVideo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/sixwaaaay.video.VideoService/CreateVideo",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(VideoServiceServer).CreateVideo(ctx, req.(*CreateVideoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _VideoService_GetRecentVideo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRecentVideoReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(VideoServiceServer).GetRecentVideo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/sixwaaaay.video.VideoService/GetRecentVideo",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(VideoServiceServer).GetRecentVideo(ctx, req.(*GetRecentVideoReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // VideoService_ServiceDesc is the grpc.ServiceDesc for VideoService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -242,6 +306,14 @@ var VideoService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUserVideos",
 			Handler:    _VideoService_GetUserVideos_Handler,
+		},
+		{
+			MethodName: "CreateVideo",
+			Handler:    _VideoService_CreateVideo_Handler,
+		},
+		{
+			MethodName: "GetRecentVideo",
+			Handler:    _VideoService_GetRecentVideo_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
