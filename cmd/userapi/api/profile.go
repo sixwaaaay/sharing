@@ -15,6 +15,7 @@ package api
 
 import (
 	"github.com/labstack/echo/v4"
+	"github.com/sixwaaaay/sharing/pkg/encoder"
 	"github.com/sixwaaaay/sharing/pkg/pb"
 	"strconv"
 )
@@ -28,7 +29,7 @@ func (r *ProfileRequest) Validate() error {
 	if r.UserId <= 0 {
 		return echo.NewHTTPError(403, "invalid user id")
 	}
-	if r.SubjectID <= 0 {
+	if r.SubjectID < 0 {
 		return echo.NewHTTPError(403, "invalid token")
 	}
 	return nil
@@ -60,8 +61,5 @@ func (u *UserApi) Profile(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	response := &ProfileResponse{
-		Profile: user.User,
-	}
-	return c.JSON(200, response)
+	return encoder.Marshal(c.Response(), user.User)
 }
