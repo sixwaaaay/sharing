@@ -45,7 +45,7 @@ type Config struct {
 	VideoBucket  string
 }
 
-var configFile = flag.String("f", "config.yaml", "the config file")
+var configFile = flag.String("f", "configs/config.yaml", "the config file")
 
 func main() {
 	config, err := configs.NewConfig[Config](*configFile)

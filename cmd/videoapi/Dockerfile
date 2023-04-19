@@ -16,6 +16,6 @@ ENV TZ Asia/Shanghai
 WORKDIR /app
 COPY --from=builder /app/videoapi /app/videoapi
 # configs
-COPY config.yaml /app/config.yaml
+COPY configs /app/configs
 EXPOSE 8080
 CMD ["./videoapi"]

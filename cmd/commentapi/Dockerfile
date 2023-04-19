@@ -16,6 +16,6 @@ ENV TZ Asia/Shanghai
 WORKDIR /app
 COPY --from=builder /app/commentapi /app/commentapi
 # configs
-COPY config.yaml /app/config.yaml
+COPY configs /app/configs
 EXPOSE 8080
 CMD ["./commentapi"]

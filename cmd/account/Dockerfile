@@ -16,6 +16,6 @@ ENV TZ Asia/Shanghai
 WORKDIR /app
 COPY --from=builder /app/account /app/account
 # configs
-COPY config.yaml /app/config.yaml
+COPY configs /app/configs
 EXPOSE 8080
 CMD ["./account"]

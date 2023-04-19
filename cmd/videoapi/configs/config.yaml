@@ -1,6 +1,6 @@
-ListenOn: :8089
+ListenOn: :8080
 VideoService:
-  Address: shavideo:8082
+  Address: shavideo:8080
 SECRET: $JWT_SECRET
 ImageBucket: $IMAGE_BUCKET
 VideoBucket: $VIDEO_BUCKET
