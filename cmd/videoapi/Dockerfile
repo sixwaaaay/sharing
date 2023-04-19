@@ -18,4 +18,4 @@ COPY --from=builder /app/videoapi /app/videoapi
 # configs
 COPY config.yaml /app/config.yaml
 EXPOSE 8080
-ENTRYPOINT ["/app/videoapi"]
+CMD ["./videoapi"]

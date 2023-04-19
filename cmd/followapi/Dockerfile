@@ -18,4 +18,4 @@ COPY --from=builder /app/followapi /app/followapi
 # configs
 COPY config.yaml /app/config.yaml
 EXPOSE 8080
-ENTRYPOINT ["/app/followapi"]
+CMD ["./followapi"]
