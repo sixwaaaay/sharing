@@ -18,4 +18,4 @@ COPY --from=builder /app/commentapi /app/commentapi
 # configs
 COPY config.yaml /app/config.yaml
 EXPOSE 8080
-ENTRYPOINT ["/app/commentapi"]
+CMD ["./commentapi"]

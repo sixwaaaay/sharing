@@ -18,4 +18,4 @@ COPY --from=builder /app/account /app/account
 # configs
 COPY config.yaml /app/config.yaml
 EXPOSE 8080
-ENTRYPOINT ["/app/account"]
+CMD ["./account"]

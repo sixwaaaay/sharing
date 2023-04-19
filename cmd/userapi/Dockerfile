@@ -18,4 +18,4 @@ COPY --from=builder /app/userapi /app/userapi
 # configs
 COPY config.yaml /app/config.yaml
 EXPOSE 8080
-ENTRYPOINT ["/app/userapi"]
+CMD ["./userapi"]
