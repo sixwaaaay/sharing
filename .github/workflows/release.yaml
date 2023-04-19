@@ -1,0 +1,47 @@
+name: Release
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Login to DockerHub
+        if: github.ref == 'refs/heads/main'
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      # build account, videoapi, userapi, followapi, commentapi container image
+      - name: Build account service and push
+        uses: docker/build-push-action@v4
+        with:
+          context: ./cmd/account
+          file: ./cmd/account/Dockerfile
+          tags: ${{ secrets.DOCKERHUB_USERNAME || 'account' }}/account:${{ github.ref_name }}
+      - name: Build videoapi service and push
+        uses: docker/build-push-action@v4
+        with:
+          context: ./cmd/videoapi
+          file: ./cmd/videoapi/Dockerfile
+          tags: ${{ secrets.DOCKERHUB_USERNAME || 'videoapi' }}/videoapi:${{ github.ref_name }}
+      - name: Build userapi service and push
+        uses: docker/build-push-action@v4
+        with:
+          context: ./cmd/userapi
+          file: ./cmd/userapi/Dockerfile
+          tags: ${{ secrets.DOCKERHUB_USERNAME || 'userapi' }}/userapi:${{ github.ref_name }}
+      - name: Build followapi service and push
+        uses: docker/build-push-action@v4
+        with:
+          context: ./cmd/followapi
+          file: ./cmd/followapi/Dockerfile
+          tags: ${{ secrets.DOCKERHUB_USERNAME || 'followapi' }}/followapi:${{ github.ref_name }}
+      - name: Build commentapi service and push
+        uses: docker/build-push-action@v4
+        with:
+          context: ./cmd/commentapi
+          file: ./cmd/commentapi/Dockerfile
+          tags: ${{ secrets.DOCKERHUB_USERNAME || 'commentapi' }}/commentapi:${{ github.ref_name }}
