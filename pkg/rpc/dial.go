@@ -14,9 +14,11 @@
 package rpc
 
 import (
+	"context"
 	"github.com/sixwaaaay/sharing/pkg/pb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/metadata"
 )
 
 func NewUserClient(conf GrpcConfig) (pb.UserServiceClient, error) {
@@ -44,10 +46,24 @@ func NewVideoClient(conf GrpcConfig) (pb.VideoServiceClient, error) {
 }
 
 func dial(conf GrpcConfig) (*grpc.ClientConn, error) {
-	conn, err := grpc.Dial(conf.Address,
-		grpc.WithTransportCredentials(
-			insecure.NewCredentials(),
-		),
-	)
+	var interceptors = []grpc.UnaryClientInterceptor{}
+	if conf.ServiceName != "" {
+		interceptors = append(interceptors, DaprServiceInvoker(conf.ServiceName))
+	}
+	var options []grpc.DialOption
+	options = append(options, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if len(interceptors) > 0 {
+		options = append(options, grpc.WithChainUnaryInterceptor(interceptors...))
+	}
+	conn, err := grpc.Dial(conf.Address, options...)
 	return conn, err
+}
+
+func DaprServiceInvoker(DaprServiceName string) grpc.UnaryClientInterceptor {
+	return func(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
+		if DaprServiceName != "" {
+			ctx = metadata.AppendToOutgoingContext(ctx, "dapr-app-id", DaprServiceName)
+		}
+		return invoker(ctx, method, req, reply, cc, opts...)
+	}
 }
