@@ -14,5 +14,6 @@
 package rpc
 
 type GrpcConfig struct {
-	Address string
+	Address     string
+	ServiceName string
 }
