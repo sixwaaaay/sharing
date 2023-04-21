@@ -49,3 +49,10 @@ jobs:
           file: ./cmd/commentapi/Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME || 'commentapi' }}/commentapi:${{ github.ref_name }}
+      - name: Build messageapi service and push
+        uses: docker/build-push-action@v4
+        with:
+          context: ./cmd/messageapi
+          file: ./cmd/messageapi/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME || 'messageapi' }}/messageapi:${{ github.ref_name }}
