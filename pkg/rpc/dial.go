@@ -45,8 +45,16 @@ func NewVideoClient(conf GrpcConfig) (pb.VideoServiceClient, error) {
 	}
 }
 
+func NewMessageClient(conf GrpcConfig) (pb.MessageServiceClient, error) {
+	if conn, err := dial(conf); err != nil {
+		return nil, err
+	} else {
+		return pb.NewMessageServiceClient(conn), nil
+	}
+}
+
 func dial(conf GrpcConfig) (*grpc.ClientConn, error) {
-	var interceptors = []grpc.UnaryClientInterceptor{}
+	var interceptors []grpc.UnaryClientInterceptor
 	if conf.ServiceName != "" {
 		interceptors = append(interceptors, DaprServiceInvoker(conf.ServiceName))
 	}
