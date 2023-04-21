@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/labstack/echo/v4 v4.10.2
-	github.com/sixwaaaay/sharing v0.8.0
+	github.com/sixwaaaay/sharing v0.9.1
 )
 
 require (

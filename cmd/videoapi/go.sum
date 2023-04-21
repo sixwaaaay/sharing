@@ -198,6 +198,8 @@ github.com/sixwaaaay/sharing v0.7.4 h1:l4TTH9CtC3LwyFL0wb2vlueNjqiSe0/1XaNUc3Lme
 github.com/sixwaaaay/sharing v0.7.4/go.mod h1:ICwRv9cH9A4OBLmUrxaApQz7vh+VrPokWOJlEegXNA0=
 github.com/sixwaaaay/sharing v0.8.0 h1:uHgdV263jl/dYJVjqkCti77bZnNcmy+h0kjs4JzQiT0=
 github.com/sixwaaaay/sharing v0.8.0/go.mod h1:ICwRv9cH9A4OBLmUrxaApQz7vh+VrPokWOJlEegXNA0=
+github.com/sixwaaaay/sharing v0.9.1 h1:JJccH2RmDtVtX5SXBlzT9TrwgyGmEbmRmBGFxc6ZbnI=
+github.com/sixwaaaay/sharing v0.9.1/go.mod h1:ICwRv9cH9A4OBLmUrxaApQz7vh+VrPokWOJlEegXNA0=
 github.com/spf13/afero v1.9.3 h1:41FoI0fD7OR7mGcKE/aOiLkGreyf8ifIOQmJANWogMk=
 github.com/spf13/afero v1.9.3/go.mod h1:iUV7ddyEEZPO5gA3zD4fJt6iStLlL+Lg4m2cihcDf8Y=
 github.com/spf13/cast v1.5.0 h1:rj3WzYc11XZaIZMPKmwP96zkFEnnAmV8s6XbB2aY32w=
