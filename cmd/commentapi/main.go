@@ -111,8 +111,8 @@ func (h *Handler) CommentList(ctx echo.Context) error {
 		return err
 	}
 	id, err := h.subjectId(ctx)
-	if err != nil || id == 0 {
-		return echo.NewHTTPError(http.StatusUnauthorized, "invalid subject id", err.Error())
+	if err != nil {
+		return echo.NewHTTPError(http.StatusUnauthorized, "invalid subject id")
 	}
 	req.SubjectId = id
 	resp, err := h.cli.CommentList(ctx.Request().Context(), req)
@@ -127,7 +127,7 @@ func (h *Handler) Comment(ctx echo.Context) error {
 	}
 	id, err := h.subjectId(ctx)
 	if err != nil || id == 0 {
-		return echo.NewHTTPError(http.StatusUnauthorized, "invalid subject id", err.Error())
+		return echo.NewHTTPError(http.StatusUnauthorized, "invalid subject id")
 	}
 	req.SubjectId = id
 	resp, err := h.cli.CommentAction(ctx.Request().Context(), req)
