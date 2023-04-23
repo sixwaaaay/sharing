@@ -9,3 +9,7 @@ MINIO:
   AccessKey: string
   SecretKey: string
   UseSSL: bool
+Dapr:
+  Address: localhost:50001
+  PubSubName: pubsub
+  TopicName: video

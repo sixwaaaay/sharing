@@ -1,0 +1,24 @@
+name: Release
+on:
+  push:
+    tags:
+      - 'p[0-9]+.[0-9]+.[0-9]+'
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      # build account, videoapi, userapi, followapi, commentapi container image
+
+      - name: Build videoapi service and push
+        uses: docker/build-push-action@v4
+        with:
+          context: ./cmd/videoapi
+          file: ./cmd/videoapi/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME || 'videoapi' }}/videoapi:${{ github.ref_name }}

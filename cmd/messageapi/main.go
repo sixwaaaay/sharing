@@ -110,7 +110,7 @@ func (h *Handler) MessageList(ctx echo.Context) error {
 		return err
 	}
 	id, err := h.subjectId(ctx)
-	if err != nil || id == 0 {
+	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, "invalid subject id", err.Error())
 	}
 	req.UserId = id
@@ -125,7 +125,7 @@ func (h *Handler) Message(ctx echo.Context) error {
 		return err
 	}
 	id, err := h.subjectId(ctx)
-	if err != nil || id == 0 {
+	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, "invalid subject id", err.Error())
 	}
 	req.UserId = id
