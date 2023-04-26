@@ -17,6 +17,7 @@ import (
 	"github.com/sixwaaaay/shauser/internal/config"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/plugin/dbresolver"
 )
 
 func NewData(config *config.Config) (*gorm.DB, error) {
@@ -25,5 +26,23 @@ func NewData(config *config.Config) (*gorm.DB, error) {
 		QueryFields:            true,
 	}
 	open := mysql.Open(config.MySQL.DSN)
-	return gorm.Open(open, options)
+	db, err := gorm.Open(open, options)
+	if err != nil {
+		return nil, err
+	}
+	if len(config.MySQL.Replicas) > 0 {
+		c := replicas(config.MySQL.Replicas)
+		if err := db.Use(dbresolver.Register(c)); err != nil {
+			return nil, err
+		}
+	}
+	return db, nil
+}
+
+func replicas(replicas []string) dbresolver.Config {
+	var dbs []gorm.Dialector
+	for _, replica := range replicas {
+		dbs = append(dbs, mysql.Open(replica))
+	}
+	return dbresolver.Config{Replicas: dbs}
 }
