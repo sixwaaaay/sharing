@@ -25,6 +25,13 @@ type Config struct {
 		DSN      string   // MySQLDSN is the DSN of the MySQL database
 		Replicas []string // MySQLDSN is the replicas database dsn of the MySQL database
 	} // MySQL is the configuration for the MySQL database
+	Otel struct {
+		Enabled     bool   `yaml:"enabled"`     // OtelEnabled is the flag to enable OpenTelemetry
+		Endpoint    string `yaml:"endpoint"`    // OtelEndpoint is the endpoint of the OpenTelemetry collector
+		Service     string `yaml:"service"`     // OtelService is the service name
+		Version     string `yaml:"version"`     // OtelVersion is the version of service
+		Environment string `yaml:"environment"` // OtelEnvironment is the environment of service
+	} `yaml:"otel"` // Otel is the configuration for the OpenTelemetry collector
 }
 
 // NewConfig parses the config file and returns a Config struct
