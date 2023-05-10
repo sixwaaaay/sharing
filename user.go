@@ -14,10 +14,12 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"github.com/sixwaaaay/shauser/internal/config"
 	"github.com/sixwaaaay/shauser/internal/data"
 	"github.com/sixwaaaay/shauser/user"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 	"net"
 	"os"
@@ -33,12 +35,27 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	tp, err := TracerProvider(&newConfig)
+	if err != nil {
+		panic(err)
+	}
+	defer tp.Shutdown(context.Background())
+	mp, err := MeterProvider(&newConfig)
+	if err != nil {
+		panic(err)
+	}
+	defer mp.Shutdown(context.Background())
+
 	db, err := data.NewData(&newConfig)
 	if err != nil {
 		panic(err)
 	}
 	server := NewServer(&newConfig, db)
-	grpcServer := grpc.NewServer()
+	grpcServer := grpc.NewServer(
+		grpc.UnaryInterceptor(otelgrpc.UnaryServerInterceptor()),
+		grpc.StreamInterceptor(otelgrpc.StreamServerInterceptor()),
+	)
 	user.RegisterUserServiceServer(grpcServer, server)
 	ln, err := net.Listen("tcp", newConfig.ListenOn)
 	if err != nil {
