@@ -28,6 +28,7 @@ import (
 	"github.com/sixwaaaay/sharing/pkg/pb"
 	"github.com/sixwaaaay/sharing/pkg/rpc"
 	"github.com/sixwaaaay/sharing/pkg/sign"
+	_ "go.uber.org/automaxprocs"
 	"mime/multipart"
 	"net/http"
 	"os"
