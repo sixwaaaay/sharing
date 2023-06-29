@@ -16,6 +16,7 @@ package main
 import (
 	"context"
 	"flag"
+	"github.com/dapr/go-sdk/client"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -27,6 +28,7 @@ import (
 	"github.com/sixwaaaay/sharing/pkg/pb"
 	"github.com/sixwaaaay/sharing/pkg/rpc"
 	"github.com/sixwaaaay/sharing/pkg/sign"
+	_ "go.uber.org/automaxprocs"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -35,6 +37,11 @@ import (
 	"time"
 )
 
+type DaprConfig struct {
+	Address    string // localhost:50001
+	PubSubName string // pubsub
+	TopicName  string // video
+}
 type Config struct {
 	ListenOn     string
 	VideoService rpc.GrpcConfig
@@ -43,6 +50,7 @@ type Config struct {
 	Secret       string
 	ImageBucket  string
 	VideoBucket  string
+	Dapr         DaprConfig
 }
 
 var configFile = flag.String("f", "configs/config.yaml", "the config file")
@@ -52,14 +60,16 @@ func main() {
 	log.Printf("%+v", config)
 	handleErr(err)
 	e := newServer()
-	client, err := rpc.NewVideoClient(config.VideoService)
+	cli, err := rpc.NewVideoClient(config.VideoService)
 	if err != nil {
 		panic(err)
 	}
 	handleErr(err)
 	mc, err := blobstore.NewMinioClient(config.MinIO)
 	handleErr(err)
-	handler := NewHandler(client, config.Secret, config.ImageBucket, config.VideoBucket, mc)
+	dapr, err := client.NewClientWithAddress(config.Dapr.Address)
+	handleErr(err)
+	handler := NewHandler(cli, dapr, config.Secret, config.ImageBucket, config.VideoBucket, mc, config.Dapr)
 	handler.Update(e)
 
 	// Start server
@@ -108,15 +118,19 @@ type Handler struct {
 	ImageBucket string
 	VideoBucket string
 	mc          *minio.Client
+	client      client.Client
+	dapr        DaprConfig
 }
 
-func NewHandler(cli pb.VideoServiceClient, secret string, bucket string, videoBucket string, mc *minio.Client) *Handler {
+func NewHandler(cli pb.VideoServiceClient, client client.Client, secret string, bucket string, videoBucket string, mc *minio.Client, dapr DaprConfig) *Handler {
 	return &Handler{
 		cli:         cli,
 		secret:      []byte(secret),
 		ImageBucket: bucket,
 		VideoBucket: videoBucket,
 		mc:          mc,
+		client:      client,
+		dapr:        dapr,
 	}
 }
 
@@ -243,6 +257,19 @@ func (h *Handler) VideoGet(c echo.Context) error {
 	return encoder.Marshal(c.Response().Writer, resp)
 }
 
+type ItemReq struct {
+	Type       string `json:"type"`
+	SubjectID  int64  `json:"subject_id"`
+	TargetType string `json:"target_type"`
+	TargetID   int64  `json:"target_id"`
+}
+
+// EdgeEvent is the event that is sent to the graph service when an edge is added or deleted.
+type EdgeEvent struct {
+	Item      ItemReq `json:"item"`
+	Operation string  `json:"operation"` // "add" or "delete"
+}
+
 func (h *Handler) VideoLike(c echo.Context) error {
 	var req = new(pb.LikeActionRequest)
 	var err error
@@ -253,9 +280,29 @@ func (h *Handler) VideoLike(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	resp, err := h.cli.LikeAction(c.Request().Context(), req)
+	data := &EdgeEvent{
+		Item: ItemReq{
+			Type:       "user",
+			SubjectID:  req.SubjectId,
+			TargetType: "video",
+			TargetID:   req.VideoId,
+		},
+	}
+	if req.Action == 1 {
+		data.Operation = "add"
+	} else if req.Action == 2 {
+		data.Operation = "delete"
+	} else {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid action")
+	}
+	err = h.client.PublishEvent(c.Request().Context(), h.dapr.PubSubName, h.dapr.TopicName, data)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	resp, err := h.cli.LikeAction(c.Request().Context(), req)
+	if err != nil {
+		//return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		log.Error(err)
 	}
 	return encoder.Marshal(c.Response().Writer, resp)
 }

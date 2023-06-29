@@ -24,6 +24,7 @@ import (
 	"github.com/sixwaaaay/sharing/pkg/configs"
 	"github.com/sixwaaaay/sharing/pkg/rpc"
 	"github.com/sixwaaaay/sharing/pkg/sign"
+	_ "go.uber.org/automaxprocs"
 	"net/http"
 	"os"
 	"os/signal"
