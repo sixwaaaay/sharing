@@ -10,7 +10,7 @@ require (
 	github.com/minio/minio-go/v7 v7.0.52
 	github.com/spf13/viper v1.16.0
 	google.golang.org/grpc v1.55.0
-	google.golang.org/protobuf v1.30.0
+	google.golang.org/protobuf v1.31.0
 )
 
 require (
