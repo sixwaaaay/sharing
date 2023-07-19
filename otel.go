@@ -24,7 +24,6 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
-	"go.opentelemetry.io/otel/metric/global"
 	"go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/metric/metricdata"
 	"go.opentelemetry.io/otel/sdk/resource"
@@ -91,7 +90,7 @@ func MeterProvider(conf *config.Config) (*metric.MeterProvider, error) {
 			semconv.ServiceName(conf.Otel.Service),
 			semconv.DeploymentEnvironment(conf.Otel.Environment),
 		)))
-	global.SetMeterProvider(provider)
+	otel.SetMeterProvider(provider)
 	if err := runtime.Start(); err != nil {
 		return nil, err
 	}
