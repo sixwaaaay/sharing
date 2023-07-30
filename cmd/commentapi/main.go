@@ -52,7 +52,7 @@ func main() {
 
 	// Start server
 	go func() {
-		if err := e.Start(config.ListenOn); err != nil && err != http.ErrServerClosed {
+		if err := e.Start(config.ListenOn); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			e.Logger.Fatal(err)
 		}
 	}()

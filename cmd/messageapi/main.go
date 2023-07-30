@@ -15,6 +15,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -51,7 +52,7 @@ func main() {
 
 	// Start server
 	go func() {
-		if err := e.Start(config.ListenOn); err != nil && err != http.ErrServerClosed {
+		if err := e.Start(config.ListenOn); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			e.Logger.Fatal(err)
 		}
 	}()

@@ -15,6 +15,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"github.com/dapr/go-sdk/client"
 	"github.com/google/uuid"
@@ -57,7 +58,6 @@ var configFile = flag.String("f", "configs/config.yaml", "the config file")
 
 func main() {
 	config, err := configs.NewConfig[Config](*configFile)
-	log.Printf("%+v", config)
 	handleErr(err)
 	e := newServer()
 	cli, err := rpc.NewVideoClient(config.VideoService)
@@ -67,14 +67,14 @@ func main() {
 	handleErr(err)
 	mc, err := blobstore.NewMinioClient(config.MinIO)
 	handleErr(err)
-	dapr, err := client.NewClientWithAddress(config.Dapr.Address)
+	dapr, err := client.NewClientWithAddressContext(context.Background(), config.Dapr.Address)
 	handleErr(err)
 	handler := NewHandler(cli, dapr, config.Secret, config.ImageBucket, config.VideoBucket, mc, config.Dapr)
 	handler.Update(e)
 
 	// Start server
 	go func() {
-		if err := e.Start(config.ListenOn); err != nil && err != http.ErrServerClosed {
+		if err := e.Start(config.ListenOn); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			e.Logger.Fatal(err)
 		}
 	}()
@@ -301,8 +301,7 @@ func (h *Handler) VideoLike(c echo.Context) error {
 	}
 	resp, err := h.cli.LikeAction(c.Request().Context(), req)
 	if err != nil {
-		//return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
-		log.Error(err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 	return encoder.Marshal(c.Response().Writer, resp)
 }
