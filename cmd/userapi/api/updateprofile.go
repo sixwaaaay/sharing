@@ -15,13 +15,14 @@ package api
 
 import (
 	"context"
+	"mime/multipart"
+	"strconv"
+
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/minio/minio-go/v7"
 	"github.com/sixwaaaay/sharing/pkg/encoder"
 	"github.com/sixwaaaay/sharing/pkg/pb"
-	"mime/multipart"
-	"strconv"
 )
 
 type UpdateProfileRequest struct {

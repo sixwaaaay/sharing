@@ -17,19 +17,21 @@ import (
 	"context"
 	"errors"
 	"flag"
+	"net/http"
+	"os"
+	"os/signal"
+	"time"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
-	"github.com/sixwaaaay/sharing/cmd/userapi/api"
 	"github.com/sixwaaaay/sharing/pkg/blobstore"
 	"github.com/sixwaaaay/sharing/pkg/configs"
 	"github.com/sixwaaaay/sharing/pkg/rpc"
 	"github.com/sixwaaaay/sharing/pkg/sign"
 	_ "go.uber.org/automaxprocs"
-	"net/http"
-	"os"
-	"os/signal"
-	"time"
+
+	"github.com/sixwaaaay/sharing/cmd/userapi/api"
 )
 
 type Config struct {

@@ -14,9 +14,10 @@
 package encoder
 
 import (
+	"io"
+
 	"github.com/gogo/protobuf/proto"
 	"github.com/golang/protobuf/jsonpb"
-	"io"
 )
 
 var marshal = jsonpb.Marshaler{OrigName: true}

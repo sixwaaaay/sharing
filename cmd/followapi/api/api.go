@@ -14,11 +14,12 @@
 package api
 
 import (
+	"strconv"
+
 	"github.com/labstack/echo/v4"
 	"github.com/sixwaaaay/sharing/pkg/encoder"
 	"github.com/sixwaaaay/sharing/pkg/pb"
 	"github.com/sixwaaaay/sharing/pkg/sign"
-	"strconv"
 )
 
 type FollowApi struct {

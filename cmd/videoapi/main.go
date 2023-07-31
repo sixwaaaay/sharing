@@ -17,6 +17,13 @@ import (
 	"context"
 	"errors"
 	"flag"
+	"mime/multipart"
+	"net/http"
+	"os"
+	"os/signal"
+	"strconv"
+	"time"
+
 	"github.com/dapr/go-sdk/client"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -30,12 +37,6 @@ import (
 	"github.com/sixwaaaay/sharing/pkg/rpc"
 	"github.com/sixwaaaay/sharing/pkg/sign"
 	_ "go.uber.org/automaxprocs"
-	"mime/multipart"
-	"net/http"
-	"os"
-	"os/signal"
-	"strconv"
-	"time"
 )
 
 type DaprConfig struct {
