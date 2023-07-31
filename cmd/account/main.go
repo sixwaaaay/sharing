@@ -15,7 +15,13 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
+	"net/http"
+	"os"
+	"os/signal"
+	"time"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
@@ -23,10 +29,6 @@ import (
 	"github.com/sixwaaaay/sharing/pkg/rpc"
 	"github.com/sixwaaaay/sharing/pkg/sign"
 	_ "go.uber.org/automaxprocs"
-	"net/http"
-	"os"
-	"os/signal"
-	"time"
 )
 
 type Config struct {
@@ -53,7 +55,7 @@ func main() {
 
 	// Start server
 	go func() {
-		if err := e.Start(config.ListenOn); err != nil && err != http.ErrServerClosed {
+		if err := e.Start(config.ListenOn); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			e.Logger.Fatal(err)
 		}
 	}()

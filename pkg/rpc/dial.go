@@ -15,10 +15,12 @@ package rpc
 
 import (
 	"context"
-	"github.com/sixwaaaay/sharing/pkg/pb"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
+
+	"github.com/sixwaaaay/sharing/pkg/pb"
 )
 
 func NewUserClient(conf GrpcConfig) (pb.UserServiceClient, error) {
