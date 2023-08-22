@@ -22,7 +22,7 @@ require (
 	google.golang.org/protobuf v1.31.0
 	gorm.io/driver/mysql v1.5.1
 	gorm.io/gorm v1.25.4
-	gorm.io/plugin/dbresolver v1.4.2
+	gorm.io/plugin/dbresolver v1.4.7
 )
 
 require (
