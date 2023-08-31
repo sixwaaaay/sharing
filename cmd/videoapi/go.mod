@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/dapr/go-sdk v1.8.0
-	github.com/google/uuid v1.3.0
+	github.com/google/uuid v1.3.1
 	github.com/labstack/echo/v4 v4.11.1
 	github.com/labstack/gommon v0.4.0
 	github.com/minio/minio-go/v7 v7.0.63
