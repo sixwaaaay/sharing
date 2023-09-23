@@ -18,7 +18,7 @@ require (
 	go.opentelemetry.io/otel/sdk v1.18.0
 	go.opentelemetry.io/otel/sdk/metric v0.41.0
 	golang.org/x/crypto v0.13.0
-	google.golang.org/grpc v1.58.1
+	google.golang.org/grpc v1.58.2
 	google.golang.org/protobuf v1.31.0
 	gorm.io/driver/mysql v1.5.1
 	gorm.io/gorm v1.25.4
