@@ -19,40 +19,21 @@ import (
 	"github.com/sixwaaaay/sharing/pkg/pb"
 )
 
-type GetFollowersRequest struct {
-	UserId int64 `json:"user_id"`
-	Limit  int64 `json:"limit"`
-	Token  int64 `json:"token"`
-}
-
-func (r *GetFollowersRequest) Validate() error {
-	if r.UserId <= 0 {
-		return echo.NewHTTPError(403, "invalid user id")
-	}
-	if r.Limit < 0 {
-		return echo.NewHTTPError(403, "invalid limit")
-	}
-	if r.Token < 0 { // for pagination
-		return echo.NewHTTPError(403, "invalid pagination token")
-	}
-	return nil
-}
-
 type GetFollowersReply struct {
 	Users []*pb.User `json:"users"`
 }
 
-func (u *FollowApi) Followers(c echo.Context) error {
+func (f *FollowApi) Followers(c echo.Context) error {
 	var req pb.GetFollowersRequest
 	if err := encoder.Unmarshal(c.Request().Body, &req); err != nil {
 		return echo.NewHTTPError(403, "invalid request")
 	}
-	id, err := u.subjectId(c)
+	id, err := f.subjectId(c)
 	if err != nil {
 		return echo.NewHTTPError(403, "invalid token")
 	}
 	req.SubjectId = id
-	reply, err := u.uc.GetFollowers(c.Request().Context(), &req)
+	reply, err := f.uc.GetFollowers(c.Request().Context(), &req)
 	if err != nil {
 		return echo.NewHTTPError(500, "internal error")
 	}
