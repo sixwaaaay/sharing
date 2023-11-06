@@ -16,6 +16,11 @@ package main
 import (
 	"context"
 	"flag"
+	"net/http"
+	"os"
+	"os/signal"
+	"time"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
@@ -23,10 +28,6 @@ import (
 	"github.com/sixwaaaay/sharing/pkg/rpc"
 	"github.com/sixwaaaay/sharing/pkg/sign"
 	_ "go.uber.org/automaxprocs"
-	"net/http"
-	"os"
-	"os/signal"
-	"time"
 )
 
 type Config struct {

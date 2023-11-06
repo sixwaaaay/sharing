@@ -17,6 +17,12 @@ import (
 	"context"
 	"errors"
 	"flag"
+	"net/http"
+	"os"
+	"os/signal"
+	"strconv"
+	"time"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/sixwaaaay/sharing/pkg/configs"
@@ -25,11 +31,6 @@ import (
 	"github.com/sixwaaaay/sharing/pkg/rpc"
 	"github.com/sixwaaaay/sharing/pkg/sign"
 	_ "go.uber.org/automaxprocs"
-	"net/http"
-	"os"
-	"os/signal"
-	"strconv"
-	"time"
 )
 
 type Config struct {
@@ -52,7 +53,7 @@ func main() {
 
 	// Start server
 	go func() {
-		if err := e.Start(config.ListenOn); err != nil && err != http.ErrServerClosed {
+		if err := e.Start(config.ListenOn); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			e.Logger.Fatal(err)
 		}
 	}()
@@ -144,44 +145,4 @@ func (h *Handler) subjectId(ctx echo.Context) (int64, error) {
 	subjectID, _ := ctx.Request().Context().Value("x-id").(string)
 	id, err := strconv.ParseInt(subjectID, 10, 64)
 	return id, err
-}
-
-type CommentReq struct {
-	VideoID   int64  `json:"video_id"`
-	Action    int32  `json:"action"`
-	Comment   string `json:"comment"`
-	CommentID int64  `json:"comment_id"`
-}
-
-func (c *CommentReq) Validate() error {
-	if c.Action != 1 && c.Action != 2 {
-		return errors.New("action is required")
-	}
-	if c.VideoID <= 0 {
-		return errors.New("video_id is required")
-	}
-	if c.Action == 1 && c.Comment == "" {
-		return errors.New("comment is required")
-	}
-	if c.Action == 2 && c.CommentID <= 0 {
-		return errors.New("comment_id is required")
-	}
-	return nil
-}
-
-type CommentListReq struct {
-	VideoID int64 `json:"video_id"`
-	Token   int64 `json:"token"`
-	Limit   int32 `json:"limit"`
-}
-
-func (c *CommentListReq) Validate() error {
-	if c.VideoID <= 0 {
-		return errors.New("video_id is required")
-	}
-	return nil
-}
-
-type CommentListReply struct {
-	Comments []*pb.Comment `json:"comments"`
 }

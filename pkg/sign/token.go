@@ -16,11 +16,12 @@ package sign
 import (
 	"context"
 	"fmt"
-	"github.com/golang-jwt/jwt/v4"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/golang-jwt/jwt/v4"
 )
 
 type JWT struct {

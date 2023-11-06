@@ -14,10 +14,11 @@
 package api
 
 import (
+	"strconv"
+
 	"github.com/labstack/echo/v4"
 	"github.com/sixwaaaay/sharing/pkg/encoder"
 	"github.com/sixwaaaay/sharing/pkg/pb"
-	"strconv"
 )
 
 type ProfileRequest struct {

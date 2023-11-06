@@ -15,13 +15,14 @@ package api
 
 import (
 	"context"
+	"mime/multipart"
+	"strconv"
+
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/minio/minio-go/v7"
 	"github.com/sixwaaaay/sharing/pkg/encoder"
 	"github.com/sixwaaaay/sharing/pkg/pb"
-	"mime/multipart"
-	"strconv"
 )
 
 type UpdateProfileRequest struct {
@@ -48,8 +49,10 @@ func (u *UserApi) UpdateProfile(ctx echo.Context) error {
 	}
 	req.UserId = subjectId
 	if req.Avatar, err = ctx.FormFile("avatar"); err != nil {
+		return echo.NewHTTPError(400, "avatar or background is required")
 	}
 	if req.Bg, err = ctx.FormFile("background"); err != nil {
+		return echo.NewHTTPError(400, "avatar or background is required")
 	}
 	req.Name = ctx.FormValue("name")
 	req.Bio = ctx.FormValue("bio")
@@ -59,7 +62,7 @@ func (u *UserApi) UpdateProfile(ctx echo.Context) error {
 			return echo.NewHTTPError(500, err)
 		}
 	}
-	//"github.com/golang/protobuf/jsonpb"
+
 	if req.Bg != nil {
 		req.BgUrl, err = u.uploadFile(ctx.Request().Context(), req.Bg)
 		if err != nil {
