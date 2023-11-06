@@ -53,9 +53,14 @@ func main() {
 	handleErr(err)
 	mc, err := blobstore.NewMinioClient(config.MinIO)
 	handleErr(err)
-	handler := api.NewUserApi(mc, client, config.ImageBucket, config.Secret)
 
-	handler.Update(e)
+	// add user api
+	userApi := api.NewUserApi(mc, client, config.ImageBucket, config.Secret)
+	userApi.Update(e)
+
+	// add follow api
+	followApi := api.NewFollowApi(client, config.Secret)
+	followApi.Update(e)
 
 	// Start server
 	go func() {
