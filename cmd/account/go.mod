@@ -7,6 +7,7 @@ require (
 	github.com/labstack/gommon v0.4.0
 	github.com/sixwaaaay/sharing v0.9.1
 	go.uber.org/automaxprocs v1.5.2
+	golang.org/x/oauth2 v0.4.0
 )
 
 require (
@@ -34,6 +35,7 @@ require (
 	golang.org/x/sys v0.10.0 // indirect
 	golang.org/x/text v0.11.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
+	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20230110181048-76db0878b65f // indirect
 	google.golang.org/grpc v1.54.0 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect

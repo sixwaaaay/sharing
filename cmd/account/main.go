@@ -29,12 +29,14 @@ import (
 	"github.com/sixwaaaay/sharing/pkg/rpc"
 	"github.com/sixwaaaay/sharing/pkg/sign"
 	_ "go.uber.org/automaxprocs"
+	"golang.org/x/oauth2"
 )
 
 type Config struct {
 	ListenOn    string
 	UserService rpc.GrpcConfig
 	Jwt         sign.JWT
+	Oauth       oauth2.Config
 }
 
 var configFile = flag.String("f", "configs/config.yaml", "the config file")
@@ -50,8 +52,9 @@ func main() {
 		panic(err)
 	}
 	handler := NewAccountHandler(client, config.Jwt)
-
 	handler.Update(e)
+	oauth := NewOauth2(&config.Oauth, client, config.Jwt)
+	oauth.Update(e)
 
 	// Start server
 	go func() {
