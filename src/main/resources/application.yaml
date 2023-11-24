@@ -7,3 +7,15 @@ spring:
     password: ${DB_PASSWORD:ABCDEF}
     url: jdbc:mysql://${DB_HOST:db}:${DB_PORT:3306}/${DB_NAME:comments}?${DB_OPTIONS:useSSL=false&serverTimezone=UTC}
     driver-class-name: com.mysql.cj.jdbc.Driver
+management:
+  tracing:
+    sampling:
+      probability: ${TRACING_PROBABILITY:1.0}
+  otlp:
+    tracing:
+      endpoint: ${OTLP_ENDPOINT:http://collector:4318/v1/traces}
+  opentelemetry:
+    resource-attributes:
+      service:
+        name: sharing-comment
+        version: 1.0.0-snapshot
