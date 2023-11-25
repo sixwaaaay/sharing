@@ -19,3 +19,6 @@ management:
       service:
         name: sharing-comment
         version: 1.0.0-snapshot
+service:
+  user:
+    base-url: ${USER_SERVICE_BASE_URL:http://shauser:8082}
