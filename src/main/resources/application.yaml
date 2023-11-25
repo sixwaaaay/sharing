@@ -20,5 +20,7 @@ management:
         name: sharing-comment
         version: 1.0.0-snapshot
 service:
+  vote:
+    base-url: ${VOTE_SERVICE_BASE_URL:http://graph:8081}
   user:
     base-url: ${USER_SERVICE_BASE_URL:http://shauser:8082}
