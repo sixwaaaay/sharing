@@ -15,6 +15,7 @@ package data
 
 import (
 	"context"
+
 	"github.com/sixwaaaay/cq"
 	"gorm.io/gorm"
 )
