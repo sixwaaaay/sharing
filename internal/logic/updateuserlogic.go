@@ -15,6 +15,7 @@ package logic
 
 import (
 	"context"
+
 	"github.com/sixwaaaay/shauser/internal/config"
 	"github.com/sixwaaaay/shauser/internal/data"
 	"github.com/sixwaaaay/shauser/user"

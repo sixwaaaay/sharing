@@ -14,10 +14,11 @@
 package data
 
 import (
-	"github.com/sixwaaaay/shauser/internal/config"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/plugin/dbresolver"
+
+	"github.com/sixwaaaay/shauser/internal/config"
 )
 
 func NewData(config *config.Config) (*gorm.DB, error) {

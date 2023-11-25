@@ -15,9 +15,11 @@ package logic
 
 import (
 	"context"
-	"github.com/sixwaaaay/shauser/internal/data"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"github.com/sixwaaaay/shauser/internal/data"
 
 	"github.com/sixwaaaay/shauser/internal/config"
 	"github.com/sixwaaaay/shauser/user"

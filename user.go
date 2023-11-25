@@ -16,15 +16,17 @@ package main
 import (
 	"context"
 	"flag"
-	"github.com/sixwaaaay/shauser/internal/config"
-	"github.com/sixwaaaay/shauser/internal/data"
-	"github.com/sixwaaaay/shauser/user"
-	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
-	"google.golang.org/grpc"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+	"google.golang.org/grpc"
+
+	"github.com/sixwaaaay/shauser/internal/config"
+	"github.com/sixwaaaay/shauser/internal/data"
+	"github.com/sixwaaaay/shauser/user"
 )
 
 var configFile = flag.String("f", "configs/config.yaml", "the config file")
