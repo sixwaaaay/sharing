@@ -2,13 +2,18 @@ services:
   mysql:
     image: 'mysql:8.2.0'
     environment:
-      - 'MYSQL_DATABASE=mydatabase'
-      - 'MYSQL_PASSWORD=secret'
+      - 'MYSQL_DATABASE=db'
+      - 'MYSQL_PASSWORD=ABCDEF'
+      - 'MYSQL_USER=v1'
       - 'MYSQL_ROOT_PASSWORD=verysecret'
-      - 'MYSQL_USER=myuser'
     ports:
       - '3306'
   redis:
-    image: 'redis:latest'
+    image: 'redis:7.2.3-alpine3.18'
     ports:
       - '6379'
+  jaeger:
+    image: 'jaegertracing/all-in-one:1.51'
+    ports:
+      - '16686'
+      - '4318'
