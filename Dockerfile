@@ -19,7 +19,7 @@ ENV CGO_ENABLED 0
 RUN apk update --no-cache && apk add --no-cache tzdata
 COPY . .
 RUN go mod download
-RUN go build -ldflags="-s -w" -o /app/shauser
+RUN go build -ldflags="-s -w" -o /app/shauser  ./webapi
 
 FROM scratch
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
