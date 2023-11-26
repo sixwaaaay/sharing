@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
@@ -36,15 +37,19 @@ public class Comment {
 
     @Column("created_at")
     @JsonProperty("created_at")
+    @ReadOnlyProperty
     private Timestamp createdAt;
 
     @Column("reply_count")
     @JsonProperty("reply_count")
+    @ReadOnlyProperty
     private Integer replyCount;
 
     @Column("like_count")
     @JsonProperty("like_count")
+    @ReadOnlyProperty
     private Integer likeCount;
+
 
     // fields which are not in the table
     @Transient
