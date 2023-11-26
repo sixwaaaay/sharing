@@ -7,6 +7,7 @@ package io.sixwaaaay.sharingcomment.repository;
 
 
 import io.sixwaaaay.sharingcomment.domain.Comment;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Limit;
 import org.springframework.data.repository.CrudRepository;
 
@@ -24,6 +25,7 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
      * @param id       the id of the earliest comment in the previous page
      * @return page of comments
      */
+    @Cacheable("comments-main")
     List<Comment> findByBelongToAndIdLessThanAndReplyToNullOrderByIdDesc(Long belongTo, Long id, Limit limit);
 
 
@@ -38,5 +40,6 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
      * @param limit   the limit
      * @return the list of comments
      */
+    @Cacheable("comments-reply")
     List<Comment> findByReplyToAndIdGreaterThanOrderByIdAsc(Long replyTo, Long id, Limit limit);
 }
