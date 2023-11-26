@@ -9,6 +9,8 @@ package io.sixwaaaay.sharingcomment.repository;
 import io.sixwaaaay.sharingcomment.domain.Comment;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Limit;
+import org.springframework.data.jdbc.repository.query.Modifying;
+import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
@@ -42,4 +44,22 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
      */
     @Cacheable("comments-reply")
     List<Comment> findByReplyToAndIdGreaterThanOrderByIdAsc(Long replyTo, Long id, Limit limit);
+
+    /**
+     * update the reply_count of the specified comment
+     *
+     * @param id the id of the comment
+     */
+    @Modifying
+    @Query("update `comments` set `reply_count` = `reply_count` + 1 where id = :id")
+    void increaseReplyCount(Long id);
+
+    /**
+     * update the reply_count of the specified comment
+     *
+     * @param id the id of the comment
+     */
+    @Modifying
+    @Query("update `comments` set `reply_count` = `reply_count` - 1 where id = :id")
+    void decreaseReplyCount(Long id);
 }
