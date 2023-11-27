@@ -9,8 +9,14 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   cache:
     cache-names: "comments-main,comments-reply"
-    caffeine:
-      spec: "maximumSize=500,expireAfterAccess=600s"
+    redis:
+      time-to-live: "600s"
+  data:
+    redis:
+      database: 0
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+      timeout: 60000
 logging:
   level:
     org:
