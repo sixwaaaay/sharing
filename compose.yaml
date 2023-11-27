@@ -41,7 +41,7 @@ services:
     ports:
       - '5000'
   graph:
-    image: 'sixwaaaay/graph:v0.3.0'
+    image: 'sixwaaaay/graph:0.4.0'
     ports:
       - '8081'
     environment:
