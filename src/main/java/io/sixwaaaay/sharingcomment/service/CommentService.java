@@ -106,6 +106,27 @@ public class CommentService {
     }
 
     /**
+     * vote a comment
+     *
+     * @param userId    the id of the user who is requesting
+     * @param commentId the id of the comment to be voted
+     */
+    public void voteComment(long userId, long commentId) {
+        voteClient.itemAdd(new VoteReq(userId, commentId));
+    }
+
+    /**
+     * cancel vote a comment
+     *
+     * @param userId    the id of the user who is requesting
+     * @param commentId the id of the comment to be unvoted
+     */
+    public void cancelVoteComment(Long userId, Long commentId) {
+        voteClient.itemDelete(new VoteReq(userId, commentId));
+    }
+
+
+    /**
      * compose the comment, fill the user info and vote status
      *
      * @param comment the comment to be composed
