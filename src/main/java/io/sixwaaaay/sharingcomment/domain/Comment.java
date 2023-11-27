@@ -22,10 +22,10 @@ import java.util.List;
 @NoArgsConstructor
 public class Comment {
     @Id
-    private Long id;
+    private long id;
     @Column("user_id")
     @JsonProperty("user_id")
-    private Long userId;
+    private long userId;
     private String content;
 
     @Column("reply_to")
@@ -33,7 +33,7 @@ public class Comment {
     private Long replyTo;
     @Column("belong_to")
     @JsonProperty("belong_to")
-    private Long belongTo;
+    private long belongTo;
 
     @Column("created_at")
     @JsonProperty("created_at")
@@ -43,12 +43,12 @@ public class Comment {
     @Column("reply_count")
     @JsonProperty("reply_count")
     @ReadOnlyProperty
-    private Integer replyCount;
+    private int replyCount;
 
     @Column("like_count")
     @JsonProperty("like_count")
     @ReadOnlyProperty
-    private Integer likeCount;
+    private int likeCount;
 
 
     // fields which are not in the table
@@ -56,7 +56,7 @@ public class Comment {
     @JsonProperty("reply_comments")
     private List<Comment> replyComments;
     @Transient
-    private Boolean voted;
+    private boolean voted;
     @Transient
     private User user;
 }
