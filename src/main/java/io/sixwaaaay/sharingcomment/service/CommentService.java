@@ -11,11 +11,11 @@ import io.sixwaaaay.sharingcomment.client.VoteClient;
 import io.sixwaaaay.sharingcomment.domain.Comment;
 import io.sixwaaaay.sharingcomment.domain.User;
 import io.sixwaaaay.sharingcomment.repository.CommentRepository;
-import io.sixwaaaay.sharingcomment.transmission.GetMultipleUserReq;
-import io.sixwaaaay.sharingcomment.transmission.VoteExistsReq;
+import io.sixwaaaay.sharingcomment.transmission.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Limit;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,15 +26,15 @@ public class CommentService {
 
     private final VoteClient voteClient;
 
-    private final UserClient userRepo;
+    private final UserClient userClient;
 
     private final boolean enableVote;
     private final boolean enableUser;
 
-    public CommentService(CommentRepository commentRepo, VoteClient voteClient, UserClient userRepo, @Value("${service.vote.enabled}") boolean enableVote, @Value("${service.user.enabled}") boolean enableUser) {
+    public CommentService(CommentRepository commentRepo, VoteClient voteClient, UserClient userClient, @Value("${service.vote.enabled}") boolean enableVote, @Value("${service.user.enabled}") boolean enableUser) {
         this.commentRepo = commentRepo;
         this.voteClient = voteClient;
-        this.userRepo = userRepo;
+        this.userClient = userClient;
         this.enableVote = enableVote;
         this.enableUser = enableUser;
     }
@@ -76,6 +76,70 @@ public class CommentService {
 
 
     /**
+     * create a comment
+     *
+     * @param comment the comment to be created
+     * @return the created comment
+     */
+    @Transactional
+    public Comment createComment(Comment comment) {
+        comment = commentRepo.save(comment);
+        if (comment.getReplyTo() != null && comment.getReplyTo() != 0) {
+            commentRepo.increaseReplyCount(comment.getReplyTo());
+        }
+        composeSingleComment(comment, comment.getUserId());
+        return comment;
+    }
+
+
+    /**
+     * delete a comment
+     *
+     * @param comment the comment to be deleted
+     */
+    @Transactional
+    public void deleteComment(Comment comment) {
+        commentRepo.deleteByIdAndUserId(comment.getId(), comment.getUserId());
+        if (comment.getReplyTo() != null && comment.getReplyTo() != 0) {
+            commentRepo.decreaseReplyCount(comment.getReplyTo());
+        }
+    }
+
+    /**
+     * vote a comment
+     *
+     * @param userId    the id of the user who is requesting
+     * @param commentId the id of the comment to be voted
+     */
+    public void voteComment(long userId, long commentId) {
+        voteClient.itemAdd(new VoteReq(userId, commentId));
+    }
+
+    /**
+     * cancel vote a comment
+     *
+     * @param userId    the id of the user who is requesting
+     * @param commentId the id of the comment to be unvoted
+     */
+    public void cancelVoteComment(Long userId, Long commentId) {
+        voteClient.itemDelete(new VoteReq(userId, commentId));
+    }
+
+
+    /**
+     * compose the comment, fill the user info and vote status
+     *
+     * @param comment the comment to be composed
+     * @param userId  the id of the user who is requesting
+     */
+    private void composeSingleComment(Comment comment, Long userId) {
+        if (enableUser) {
+            var user = userClient.getUser(new GetUserReq(comment.getUserId(), userId));
+            comment.setUser(user.getUser());
+        }
+    }
+
+    /**
      * compose the comment, fill the user info and vote status
      *
      * @param comments the comments to be composed
@@ -100,7 +164,7 @@ public class CommentService {
         var userList = comments.stream().flatMap(c -> c.getReplyComments().stream()).
                 map(Comment::getUserId).distinct().toList();
         // fetch user info
-        var users = userRepo.getManyUser(new GetMultipleUserReq(userList, userId));
+        var users = userClient.getManyUser(new GetMultipleUserReq(userList, userId));
         // covert to map
         var userMap = users.getUsers().stream().collect(Collectors.toMap(User::getId, user -> user));
         // fill user info
