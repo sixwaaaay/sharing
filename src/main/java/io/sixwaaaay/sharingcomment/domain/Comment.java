@@ -16,7 +16,7 @@ import org.springframework.data.relational.core.mapping.Table;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Table("comments")
@@ -43,7 +43,7 @@ public class Comment implements Serializable {
     @Column("created_at")
     @JsonProperty("created_at")
     @ReadOnlyProperty
-    private Timestamp createdAt;
+    private LocalDateTime createdAt;
 
     @Column("reply_count")
     @JsonProperty("reply_count")

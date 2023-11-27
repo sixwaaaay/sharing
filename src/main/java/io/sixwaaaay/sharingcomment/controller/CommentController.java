@@ -15,7 +15,8 @@ import io.sixwaaaay.sharingcomment.util.TokenParser;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 
@@ -81,7 +82,8 @@ public class CommentController {
         comment.setBelongTo(request.getBelongTo());
         comment.setContent(request.getContent());
         comment.setReplyTo(request.getReplyTo());
-        comment.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+        long epochSecond = System.currentTimeMillis() / 1000;
+        comment.setCreatedAt(LocalDateTime.ofEpochSecond(epochSecond, 0, ZoneOffset.ofHours(8)));
 
         comment = commentService.createComment(comment);
         return comment;
