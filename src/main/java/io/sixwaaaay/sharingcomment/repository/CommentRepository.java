@@ -45,6 +45,17 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
     @Cacheable("comments-reply")
     List<Comment> findByReplyToAndIdGreaterThanOrderByIdAsc(Long replyTo, Long id, Limit limit);
 
+
+    /**
+     * delete from comments where id = ? and user_id = ?
+     *
+     * @param id     the id of the comment
+     * @param userId the id of the user
+     */
+    @Modifying
+    @Query("delete from `comments` where `id` = :id and `user_id` = :userId")
+    void deleteByIdAndUserId(Long id, Long userId);
+
     /**
      * update the reply_count of the specified comment
      *

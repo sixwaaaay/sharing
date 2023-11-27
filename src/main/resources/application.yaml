@@ -11,6 +11,11 @@ spring:
     cache-names: "comments-main,comments-reply"
     caffeine:
       spec: "maximumSize=500,expireAfterAccess=600s"
+logging:
+  level:
+    org:
+      springframework:
+        jdbc: INFO
 management:
   tracing:
     sampling:
@@ -25,6 +30,8 @@ management:
         version: 1.0.0-snapshot
 service:
   vote:
+    enabled: true
     base-url: ${VOTE_SERVICE_BASE_URL:http://graph:8081}
   user:
+    enabled: true
     base-url: ${USER_SERVICE_BASE_URL:http://shauser:8082}
