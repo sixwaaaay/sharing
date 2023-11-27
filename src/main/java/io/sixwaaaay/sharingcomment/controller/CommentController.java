@@ -100,4 +100,32 @@ public class CommentController {
         comment.setReplyTo(request.getReplyTo());
         commentService.deleteComment(comment);
     }
+
+    /**
+     * vote a comment
+     *
+     * @param id     the id of comment
+     * @param header the header of request
+     */
+    @PostMapping("/action/like/{id}")
+    public void voteComment(
+            @PathVariable long id,
+            @RequestHeader(value = "Authorization", defaultValue = "") String header) {
+        var userAuth = tokenParser.parse(header);
+        commentService.voteComment(userAuth.map(UserAuth::getId).orElseThrow(NoUserExitsError::supply), id);
+    }
+
+    /**
+     * cancel vote a comment
+     *
+     * @param id     the id of comment
+     * @param header the header of request
+     */
+    @DeleteMapping("/action/like/{id}")
+    public void cancelVoteComment(
+            @PathVariable long id,
+            @RequestHeader(value = "Authorization", defaultValue = "") String header) {
+        var userAuth = tokenParser.parse(header);
+        commentService.cancelVoteComment(userAuth.map(UserAuth::getId).orElseThrow(NoUserExitsError::supply), id);
+    }
 }
