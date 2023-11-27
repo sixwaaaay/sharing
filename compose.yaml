@@ -1,4 +1,21 @@
 services:
+  app:
+    image: 'sixwaaaay/sharing-comment:latest'
+    pull_policy: 'always'
+    ports:
+      - '8080'
+    environment:
+      - 'DB_HOST=mysql'
+      - 'DB_PORT=3306'
+      - 'DB_NAME=db'
+      - 'DB_USER=v1'
+      - 'DB_PASSWORD=ABCDEF'
+      - 'DB_OPTIONS=useSSL=false&serverTimezone=Asia/Shanghai'
+      - 'TRACING_PROBABILITY=0.1'
+      - 'OTLP_ENDPOINT=http://jaeger:4318/v1/traces'
+      - 'VOTE_SERVICE_BASE_URL=http://graph:8081'
+      - 'USER_SERVICE_BASE_URL=http://shauser:5000'
+    restart: 'always'
   mysql:
     image: 'mysql:8.2.0'
     environment:
@@ -6,6 +23,8 @@ services:
       - 'MYSQL_PASSWORD=ABCDEF'
       - 'MYSQL_USER=v1'
       - 'MYSQL_ROOT_PASSWORD=verysecret'
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - '3306'
   redis:
@@ -17,3 +36,13 @@ services:
     ports:
       - '16686'
       - '4318'
+  shauser:
+    image: 'sixwaaaay/shauser:434930a99a118fdc4e642f7fbb08cf35f9d7315a-test'
+    ports:
+      - '5000'
+  graph:
+    image: 'sixwaaaay/graph:v0.3.0'
+    ports:
+      - '8081'
+    environment:
+      - 'APP_PORT=8081'

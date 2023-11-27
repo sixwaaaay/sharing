@@ -14,13 +14,18 @@ import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.List;
 
 @Table("comments")
 @Data
 @NoArgsConstructor
-public class Comment {
+public class Comment implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     @Id
     private long id;
     @Column("user_id")
