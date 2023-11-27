@@ -7,18 +7,20 @@ package io.sixwaaaay.sharingcomment.controller;
 
 
 import io.sixwaaaay.sharingcomment.domain.Comment;
+import io.sixwaaaay.sharingcomment.request.CommentRequest;
 import io.sixwaaaay.sharingcomment.request.UserAuth;
+import io.sixwaaaay.sharingcomment.request.error.NoUserExitsError;
 import io.sixwaaaay.sharingcomment.service.CommentService;
 import io.sixwaaaay.sharingcomment.util.TokenParser;
-import lombok.extern.slf4j.Slf4j;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/comments")
-@Slf4j
 public class CommentController {
 
     private final TokenParser tokenParser;
@@ -66,4 +68,64 @@ public class CommentController {
         return commentService.getReplyCommentList(replyTo, id.orElse(0L), size, userAuth.map(UserAuth::getId).orElse(0L));
     }
 
+    /**
+     * create a comment
+     *
+     * @return the created comment
+     */
+    @PostMapping
+    public Comment createComment(@Valid @RequestBody CommentRequest request, @RequestHeader(value = "Authorization", defaultValue = "") String header) {
+        var userAuth = tokenParser.parse(header);
+        var comment = new Comment();
+        comment.setUserId(userAuth.orElseThrow(NoUserExitsError::supply).getId()); // throw exception if userAuth is empty
+        comment.setBelongTo(request.getBelongTo());
+        comment.setContent(request.getContent());
+        comment.setReplyTo(request.getReplyTo());
+        comment.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+
+        comment = commentService.createComment(comment);
+        return comment;
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteComment(
+            @PathVariable("id") Long id,
+            @RequestHeader(value = "Authorization", defaultValue = "") String header,
+            @RequestBody CommentRequest request
+    ) {
+        var userAuth = tokenParser.parse(header);
+        var comment = new Comment();
+        comment.setUserId(userAuth.orElseThrow(NoUserExitsError::supply).getId()); // throw exception if userAuth is empty
+        comment.setId(id);
+        comment.setReplyTo(request.getReplyTo());
+        commentService.deleteComment(comment);
+    }
+
+    /**
+     * vote a comment
+     *
+     * @param id     the id of comment
+     * @param header the header of request
+     */
+    @PostMapping("/action/like/{id}")
+    public void voteComment(
+            @PathVariable long id,
+            @RequestHeader(value = "Authorization", defaultValue = "") String header) {
+        var userAuth = tokenParser.parse(header);
+        commentService.voteComment(userAuth.map(UserAuth::getId).orElseThrow(NoUserExitsError::supply), id);
+    }
+
+    /**
+     * cancel vote a comment
+     *
+     * @param id     the id of comment
+     * @param header the header of request
+     */
+    @DeleteMapping("/action/like/{id}")
+    public void cancelVoteComment(
+            @PathVariable long id,
+            @RequestHeader(value = "Authorization", defaultValue = "") String header) {
+        var userAuth = tokenParser.parse(header);
+        commentService.cancelVoteComment(userAuth.map(UserAuth::getId).orElseThrow(NoUserExitsError::supply), id);
+    }
 }
