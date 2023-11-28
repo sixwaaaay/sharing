@@ -16,6 +16,9 @@ services:
       - 'VOTE_SERVICE_BASE_URL=http://graph:8081'
       - 'USER_SERVICE_BASE_URL=http://shauser:5000'
     restart: 'always'
+    depends_on:
+      mysql:
+        condition: service_healthy
   mysql:
     image: 'mysql:8.2.0'
     environment:
@@ -27,6 +30,10 @@ services:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - '3306'
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      timeout: 20s
+      retries: 10
   redis:
     image: 'redis:7.2.3-alpine3.18'
     ports:
