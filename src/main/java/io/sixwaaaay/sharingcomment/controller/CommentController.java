@@ -8,7 +8,7 @@ package io.sixwaaaay.sharingcomment.controller;
 
 import io.sixwaaaay.sharingcomment.domain.Comment;
 import io.sixwaaaay.sharingcomment.request.CommentRequest;
-import io.sixwaaaay.sharingcomment.request.UserAuth;
+import io.sixwaaaay.sharingcomment.request.Principal;
 import io.sixwaaaay.sharingcomment.request.error.NoUserExitsError;
 import io.sixwaaaay.sharingcomment.service.CommentService;
 import io.sixwaaaay.sharingcomment.util.TokenParser;
@@ -48,8 +48,8 @@ public class CommentController {
             @RequestParam(value = "size", defaultValue = "10") Integer size,
             @RequestHeader(value = "Authorization", defaultValue = "") String header
     ) {
-        var userAuth = tokenParser.parse(header);
-        return commentService.getMainCommentList(belongTo, id.orElse(Long.MAX_VALUE), size, userAuth.map(UserAuth::getId).orElse(0L));
+        var principal = tokenParser.parse(header);
+        return commentService.getMainCommentList(belongTo, id.orElse(Long.MAX_VALUE), size, principal.map(Principal::getId).orElse(0L));
     }
 
     /**
@@ -65,8 +65,8 @@ public class CommentController {
             @RequestParam(value = "size", defaultValue = "10") Integer size,
             @RequestHeader(value = "Authorization", defaultValue = "") String header
     ) {
-        var userAuth = tokenParser.parse(header);
-        return commentService.getReplyCommentList(replyTo, id.orElse(0L), size, userAuth.map(UserAuth::getId).orElse(0L));
+        var principal = tokenParser.parse(header);
+        return commentService.getReplyCommentList(replyTo, id.orElse(0L), size, principal.map(Principal::getId).orElse(0L));
     }
 
     /**
@@ -76,9 +76,9 @@ public class CommentController {
      */
     @PostMapping
     public Comment createComment(@Valid @RequestBody CommentRequest request, @RequestHeader(value = "Authorization", defaultValue = "") String header) {
-        var userAuth = tokenParser.parse(header);
+        var principal = tokenParser.parse(header);
         var comment = new Comment();
-        comment.setUserId(userAuth.orElseThrow(NoUserExitsError::supply).getId()); // throw exception if userAuth is empty
+        comment.setUserId(principal.orElseThrow(NoUserExitsError::supply).getId()); // throw exception if principal is empty
         comment.setBelongTo(request.getBelongTo());
         comment.setContent(request.getContent());
         comment.setReplyTo(request.getReplyTo());
@@ -95,9 +95,9 @@ public class CommentController {
             @RequestHeader(value = "Authorization", defaultValue = "") String header,
             @RequestBody CommentRequest request
     ) {
-        var userAuth = tokenParser.parse(header);
+        var principal = tokenParser.parse(header);
         var comment = new Comment();
-        comment.setUserId(userAuth.orElseThrow(NoUserExitsError::supply).getId()); // throw exception if userAuth is empty
+        comment.setUserId(principal.orElseThrow(NoUserExitsError::supply).getId()); // throw exception if principal is empty
         comment.setId(id);
         comment.setReplyTo(request.getReplyTo());
         commentService.deleteComment(comment);
@@ -113,8 +113,8 @@ public class CommentController {
     public void voteComment(
             @PathVariable long id,
             @RequestHeader(value = "Authorization", defaultValue = "") String header) {
-        var userAuth = tokenParser.parse(header);
-        commentService.voteComment(userAuth.map(UserAuth::getId).orElseThrow(NoUserExitsError::supply), id);
+        var principal = tokenParser.parse(header);
+        commentService.voteComment(principal.map(Principal::getId).orElseThrow(NoUserExitsError::supply), id);
     }
 
     /**
@@ -127,7 +127,7 @@ public class CommentController {
     public void cancelVoteComment(
             @PathVariable long id,
             @RequestHeader(value = "Authorization", defaultValue = "") String header) {
-        var userAuth = tokenParser.parse(header);
-        commentService.cancelVoteComment(userAuth.map(UserAuth::getId).orElseThrow(NoUserExitsError::supply), id);
+        var principal = tokenParser.parse(header);
+        commentService.cancelVoteComment(principal.map(Principal::getId).orElseThrow(NoUserExitsError::supply), id);
     }
 }

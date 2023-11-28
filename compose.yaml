@@ -10,7 +10,7 @@ services:
       - 'DB_NAME=db'
       - 'DB_USER=v1'
       - 'DB_PASSWORD=ABCDEF'
-      - 'DB_OPTIONS=useSSL=false&serverTimezone=Asia/Shanghai'
+      - 'DB_OPTIONS=useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true'
       - 'TRACING_PROBABILITY=0.1'
       - 'OTLP_ENDPOINT=http://jaeger:4318/v1/traces'
       - 'VOTE_SERVICE_BASE_URL=http://graph:8081'
