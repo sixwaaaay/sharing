@@ -7,6 +7,8 @@ package io.sixwaaaay.sharingcomment.config;
 
 import io.sixwaaaay.sharingcomment.client.UserClient;
 import io.sixwaaaay.sharingcomment.client.VoteClient;
+import io.sixwaaaay.sharingcomment.request.Principal;
+import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,7 +16,10 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.support.RestClientAdapter;
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 
+import java.util.ArrayList;
+
 @Configuration
+@RegisterReflectionForBinding({Principal.class, ArrayList.class})
 public class Config {
     @Bean
     VoteClient repositoryService(

@@ -6,8 +6,24 @@ on:
     tags:
       - ''
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '21'
+          distribution: 'graalvm' # See 'Options' for all available distributions
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: AOT Compilation
+        run: |
+            mvn -Pnative compile -DskipTests
+            mvn -Pnative spring-boot:process-aot -DskipTests
+
   release:
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -25,7 +41,6 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Push to Docker Hub
-        if: github.ref == 'refs/heads/main'
         run: |
           docker tag sharing-comment:0.0.1-SNAPSHOT ${{ secrets.DOCKERHUB_USERNAME }}/sharing-comment:latest
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/sharing-comment:latest
