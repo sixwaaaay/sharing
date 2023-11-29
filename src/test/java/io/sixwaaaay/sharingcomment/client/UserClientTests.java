@@ -5,14 +5,14 @@
 
 package io.sixwaaaay.sharingcomment.client;
 
-import io.sixwaaaay.sharingcomment.transmission.GetUserReq;
 import io.sixwaaaay.sharingcomment.transmission.GetMultipleUserReq;
+import io.sixwaaaay.sharingcomment.transmission.GetUserReq;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.List;
+import java.util.Set;
 
 @SpringBootTest
 public class UserClientTests {
@@ -27,7 +27,7 @@ public class UserClientTests {
 
     @Test
     void testGetUsers() {
-        var usersReply = userClient.getManyUser(new GetMultipleUserReq(List.of(457232417502052951L, 457121784278309633L), 1L));
+        var usersReply = userClient.getManyUser(new GetMultipleUserReq(Set.of(457232417502052951L, 457121784278309633L), 1L));
         Assertions.assertNotNull(usersReply);
     }
 }

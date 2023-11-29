@@ -11,7 +11,10 @@ import io.sixwaaaay.sharingcomment.client.VoteClient;
 import io.sixwaaaay.sharingcomment.domain.Comment;
 import io.sixwaaaay.sharingcomment.domain.User;
 import io.sixwaaaay.sharingcomment.repository.CommentRepository;
-import io.sixwaaaay.sharingcomment.transmission.*;
+import io.sixwaaaay.sharingcomment.transmission.GetMultipleUserReq;
+import io.sixwaaaay.sharingcomment.transmission.GetUserReq;
+import io.sixwaaaay.sharingcomment.transmission.VoteExistsReq;
+import io.sixwaaaay.sharingcomment.transmission.VoteReq;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Limit;
 import org.springframework.stereotype.Service;
@@ -19,6 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static java.util.function.Function.identity;
 
 @Service
 public class CommentService {
@@ -161,15 +167,13 @@ public class CommentService {
      */
     private void composeCommentAuthor(List<Comment> comments, Long userId) {
         // get user id list
-        var userList = comments.stream().flatMap(c -> c.getReplyComments().stream()).
-                map(Comment::getUserId).distinct().toList();
+        var userList = flatComments(comments).map(Comment::getUserId).collect(Collectors.toUnmodifiableSet());
         // fetch user info
         var users = userClient.getManyUser(new GetMultipleUserReq(userList, userId));
         // covert to map
-        var userMap = users.getUsers().stream().collect(Collectors.toMap(User::getId, user -> user));
+        var userMap = users.getUsers().stream().collect(Collectors.toMap(User::getId, identity()));
         // fill user info
-        comments.stream().flatMap(c -> c.getReplyComments().stream()).
-                forEach(comment -> comment.setUser(userMap.get(comment.getUserId())));
+        flatComments(comments).forEach(comment -> comment.setUser(userMap.get(comment.getUserId())));
     }
 
     /**
@@ -182,14 +186,27 @@ public class CommentService {
         if (userId == 0) {
             return;
         }
-        var commentIdList = comments.stream().flatMap(c -> c.getReplyComments().stream()).map(Comment::getId).toList();
+        var commentIdList = flatComments(comments).map(Comment::getId).toList();
         //  check if voted
         var voteExistsReply = voteClient.exists(new VoteExistsReq(userId, commentIdList));
         // convert to set
         var existedVote = voteExistsReply.getExists();
-
         // fill vote status
-        comments.stream().flatMap(c -> c.getReplyComments().stream()).
-                forEach(comment -> comment.setVoted(existedVote.contains(comment.getId())));
+        flatComments(comments).forEach(comment -> comment.setVoted(existedVote.contains(comment.getId())));
+    }
+
+    /**
+     * flat the comments and reply comments(only one level) to a stream
+     *
+     * @param comments the comments to be flatted
+     * @return the stream of comments
+     */
+    private static Stream<Comment> flatComments(List<Comment> comments) {
+        return comments.stream().flatMap(c -> {
+            if (c.getReplyComments() == null)
+                return Stream.of(c);
+            else
+                return Stream.concat(Stream.of(c), c.getReplyComments().stream());
+        });
     }
 }
