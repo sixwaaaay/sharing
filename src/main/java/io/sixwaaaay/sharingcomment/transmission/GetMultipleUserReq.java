@@ -9,13 +9,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import java.util.List;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
 public class GetMultipleUserReq {
     @JsonProperty("user_ids")
-    private List<Long> userIds;
+    private Set<Long> userIds;
     @JsonProperty("subject_id")
     private Long subjectId;
 }

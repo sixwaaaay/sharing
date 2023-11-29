@@ -13,6 +13,7 @@ import io.sixwaaaay.sharingcomment.request.error.NoUserExitsError;
 import io.sixwaaaay.sharingcomment.service.CommentService;
 import io.sixwaaaay.sharingcomment.util.TokenParser;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -22,18 +23,12 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/comments")
+@AllArgsConstructor
 public class CommentController {
 
     private final TokenParser tokenParser;
 
     private final CommentService commentService;
-
-
-    public CommentController(TokenParser tokenParser, CommentService commentService) {
-        this.tokenParser = tokenParser;
-        this.commentService = commentService;
-    }
-
 
     /**
      * main comment list also known as first level comment list
@@ -43,7 +38,7 @@ public class CommentController {
      */
     @GetMapping("/main")
     public List<Comment> getMainCommentList(
-            @RequestParam("belongTo") Long belongTo,
+            @RequestParam("belong_to") Long belongTo,
             @RequestParam("page") Optional<Long> id,
             @RequestParam(value = "size", defaultValue = "10") Integer size,
             @RequestHeader(value = "Authorization", defaultValue = "") String header
@@ -60,7 +55,7 @@ public class CommentController {
      */
     @GetMapping("/reply")
     public List<Comment> getReplyCommentList(
-            @RequestParam("replyTo") Long replyTo,
+            @RequestParam("reply_to") Long replyTo,
             @RequestParam("page") Optional<Long> id,
             @RequestParam(value = "size", defaultValue = "10") Integer size,
             @RequestHeader(value = "Authorization", defaultValue = "") String header
