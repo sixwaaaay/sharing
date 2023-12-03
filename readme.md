@@ -21,6 +21,7 @@ docker-compose up
 ## Features
 
 - [x] comment for specified object
+- [x] key-based pagination for comments
 - [x] comment reply
 - [x] comment vote
 - [x] opentelemetry tracing

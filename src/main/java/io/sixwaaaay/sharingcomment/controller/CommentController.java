@@ -70,7 +70,7 @@ public class CommentController {
      * @return the created comment
      */
     @PostMapping
-    public Comment createComment(@Valid @RequestBody CommentRequest request, @RequestHeader(value = "Authorization", defaultValue = "") String header) {
+    public Comment createComment(@Valid @RequestBody CommentRequest request, @RequestHeader(value = "Authorization") String header) {
         var principal = tokenParser.parse(header);
         var comment = new Comment();
         comment.setUserId(principal.orElseThrow(NoUserExitsError::supply).getId()); // throw exception if principal is empty
@@ -87,7 +87,7 @@ public class CommentController {
     @DeleteMapping("/{id}")
     public void deleteComment(
             @PathVariable("id") Long id,
-            @RequestHeader(value = "Authorization", defaultValue = "") String header,
+            @RequestHeader(value = "Authorization") String header,
             @RequestBody CommentRequest request
     ) {
         var principal = tokenParser.parse(header);
@@ -107,7 +107,7 @@ public class CommentController {
     @PostMapping("/action/like/{id}")
     public void voteComment(
             @PathVariable long id,
-            @RequestHeader(value = "Authorization", defaultValue = "") String header) {
+            @RequestHeader(value = "Authorization") String header) {
         var principal = tokenParser.parse(header);
         commentService.voteComment(principal.map(Principal::getId).orElseThrow(NoUserExitsError::supply), id);
     }
@@ -121,7 +121,7 @@ public class CommentController {
     @DeleteMapping("/action/like/{id}")
     public void cancelVoteComment(
             @PathVariable long id,
-            @RequestHeader(value = "Authorization", defaultValue = "") String header) {
+            @RequestHeader(value = "Authorization") String header) {
         var principal = tokenParser.parse(header);
         commentService.cancelVoteComment(principal.map(Principal::getId).orElseThrow(NoUserExitsError::supply), id);
     }
