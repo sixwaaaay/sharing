@@ -16,35 +16,27 @@ package main
 
 import (
 	"github.com/google/wire"
+	"gorm.io/gorm"
+
 	"github.com/sixwaaaay/shauser/internal/config"
 	"github.com/sixwaaaay/shauser/internal/data"
 	"github.com/sixwaaaay/shauser/internal/logic"
 	"github.com/sixwaaaay/shauser/internal/server"
-	"gorm.io/gorm"
 )
 
 func NewServer(config *config.Config, db *gorm.DB) *server.UserServiceServer {
 	wire.Build(
 		server.NewUserServiceServer,
 		wire.Struct(new(server.ServerOption), "*"),
-		wire.Struct(new(logic.FollowActionLogicOption), "*"),
 		logic.NewFollowActionLogic,
-		wire.Struct(new(logic.GetUserLogicOption), "*"),
 		logic.NewGetUserLogic,
-		wire.Struct(new(logic.GetUsersLogicOption), "*"),
 		logic.NewGetUsersLogic,
-		wire.Struct(new(logic.GetFollowersLogicOption), "*"),
 		logic.NewGetFollowersLogic,
-		wire.Struct(new(logic.GetFollowingsLogicOption), "*"),
 		logic.NewGetFollowingsLogic,
-		wire.Struct(new(logic.GetFriendsLogicOption), "*"),
 		logic.NewGetFriendsLogic,
-		wire.Struct(new(logic.RegisterLogicOption), "*"),
 		logic.NewRegisterLogic,
-		wire.Struct(new(logic.LoginLogicOption), "*"),
 		logic.NewLoginLogic,
 		logic.NewUpdateUserLogic,
-		wire.Struct(new(logic.UpdateUserLogicOption), "*"),
 		data.NewUserQuery,
 		data.NewFollowQuery,
 		data.NewFollowCommand,

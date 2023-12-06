@@ -31,18 +31,8 @@ type GetFollowingsLogic struct {
 	getUsers *GetUsersLogic
 }
 
-type GetFollowingsLogicOption struct {
-	Config   *config.Config
-	FollowQ  *data.FollowQuery
-	GetUsers *GetUsersLogic
-}
-
-func NewGetFollowingsLogic(opt GetFollowingsLogicOption) *GetFollowingsLogic {
-	return &GetFollowingsLogic{
-		conf:     opt.Config,
-		followQ:  opt.FollowQ,
-		getUsers: opt.GetUsers,
-	}
+func NewGetFollowingsLogic(conf *config.Config, followQ *data.FollowQuery, getUsers *GetUsersLogic) *GetFollowingsLogic {
+	return &GetFollowingsLogic{conf: conf, followQ: followQ, getUsers: getUsers}
 }
 
 func (l *GetFollowingsLogic) GetFollowings(ctx context.Context, in *user.GetFollowingsRequest) (*user.GetFollowingsReply, error) {

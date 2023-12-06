@@ -30,16 +30,8 @@ type FollowActionLogic struct {
 	follow *data.FollowCommand
 }
 
-type FollowActionLogicOption struct {
-	Config *config.Config
-	Follow *data.FollowCommand
-}
-
-func NewFollowActionLogic(opt FollowActionLogicOption) *FollowActionLogic {
-	return &FollowActionLogic{
-		conf:   opt.Config,
-		follow: opt.Follow,
-	}
+func NewFollowActionLogic(conf *config.Config, follow *data.FollowCommand) *FollowActionLogic {
+	return &FollowActionLogic{conf: conf, follow: follow}
 }
 
 func (l *FollowActionLogic) FollowAction(ctx context.Context, in *user.FollowActionRequest) (*user.FollowActionReply, error) {
