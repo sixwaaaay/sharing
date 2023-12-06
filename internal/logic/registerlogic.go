@@ -18,16 +18,8 @@ type RegisterLogic struct {
 	userCommand *data.UserCommand
 }
 
-type RegisterLogicOption struct {
-	Config      *config.Config
-	UserCommand *data.UserCommand
-}
-
-func NewRegisterLogic(opt RegisterLogicOption) *RegisterLogic {
-	return &RegisterLogic{
-		conf:        opt.Config,
-		userCommand: opt.UserCommand,
-	}
+func NewRegisterLogic(conf *config.Config, userCommand *data.UserCommand) *RegisterLogic {
+	return &RegisterLogic{conf: conf, userCommand: userCommand}
 }
 
 func (l *RegisterLogic) Register(ctx context.Context, in *user.RegisterRequest) (*user.RegisterReply, error) {

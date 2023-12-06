@@ -31,18 +31,8 @@ type GetUserLogic struct {
 	followQ *data.FollowQuery
 }
 
-type GetUserLogicOption struct {
-	Config  *config.Config
-	UserQ   *data.UserQuery
-	FollowQ *data.FollowQuery
-}
-
-func NewGetUserLogic(opt GetUserLogicOption) *GetUserLogic {
-	return &GetUserLogic{
-		conf:    opt.Config,
-		userQ:   opt.UserQ,
-		followQ: opt.FollowQ,
-	}
+func NewGetUserLogic(conf *config.Config, userQ *data.UserQuery, followQ *data.FollowQuery) *GetUserLogic {
+	return &GetUserLogic{conf: conf, userQ: userQ, followQ: followQ}
 }
 
 func (l *GetUserLogic) GetUser(ctx context.Context, in *user.GetUserRequest) (*user.GetUserReply, error) {

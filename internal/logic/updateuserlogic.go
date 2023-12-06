@@ -26,16 +26,8 @@ type UpdateUserLogic struct {
 	userCommand *data.UserCommand
 }
 
-type UpdateUserLogicOption struct {
-	Config      *config.Config
-	UserCommand *data.UserCommand
-}
-
-func NewUpdateUserLogic(opt UpdateUserLogicOption) *UpdateUserLogic {
-	return &UpdateUserLogic{
-		conf:        opt.Config,
-		userCommand: opt.UserCommand,
-	}
+func NewUpdateUserLogic(conf *config.Config, userCommand *data.UserCommand) *UpdateUserLogic {
+	return &UpdateUserLogic{conf: conf, userCommand: userCommand}
 }
 
 func (l *UpdateUserLogic) UpdateUser(ctx context.Context, in *user.UpdateUserRequest) (*user.UpdateUserReply, error) {

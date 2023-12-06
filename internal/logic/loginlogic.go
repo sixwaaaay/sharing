@@ -18,16 +18,8 @@ type LoginLogic struct {
 	userCommand *data.UserCommand
 }
 
-type LoginLogicOption struct {
-	Config      *config.Config
-	UserCommand *data.UserCommand
-}
-
-func NewLoginLogic(opt LoginLogicOption) *LoginLogic {
-	return &LoginLogic{
-		conf:        opt.Config,
-		userCommand: opt.UserCommand,
-	}
+func NewLoginLogic(conf *config.Config, userCommand *data.UserCommand) *LoginLogic {
+	return &LoginLogic{conf: conf, userCommand: userCommand}
 }
 
 func (l *LoginLogic) Login(ctx context.Context, in *user.LoginRequest) (*user.LoginReply, error) {

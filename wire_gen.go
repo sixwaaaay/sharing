@@ -19,58 +19,17 @@ import (
 func NewServer(config2 *config.Config, db *gorm.DB) *server.UserServiceServer {
 	userQuery := data.NewUserQuery(db)
 	followQuery := data.NewFollowQuery(db)
-	getUserLogicOption := logic.GetUserLogicOption{
-		Config:  config2,
-		UserQ:   userQuery,
-		FollowQ: followQuery,
-	}
-	getUserLogic := logic.NewGetUserLogic(getUserLogicOption)
-	getUsersLogicOption := logic.GetUsersLogicOption{
-		Config:  config2,
-		UserQ:   userQuery,
-		FollowQ: followQuery,
-	}
-	getUsersLogic := logic.NewGetUsersLogic(getUsersLogicOption)
+	getUserLogic := logic.NewGetUserLogic(config2, userQuery, followQuery)
+	getUsersLogic := logic.NewGetUsersLogic(config2, userQuery, followQuery)
 	userCommand := data.NewUserCommand(db)
-	loginLogicOption := logic.LoginLogicOption{
-		Config:      config2,
-		UserCommand: userCommand,
-	}
-	loginLogic := logic.NewLoginLogic(loginLogicOption)
-	registerLogicOption := logic.RegisterLogicOption{
-		Config:      config2,
-		UserCommand: userCommand,
-	}
-	registerLogic := logic.NewRegisterLogic(registerLogicOption)
+	loginLogic := logic.NewLoginLogic(config2, userCommand)
+	registerLogic := logic.NewRegisterLogic(config2, userCommand)
 	followCommand := data.NewFollowCommand(db)
-	followActionLogicOption := logic.FollowActionLogicOption{
-		Config: config2,
-		Follow: followCommand,
-	}
-	followActionLogic := logic.NewFollowActionLogic(followActionLogicOption)
-	getFollowersLogicOption := logic.GetFollowersLogicOption{
-		Config:   config2,
-		FollowQ:  followQuery,
-		GetUsers: getUsersLogic,
-	}
-	getFollowersLogic := logic.NewGetFollowersLogic(getFollowersLogicOption)
-	getFollowingsLogicOption := logic.GetFollowingsLogicOption{
-		Config:   config2,
-		FollowQ:  followQuery,
-		GetUsers: getUsersLogic,
-	}
-	getFollowingsLogic := logic.NewGetFollowingsLogic(getFollowingsLogicOption)
-	getFriendsLogicOption := logic.GetFriendsLogicOption{
-		Config:  config2,
-		UserQ:   userQuery,
-		FollowQ: followQuery,
-	}
-	getFriendsLogic := logic.NewGetFriendsLogic(getFriendsLogicOption)
-	updateUserLogicOption := logic.UpdateUserLogicOption{
-		Config:      config2,
-		UserCommand: userCommand,
-	}
-	updateUserLogic := logic.NewUpdateUserLogic(updateUserLogicOption)
+	followActionLogic := logic.NewFollowActionLogic(config2, followCommand)
+	getFollowersLogic := logic.NewGetFollowersLogic(config2, followQuery, getUsersLogic)
+	getFollowingsLogic := logic.NewGetFollowingsLogic(config2, followQuery, getUsersLogic)
+	getFriendsLogic := logic.NewGetFriendsLogic(config2, userQuery, followQuery)
+	updateUserLogic := logic.NewUpdateUserLogic(config2, userCommand)
 	serverOption := server.ServerOption{
 		GetUserLogic:       getUserLogic,
 		GetUsersLogic:      getUsersLogic,

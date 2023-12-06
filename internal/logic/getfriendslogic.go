@@ -31,18 +31,8 @@ type GetFriendsLogic struct {
 	followQ *data.FollowQuery
 }
 
-type GetFriendsLogicOption struct {
-	Config  *config.Config
-	UserQ   *data.UserQuery
-	FollowQ *data.FollowQuery
-}
-
-func NewGetFriendsLogic(opt GetFriendsLogicOption) *GetFriendsLogic {
-	return &GetFriendsLogic{
-		conf:    opt.Config,
-		userQ:   opt.UserQ,
-		followQ: opt.FollowQ,
-	}
+func NewGetFriendsLogic(conf *config.Config, userQ *data.UserQuery, followQ *data.FollowQuery) *GetFriendsLogic {
+	return &GetFriendsLogic{conf: conf, userQ: userQ, followQ: followQ}
 }
 
 func (l *GetFriendsLogic) GetFriends(ctx context.Context, in *user.GetFriendsRequest) (*user.GetFriendsReply, error) {
