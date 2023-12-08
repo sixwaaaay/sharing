@@ -27,13 +27,16 @@ public class TokenParser {
     }
 
     /**
-     * Parse a token and return a Principal object
+     * Parse a Bearer token and return a Principal object
+     *
      * @param token Bearer token
      * @return Optional of Principal
      */
     public Optional<Principal> parse(String token) {
         if (token == null || token.isEmpty()) return Optional.empty();
-
+        var PREFIX = "Bearer ";
+        if (!token.startsWith(PREFIX)) return Optional.empty();
+        token = token.substring(PREFIX.length());
         var claimsJws = jwtParser.parseSignedClaims(token);
         var name = claimsJws.getPayload().get("name", String.class);
         var id = claimsJws.getPayload().get("id", String.class);
