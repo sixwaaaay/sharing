@@ -1,7 +1,7 @@
 server:
   shutdown: graceful
 jwt:
-  secret: a-key
+  secret: "this is a secret string you should use"
 spring:
   lifecycle:
     timeout-per-shutdown-phase: 20s

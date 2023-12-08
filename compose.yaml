@@ -3,7 +3,7 @@ services:
     image: 'sixwaaaay/sharing-comment:latest'
     pull_policy: 'always'
     ports:
-      - '8080'
+      - '8080:8080'
     environment:
       - 'DB_HOST=mysql'
       - 'DB_PORT=3306'
@@ -29,7 +29,7 @@ services:
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
-      - '3306'
+      - '3306:3306'
     healthcheck:
       test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
       timeout: 20s
@@ -37,19 +37,19 @@ services:
   redis:
     image: 'redis:7.2.3-alpine3.18'
     ports:
-      - '6379'
+      - '6379:6379'
   jaeger:
     image: 'jaegertracing/all-in-one:1.51'
     ports:
-      - '16686'
-      - '4318'
+      - '16686:16686'
+      - '4318:4318'
   shauser:
     image: 'sixwaaaay/shauser:434930a99a118fdc4e642f7fbb08cf35f9d7315a-test'
     ports:
-      - '5000'
+      - '5000:5000'
   graph:
     image: 'sixwaaaay/graph:0.4.0'
     ports:
-      - '8081'
+      - '8081:8081'
     environment:
       - 'APP_PORT=8081'

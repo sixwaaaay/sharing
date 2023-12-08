@@ -18,8 +18,27 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: AOT Compilation
         run: |
-            mvn -Pnative compile -DskipTests
-            mvn -Pnative spring-boot:process-aot -DskipTests
+            mvn -q -Pnative compile -DskipTests
+            mvn -q -Pnative spring-boot:process-aot -DskipTests
+      - name: docker-compose up
+        run: docker-compose up -d
+      - name: Unit Test
+        run: |
+          mvn -q clean
+          mvn -q test
+        env:
+          DB_HOST: localhost
+          DB_PORT: 3306
+          DB_NAME: db
+          DB_USER: v1
+          DB_PASSWORD: ABCDEF
+          DB_OPTIONS: useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+          TRACING_PROBABILITY: 0.1
+          OTLP_ENDPOINT: http://localhost:4318/v1/traces
+          VOTE_SERVICE_BASE_URL: http://localhost:8081
+          USER_SERVICE_BASE_URL: http://localhost:5000
+          REDIS_HOST: localhost
+          SERVICE_VOTE_ENABLED: false
 
   release:
     runs-on: ubuntu-latest
