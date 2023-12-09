@@ -4,3 +4,13 @@ UserService:
 JWT:
   SECRET: $JWT_SECRET
   TTL: 1296000 # 15day 15 * 24 * 60 * 60
+Oauth:
+  clientid: $OAUTH_CLIENT_ID
+  clientsecret: $OAUTH_CLIENT_SECRET
+  endpoint:
+    authurl: https://github.com/login/oauth/authorize
+    tokenurl: https://github.com/login/oauth/access_token
+  redirecturl: ${REDIRECT_URL}/oauth/callback/github
+  scopes:
+    - user:email
+    - read:user
