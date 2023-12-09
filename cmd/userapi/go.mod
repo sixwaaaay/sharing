@@ -8,7 +8,7 @@ require (
 	github.com/labstack/gommon v0.4.0
 	github.com/minio/minio-go/v7 v7.0.63
 	github.com/sixwaaaay/sharing v0.9.1
-	go.uber.org/automaxprocs v1.5.2
+	go.uber.org/automaxprocs v1.5.3
 )
 
 require (

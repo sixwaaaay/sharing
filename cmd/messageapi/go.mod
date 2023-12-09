@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/labstack/echo/v4 v4.11.1
 	github.com/sixwaaaay/sharing v0.9.1
-	go.uber.org/automaxprocs v1.5.2
+	go.uber.org/automaxprocs v1.5.3
 )
 
 require (
