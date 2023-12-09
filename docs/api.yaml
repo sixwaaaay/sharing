@@ -4,7 +4,7 @@ info:
   description: Sharing has a really interesting name
   version: 1.0.0
 servers:
-  - url: 'http://sharing/api/v1'
+  - url: "http://sharing/api/v1"
     description: server
 paths:
   /sign/in:
@@ -515,7 +515,7 @@ components:
       type: object
       properties:
         comment:
-          $ref: '#/components/schemas/Comment'
+          $ref: "#/components/schemas/Comment"
     Comment:
       type: object
       properties:
@@ -528,7 +528,7 @@ components:
           type: string
           format: int64
         user:
-          $ref: '#/components/schemas/User'
+          $ref: "#/components/schemas/User"
     CommentListReq:
       type: object
       properties:
@@ -552,7 +552,7 @@ components:
         comment_list:
           type: array
           items:
-            $ref: '#/components/schemas/Comment'
+            $ref: "#/components/schemas/Comment"
     SendMessageRequest:
       type: object
       properties:
@@ -588,7 +588,7 @@ components:
         message_list:
           type: array
           items:
-            $ref: '#/components/schemas/Message'
+            $ref: "#/components/schemas/Message"
     Message:
       type: object
       properties:
@@ -619,7 +619,7 @@ components:
           type: string
           format: int64
         author:
-          $ref: '#/components/schemas/User'
+          $ref: "#/components/schemas/User"
         title:
           type: string
         description:
@@ -643,7 +643,7 @@ components:
       type: object
       properties:
         video:
-          $ref: '#/components/schemas/Video'
+          $ref: "#/components/schemas/Video"
     GetUserVideosRequest:
       type: object
       properties:
@@ -684,7 +684,7 @@ components:
         videos:
           type: array
           items:
-            $ref: '#/components/schemas/Video'
+            $ref: "#/components/schemas/Video"
 
     GetRecentVideosRequest:
       type: object
@@ -703,7 +703,7 @@ components:
         videos:
           type: array
           items:
-            $ref: '#/components/schemas/Video'
+            $ref: "#/components/schemas/Video"
     UploadVideoResponse:
       type: object
     GetUserVideosReply:
@@ -712,19 +712,19 @@ components:
         videos:
           type: array
           items:
-            $ref: '#/components/schemas/Video'
+            $ref: "#/components/schemas/Video"
     RegisterReply:
       type: object
       properties:
         account:
-          $ref: '#/components/schemas/User'
+          $ref: "#/components/schemas/User"
         token:
           type: string
     LoginReply:
       type: object
       properties:
         account:
-          $ref: '#/components/schemas/User'
+          $ref: "#/components/schemas/User"
         token:
           type: string
     GetFollowersRequest:
@@ -794,7 +794,6 @@ components:
     FollowActionReply:
       type: object
 
-
     LikeVideoRequest:
       type: object
       properties:
@@ -817,7 +816,7 @@ components:
         users:
           type: array
           items:
-            $ref: '#/components/schemas/User'
+            $ref: "#/components/schemas/User"
     GetFollowingsRequest:
       type: object
       properties:
@@ -838,7 +837,7 @@ components:
         users:
           type: array
           items:
-            $ref: '#/components/schemas/User'
+            $ref: "#/components/schemas/User"
     GetFriendsRequest:
       type: object
       properties:
@@ -856,9 +855,9 @@ components:
         users:
           type: array
           items:
-            $ref: '#/components/schemas/User'
+            $ref: "#/components/schemas/User"
     UpdateProfileResponse:
       type: object
       properties:
         profile:
-          $ref: '#/components/schemas/User'
+          $ref: "#/components/schemas/User"
