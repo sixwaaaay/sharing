@@ -35,16 +35,13 @@ paths:
           required: false
           schema:
             type: "string"
-            default: ""
       responses:
         "200":
           description: "OK"
           content:
             '*/*':
               schema:
-                type: "array"
-                items:
-                  $ref: "#/components/schemas/Comment"
+                $ref: "#/components/schemas/CommentResult"
   /comments/reply:
     get:
       summary: "GET comments/reply"
@@ -74,16 +71,13 @@ paths:
           required: false
           schema:
             type: "string"
-            default: ""
       responses:
         "200":
           description: "OK"
           content:
             '*/*':
               schema:
-                type: "array"
-                items:
-                  $ref: "#/components/schemas/Comment"
+                $ref: "#/components/schemas/ReplyResult"
   /comments:
     post:
       summary: "POST comments"
@@ -236,6 +230,29 @@ components:
           type: "boolean"
         user:
           $ref: "#/components/schemas/User"
+    CommentResult:
+      type: "object"
+      properties:
+        all_count:
+          type: "integer"
+          format: "int32"
+        next_page:
+          type: "integer"
+          format: "int64"
+        comments:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Comment"
+    ReplyResult:
+      type: "object"
+      properties:
+        next_page:
+          type: "integer"
+          format: "int64"
+        comments:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Comment"
     CommentRequest:
       type: "object"
       properties:
