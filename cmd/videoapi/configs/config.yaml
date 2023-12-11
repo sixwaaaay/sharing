@@ -2,13 +2,6 @@ ListenOn: :8080
 VideoService:
   Address: shavideo:8080
 SECRET: $JWT_SECRET
-ImageBucket: $IMAGE_BUCKET
-VideoBucket: $VIDEO_BUCKET
-MINIO:
-  Endpoint: string
-  AccessKey: string
-  SecretKey: string
-  UseSSL: bool
 Dapr:
   Address: localhost:50001
   PubSubName: pubsub

@@ -70,7 +70,7 @@ paths:
                 $ref: "#/components/schemas/User"
   /assets/new:
     post:
-      summary: genrate new asset pre-signed url to upload
+      summary: generate new asset pre-signed url to upload
       operationId: newAsset
       requestBody:
         description: asset information
@@ -200,20 +200,9 @@ paths:
             type: string
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                bio:
-                  type: string
-                avatar:
-                  type: string
-                  format: binary
-                bg:
-                  type: string
-                  format: binary
+              $ref: "#/components/schemas/UserProfileReq"
       responses:
         "200":
           description: User object
@@ -407,27 +396,9 @@ paths:
             type: string
       requestBody:
         content:
-          multipart/form-data:
+          application/json:
             schema:
-              type: object
-              properties:
-                title:
-                  type: string
-                description:
-                  type: string
-                category:
-                  type: string
-                video:
-                  type: string
-                  format: binary
-                cover:
-                  type: string
-                  format: binary
-                tags:
-                  type: array
-                  items:
-                    type: string
-
+              $ref: "#/components/schemas/VideoReq"
       responses:
         "200":
           description: Video object
@@ -898,3 +869,32 @@ components:
         url:
           type: string
           format: uri
+
+    VideoReq:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        video_url:
+          type: string
+        cover_url:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+    UserProfileReq:
+      type: object
+      properties:
+        name:
+          type: string
+        bio:
+          type: string
+        avatar_url:
+          type: string
+        bg_url:
+          type: string
