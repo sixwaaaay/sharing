@@ -7,6 +7,8 @@ package io.sixwaaaay.sharingcomment.controller;
 
 
 import io.sixwaaaay.sharingcomment.domain.Comment;
+import io.sixwaaaay.sharingcomment.domain.CommentResult;
+import io.sixwaaaay.sharingcomment.domain.ReplyResult;
 import io.sixwaaaay.sharingcomment.request.CommentRequest;
 import io.sixwaaaay.sharingcomment.request.Principal;
 import io.sixwaaaay.sharingcomment.request.error.NoUserExitsError;
@@ -18,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -37,11 +38,11 @@ public class CommentController {
      * @return the list of main comment
      */
     @GetMapping("/main")
-    public List<Comment> getMainCommentList(
+    public CommentResult getMainCommentList(
             @RequestParam("belong_to") Long belongTo,
             @RequestParam("page") Optional<Long> id,
             @RequestParam(value = "size", defaultValue = "10") Integer size,
-            @RequestHeader(value = "Authorization", defaultValue = "") String header
+            @RequestHeader(value = "Authorization", required = false) String header
     ) {
         var principal = tokenParser.parse(header);
         return commentService.getMainCommentList(belongTo, id.orElse(Long.MAX_VALUE), size, principal.map(Principal::getId).orElse(0L));
@@ -54,11 +55,11 @@ public class CommentController {
      * @return the list of reply comment
      */
     @GetMapping("/reply")
-    public List<Comment> getReplyCommentList(
+    public ReplyResult getReplyCommentList(
             @RequestParam("reply_to") Long replyTo,
             @RequestParam("page") Optional<Long> id,
             @RequestParam(value = "size", defaultValue = "10") Integer size,
-            @RequestHeader(value = "Authorization", defaultValue = "") String header
+            @RequestHeader(value = "Authorization", required = false) String header
     ) {
         var principal = tokenParser.parse(header);
         return commentService.getReplyCommentList(replyTo, id.orElse(0L), size, principal.map(Principal::getId).orElse(0L));
@@ -77,7 +78,7 @@ public class CommentController {
         comment.setBelongTo(request.getBelongTo());
         comment.setContent(request.getContent());
         comment.setReplyTo(request.getReplyTo());
-        long epochSecond = System.currentTimeMillis() / 1000;
+        var epochSecond = System.currentTimeMillis() / 1000;
         comment.setCreatedAt(LocalDateTime.ofEpochSecond(epochSecond, 0, ZoneOffset.ofHours(8)));
 
         comment = commentService.createComment(comment);

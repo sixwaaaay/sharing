@@ -54,7 +54,7 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
      */
     @Modifying
     @Query("delete from `comments` where `id` = :id and `user_id` = :userId")
-    void deleteByIdAndUserId(Long id, Long userId);
+    boolean deleteByIdAndUserId(Long id, Long userId);
 
     /**
      * update the reply_count of the specified comment
