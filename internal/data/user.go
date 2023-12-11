@@ -48,9 +48,7 @@ func (c *UserQuery) FindOne(ctx context.Context, id int64) (*User, error) {
 // Even if there is no any user matched, it will return an empty slice
 func (c *UserQuery) FindMany(ctx context.Context, ids []int64) ([]*User, error) {
 	var users []*User
-	err := c.db.WithContext(ctx).
-		Where("id IN ?", ids).
-		Find(&users).Error
+	err := c.db.WithContext(ctx).Where("id IN ?", ids).Find(&users).Error
 	if err != nil {
 		return nil, err
 	}

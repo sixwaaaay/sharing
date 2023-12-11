@@ -20,44 +20,77 @@ import (
 	"gorm.io/gorm"
 )
 
-// FollowCommand is the implementation of dal.FollowCommand
+// FollowCommand is a struct that represents a command to follow a user.
+// It contains a database connection and a unique ID generator.
 type FollowCommand struct {
-	db       *gorm.DB
+	// db is a pointer to a gorm.DB object, which represents a database connection.
+	db *gorm.DB
+	// uniqueID is a pointer to a sonyflake.Sonyflake object, which is used to generate unique IDs.
 	uniqueID *sonyflake.Sonyflake
 }
 
-// NewFollowCommand creates a new comment relation model
+// NewFollowCommand is a constructor function for FollowCommand.
+// It takes a database connection as an argument and returns a pointer to a FollowCommand object.
 func NewFollowCommand(db *gorm.DB) *FollowCommand {
 	return &FollowCommand{
-		db:       db,
+		// Initialize the db field with the provided database connection.
+		db: db,
+		// Initialize the uniqueID field with a new Sonyflake object.
 		uniqueID: sonyflake.NewSonyflake(sonyflake.Settings{}),
 	}
 }
 
-// Insert create a relation record
+// Insert is a method of FollowCommand that inserts a new follow relationship into the database.
+// It takes a context and a pointer to a Follow object as arguments.
+// It returns an error if the insertion fails.
 func (c *FollowCommand) Insert(ctx context.Context, f *Follow) error {
+	// Generate a new unique ID.
 	id, err := c.uniqueID.NextID()
 	if err != nil {
 		return err
 	}
+	// Set the ID of the Follow object to the generated ID.
 	f.ID = int64(id)
-	session := c.db.WithContext(ctx)
-	err = session.Create(f).Error
-	return err
+
+	// Start a new database transaction.
+	return c.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		// Insert the Follow object into the database.
+		if tx.Create(f).Error != nil {
+			return err
+		}
+		// Increment the follow count of the user who is following.
+		if err := tx.Raw("UPDATE users SET following = following + 1 WHERE id = ?", f.UserID).Error; err != nil {
+			return err
+		}
+		// Increment the follower count of the user who is being followed.
+		if err := tx.Raw("UPDATE users SET followers = followers + 1 WHERE id = ?", f.Target).Error; err != nil {
+			return err
+		}
+		return nil
+	})
 }
 
-// Delete a relation record by userid and followTo
+// Delete is a method of FollowCommand that deletes a follow relationship from the database.
+// It takes a context and two user IDs as arguments: the ID of the user who is following and the ID of the user who is being followed.
+// It returns an error if the deletion fails.
 func (c *FollowCommand) Delete(ctx context.Context, userid, followTo int64) error {
-	session := c.db.WithContext(ctx)
-	res := session.
-		Where("user_id = ?", userid).
-		Where("target = ?", followTo).
-		Delete(&Follow{})
-	if res.Error != nil {
-		return res.Error
-	}
-	if res.RowsAffected == 0 {
-		return gorm.ErrRecordNotFound
-	}
-	return nil
+	// Start a new database transaction.
+	err := c.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		// Delete the follow relationship from the database.
+		if res := tx.Exec("DELETE FROM follows WHERE user_id = ? AND target = ?", userid, followTo); res.Error != nil {
+			return res.Error
+		} else if res.RowsAffected == 0 { // If no rows were affected by the deletion, return an error.
+			return gorm.ErrRecordNotFound
+		}
+		// Decrement the follow count of the user who was following.
+		if err := tx.Exec("UPDATE users SET following = following - 1 WHERE id = ?", userid).Error; err != nil {
+			return err
+		}
+		// Decrement the follower count of the user who was being followed.
+		if err := tx.Exec("UPDATE users SET followers = followers - 1 WHERE id = ?", followTo).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+	return err
 }
