@@ -17,7 +17,6 @@ import (
 	"strconv"
 
 	"github.com/labstack/echo/v4"
-	"github.com/minio/minio-go/v7"
 	"github.com/sixwaaaay/sharing/pkg/encoder"
 	"github.com/sixwaaaay/sharing/pkg/pb"
 	"github.com/sixwaaaay/sharing/pkg/sign"
@@ -25,17 +24,13 @@ import (
 
 // UserApi defines '/users' api
 type UserApi struct {
-	mc     *minio.Client
 	uc     pb.UserServiceClient
-	bucket string
 	secret []byte
 }
 
-func NewUserApi(mc *minio.Client, uc pb.UserServiceClient, bucket string, secret string) *UserApi {
+func NewUserApi(uc pb.UserServiceClient, secret string) *UserApi {
 	return &UserApi{
-		mc:     mc,
 		uc:     uc,
-		bucket: bucket,
 		secret: []byte(secret),
 	}
 }

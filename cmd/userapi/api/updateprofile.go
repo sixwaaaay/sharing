@@ -14,75 +14,29 @@
 package api
 
 import (
-	"context"
-	"mime/multipart"
 	"strconv"
 
-	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
-	"github.com/minio/minio-go/v7"
 	"github.com/sixwaaaay/sharing/pkg/encoder"
 	"github.com/sixwaaaay/sharing/pkg/pb"
 )
 
-type UpdateProfileRequest struct {
-	UserId    string `form:"user_id" validate:"required"`
-	Name      string `form:"name" validate:"required"`
-	Bio       string `form:"bio"`
-	Avatar    *multipart.FileHeader
-	Bg        *multipart.FileHeader
-	AvatarUrl string `form:"avatar_url"`
-	BgUrl     string `form:"bg_url"`
-}
-
-type UpdateProfileResponse struct {
-	Profile *pb.User `json:"profile"`
-}
-
 func (u *UserApi) UpdateProfile(ctx echo.Context) error {
-	var req UpdateProfileRequest
-	var err error
-	// get header value
+	var req = new(pb.UpdateUserRequest)
+	var err error // get header value
+	if err := encoder.Unmarshal(ctx.Request().Body, req); err != nil {
+		return echo.NewHTTPError(400, err)
+	}
 	subjectId, ok := ctx.Request().Context().Value("x-id").(string)
 	if !ok {
 		return echo.NewHTTPError(403, "token is not valid")
 	}
-	req.UserId = subjectId
-	if req.Avatar, err = ctx.FormFile("avatar"); err != nil {
-		return echo.NewHTTPError(400, "avatar or background is required")
-	}
-	if req.Bg, err = ctx.FormFile("background"); err != nil {
-		return echo.NewHTTPError(400, "avatar or background is required")
-	}
-	req.Name = ctx.FormValue("name")
-	req.Bio = ctx.FormValue("bio")
-	if req.Avatar != nil {
-		req.AvatarUrl, err = u.uploadFile(ctx.Request().Context(), req.Avatar)
-		if err != nil {
-			return echo.NewHTTPError(500, err)
-		}
-	}
-
-	if req.Bg != nil {
-		req.BgUrl, err = u.uploadFile(ctx.Request().Context(), req.Bg)
-		if err != nil {
-			return echo.NewHTTPError(500, err)
-		}
-	}
-
-	r, err := u.updateUser(ctx.Request().Context(), &req)
+	id, err := strconv.ParseInt(subjectId, 10, 64)
 	if err != nil {
-		return echo.NewHTTPError(500, err)
+		return err
 	}
-	return encoder.Marshal(ctx.Response(), r)
-}
-
-func (u *UserApi) updateUser(ctx context.Context, req *UpdateProfileRequest) (*pb.UpdateUserReply, error) {
-	id, err := strconv.ParseInt(req.UserId, 10, 64)
-	if err != nil {
-		return nil, err
-	}
-	reply, err := u.uc.UpdateUser(ctx, &pb.UpdateUserRequest{
+	req.UserId = id
+	r, err := u.uc.UpdateUser(ctx.Request().Context(), &pb.UpdateUserRequest{
 		UserId:    id,
 		Name:      req.Name,
 		Bio:       req.Bio,
@@ -90,25 +44,7 @@ func (u *UserApi) updateUser(ctx context.Context, req *UpdateProfileRequest) (*p
 		BgUrl:     req.BgUrl,
 	})
 	if err != nil {
-		return nil, err
+		return echo.NewHTTPError(500, err)
 	}
-	return reply, err
-}
-
-func (u *UserApi) uploadFile(ctx context.Context, avatar *multipart.FileHeader) (string, error) {
-	//	gen a uuid
-	id := uuid.New().String()
-	// open source file
-	src, err := avatar.Open()
-	if err != nil {
-		return "", err
-	}
-	defer src.Close()
-	_, err = u.mc.PutObject(ctx, u.bucket, id, src, -1, minio.PutObjectOptions{
-		ContentType: avatar.Header.Get("Content-Type"),
-	})
-	if err != nil {
-		return "", err
-	}
-	return id, nil
+	return encoder.Marshal(ctx.Response(), r)
 }

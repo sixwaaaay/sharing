@@ -2,9 +2,3 @@ ListenOn: :8080
 UserService:
   Address: shauser:8080
 SECRET: $JWT_SECRET
-ImageBucket: $IMAGE_BUCKET
-MINIO:
-  Endpoint: string
-  AccessKey: string
-  SecretKey: string
-  UseSSL: bool

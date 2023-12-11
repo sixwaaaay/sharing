@@ -25,7 +25,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
-	"github.com/sixwaaaay/sharing/pkg/blobstore"
 	"github.com/sixwaaaay/sharing/pkg/configs"
 	"github.com/sixwaaaay/sharing/pkg/rpc"
 	"github.com/sixwaaaay/sharing/pkg/sign"
@@ -38,8 +37,6 @@ type Config struct {
 	ListenOn    string
 	UserService rpc.GrpcConfig
 	Jwt         sign.JWT
-	MinIO       blobstore.MinioConfig
-	ImageBucket string
 	Secret      string
 }
 
@@ -51,11 +48,9 @@ func main() {
 	e := newServer()
 	client, err := rpc.NewUserClient(config.UserService)
 	handleErr(err)
-	mc, err := blobstore.NewMinioClient(config.MinIO)
-	handleErr(err)
 
 	// add user api
-	userApi := api.NewUserApi(mc, client, config.ImageBucket, config.Secret)
+	userApi := api.NewUserApi(client, config.Secret)
 	userApi.Update(e)
 
 	// add follow api
