@@ -68,6 +68,25 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/User"
+  /assets/new:
+    post:
+      summary: genrate new asset pre-signed url to upload
+      operationId: newAsset
+      requestBody:
+        description: asset information
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewAssetRequest"
+      responses:
+        "200":
+          description: asset object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NewAssetReply"
+
   /follow:
     post:
       summary: Follow or unfollow a user
@@ -861,3 +880,21 @@ components:
       properties:
         profile:
           $ref: "#/components/schemas/User"
+
+    NewAssetRequest:
+      type: object
+      properties:
+        kind:
+          type: string
+          oneOf:
+            - type: string
+              enum:
+                - video
+                - img
+                - avatar
+    NewAssetReply:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
