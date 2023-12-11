@@ -3,10 +3,12 @@
  * All rights reserved.
  */
 
-/*
- * Copyright (c)  sixwaaaay
- * All rights reserved.
- */
+
+create table counts
+(
+    `id`            bigint NOT NULL PRIMARY KEY,
+    `comment_count` int    NOT NULL DEFAULT 0
+) engine = innodb;
 
 CREATE TABLE `comments`
 (
@@ -164,12 +166,6 @@ VALUES (2, 'hello world', 62, 1, '2023-11-26 15:58:54', 0, 0);
 INSERT INTO comments (user_id, content, reply_to, belong_to, created_at, reply_count, like_count)
 VALUES (2, 'hello world', 62, 1, '2023-11-26 15:59:21', 0, 0);
 INSERT INTO comments (user_id, content, reply_to, belong_to, created_at, reply_count, like_count)
-VALUES (2, 'hello world', null, 0, '2023-11-26 16:21:03', 0, 0);
-INSERT INTO comments (user_id, content, reply_to, belong_to, created_at, reply_count, like_count)
-VALUES (2, 'hello world', null, 0, '2023-11-26 16:21:18', 0, 0);
-INSERT INTO comments (user_id, content, reply_to, belong_to, created_at, reply_count, like_count)
-VALUES (2, 'hello world', null, 0, '2023-11-27 05:12:47', 0, 0);
-INSERT INTO comments (user_id, content, reply_to, belong_to, created_at, reply_count, like_count)
 VALUES (2, 'hello world', null, 1, '2023-11-27 05:32:42', 0, 0);
 INSERT INTO comments (user_id, content, reply_to, belong_to, created_at, reply_count, like_count)
 VALUES (2, 'hello world', null, 1, '2023-11-27 05:37:52', 0, 0);
@@ -197,3 +193,8 @@ INSERT INTO comments (user_id, content, reply_to, belong_to, created_at, reply_c
 VALUES (2, 'hello world', null, 1, '2023-11-27 07:40:10', 0, 0);
 INSERT INTO comments (user_id, content, reply_to, belong_to, created_at, reply_count, like_count)
 VALUES (2, 'hello world', null, 1, '2023-11-27 07:40:48', 0, 0);
+
+INSERT INTO counts (id, comment_count)
+SELECT belong_to, COUNT(*)
+FROM comments
+GROUP BY belong_to;

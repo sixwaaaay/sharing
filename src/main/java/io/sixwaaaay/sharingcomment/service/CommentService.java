@@ -8,9 +8,9 @@ package io.sixwaaaay.sharingcomment.service;
 
 import io.sixwaaaay.sharingcomment.client.UserClient;
 import io.sixwaaaay.sharingcomment.client.VoteClient;
-import io.sixwaaaay.sharingcomment.domain.Comment;
-import io.sixwaaaay.sharingcomment.domain.User;
+import io.sixwaaaay.sharingcomment.domain.*;
 import io.sixwaaaay.sharingcomment.repository.CommentRepository;
+import io.sixwaaaay.sharingcomment.repository.CountRepository;
 import io.sixwaaaay.sharingcomment.transmission.GetMultipleUserReq;
 import io.sixwaaaay.sharingcomment.transmission.GetUserReq;
 import io.sixwaaaay.sharingcomment.transmission.VoteExistsReq;
@@ -30,6 +30,8 @@ import static java.util.function.Function.identity;
 public class CommentService {
     private final CommentRepository commentRepo;
 
+    private final CountRepository countRepo;
+
     private final VoteClient voteClient;
 
     private final UserClient userClient;
@@ -37,8 +39,9 @@ public class CommentService {
     private final boolean enableVote;
     private final boolean enableUser;
 
-    public CommentService(CommentRepository commentRepo, VoteClient voteClient, UserClient userClient, @Value("${service.vote.enabled}") boolean enableVote, @Value("${service.user.enabled}") boolean enableUser) {
+    public CommentService(CommentRepository commentRepo, CountRepository countRepo, VoteClient voteClient, UserClient userClient, @Value("${service.vote.enabled}") boolean enableVote, @Value("${service.user.enabled}") boolean enableUser) {
         this.commentRepo = commentRepo;
+        this.countRepo = countRepo;
         this.voteClient = voteClient;
         this.userClient = userClient;
         this.enableVote = enableVote;
@@ -46,15 +49,30 @@ public class CommentService {
     }
 
     /**
-     * get the main comment list
+     * This method is used to get the main comment list.
+     * It first retrieves the count of comments belonging to the same entity.
+     * If the count is zero, it returns an empty list of comments.
+     * Otherwise, it retrieves the main comments that belong to the same entity and have an id less than the provided id.
+     * For each main comment that has reply comments, it retrieves the latest 2 reply comments.
+     * Then, it composes the comments by filling in the user info and vote status.
+     * Finally, it sets the comments and the next page id to the result.
      *
      * @param belongTo the id of the object which the comments belong to
      * @param id       the id of the earliest comment in the previous page
+     * @param size     the number of comments to be retrieved
      * @param userId   the id of the user who is requesting
-     * @return page of comments
+     * @return a CommentResult object that contains the total count of comments, the comments for the current page, and the id of the next page
      */
+    public CommentResult getMainCommentList(Long belongTo, Long id, Integer size, Long userId) {
+        var result = new CommentResult();
+        var count = countRepo.findById(belongTo).orElse(new Count(belongTo, 0)).getCommentCount();
 
-    public List<Comment> getMainCommentList(Long belongTo, Long id, Integer size, Long userId) {
+        result.setAllCount(count);
+        if (count == 0) {
+            result.setComments(List.of());
+            return result;
+        }
+
         var mainComments = commentRepo.findByBelongToAndIdLessThanAndReplyToNullOrderByIdDesc(belongTo, id, Limit.of(size));
 //       for each main comment which has reply comments, get the latest 2 reply comments
         mainComments.stream().filter(comment -> comment.getReplyCount() != 0).forEach(comment -> {
@@ -63,51 +81,76 @@ public class CommentService {
         });
 
         composeComment(mainComments, userId);
-        return mainComments;
+        result.setComments(mainComments);
+        if (mainComments.size() == size) {
+            result.setNextPage(mainComments.getLast().getId());
+        }
+        return result;
     }
 
     /**
-     * get the reply comment list
+     * This method is used to get the reply comment list.
+     * It first retrieves the reply comments that belong to the same comment and have an id greater than the provided id.
+     * Then, it composes the comments by filling in the user info and vote status.
+     * Finally, it sets the comments and the next page id to the result.
      *
-     * @param replyTo the id of the comment which the comments belong to
+     * @param replyTo the id of the comment which the comments are replies to
      * @param id      the id of the latest comment in the previous page
+     * @param size    the number of comments to be retrieved
      * @param userId  the id of the user who is requesting
-     * @return the list of comments
+     * @return a ReplyResult object that contains the comments for the current page and the id of the next page
      */
-    public List<Comment> getReplyCommentList(Long replyTo, Long id, Integer size, Long userId) {
+    public ReplyResult getReplyCommentList(Long replyTo, Long id, Integer size, Long userId) {
         var comments = commentRepo.findByReplyToAndIdGreaterThanOrderByIdAsc(replyTo, id, Limit.of(size));
         composeComment(comments, userId);
-        return comments;
+        var result = new ReplyResult();
+        result.setComments(comments);
+        if (comments.size() == size) {
+            result.setNextPage(comments.getLast().getId());
+        }
+        return result;
     }
 
-
     /**
-     * create a comment
+     * This method is used to create a new comment in the system.
+     * It first saves the comment to the repository.
+     * Then, it increases the count of comments belonging to the same entity.
+     * If the count does not exist, it creates a new count with a value of 1.
+     * If the new comment is a reply to another comment, it increases the reply count of the original comment.
+     * Finally, it composes the comment by filling in the user info and vote status.
      *
-     * @param comment the comment to be created
-     * @return the created comment
+     * @param comment The comment to be created. It contains the content of the comment, the id of the user who posted the comment, and the id of the entity to which the comment belongs.
+     * @return The created comment with the user info and vote status filled in.
      */
     @Transactional
     public Comment createComment(Comment comment) {
         comment = commentRepo.save(comment);
-        if (comment.getReplyTo() != null && comment.getReplyTo() != 0) {
+        var updated = countRepo.increaseCount(comment.getBelongTo());
+        if (!updated)
+            countRepo.createCount(comment.getBelongTo()); // create count if not exist
+        if (comment.getReplyTo() != null && comment.getReplyTo() != 0)
             commentRepo.increaseReplyCount(comment.getReplyTo());
-        }
         composeSingleComment(comment, comment.getUserId());
         return comment;
     }
 
 
     /**
-     * delete a comment
+     * Deletes a comment from the repository.
+     * If the comment is successfully deleted, it decreases the count of comments belonging to the same entity.
+     * If the deleted comment is a reply to another comment, it decreases the reply count of the original comment.
+     * This annotation makes the method run within a transaction context.
      *
-     * @param comment the comment to be deleted
+     * @param comment The comment to be deleted. It contains the id of the comment and the id of the user who posted the comment.
      */
     @Transactional
     public void deleteComment(Comment comment) {
-        commentRepo.deleteByIdAndUserId(comment.getId(), comment.getUserId());
-        if (comment.getReplyTo() != null && comment.getReplyTo() != 0) {
-            commentRepo.decreaseReplyCount(comment.getReplyTo());
+        var deleted = commentRepo.deleteByIdAndUserId(comment.getId(), comment.getUserId());
+        if (deleted) {
+            countRepo.decreaseCount(comment.getBelongTo());
+            if (comment.getReplyTo() != null && comment.getReplyTo() != 0) {
+                commentRepo.decreaseReplyCount(comment.getReplyTo());
+            }
         }
     }
 
