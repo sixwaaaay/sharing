@@ -17,7 +17,6 @@ import (
 	"context"
 	"errors"
 	"flag"
-	"mime/multipart"
 	"net/http"
 	"os"
 	"os/signal"
@@ -25,12 +24,9 @@ import (
 	"time"
 
 	"github.com/dapr/go-sdk/client"
-	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
-	"github.com/minio/minio-go/v7"
-	"github.com/sixwaaaay/sharing/pkg/blobstore"
 	"github.com/sixwaaaay/sharing/pkg/configs"
 	"github.com/sixwaaaay/sharing/pkg/encoder"
 	"github.com/sixwaaaay/sharing/pkg/pb"
@@ -39,22 +35,6 @@ import (
 	_ "go.uber.org/automaxprocs"
 )
 
-type DaprConfig struct {
-	Address    string // localhost:50001
-	PubSubName string // pubsub
-	TopicName  string // video
-}
-type Config struct {
-	ListenOn     string
-	VideoService rpc.GrpcConfig
-	Jwt          sign.JWT
-	MinIO        blobstore.MinioConfig
-	Secret       string
-	ImageBucket  string
-	VideoBucket  string
-	Dapr         DaprConfig
-}
-
 var configFile = flag.String("f", "configs/config.yaml", "the config file")
 
 func main() {
@@ -62,16 +42,10 @@ func main() {
 	handleErr(err)
 	e := newServer()
 	cli, err := rpc.NewVideoClient(config.VideoService)
-	if err != nil {
-		panic(err)
-	}
-	handleErr(err)
-	mc, err := blobstore.NewMinioClient(config.MinIO)
 	handleErr(err)
 	dapr, err := client.NewClientWithAddressContext(context.Background(), config.Dapr.Address)
 	handleErr(err)
-	handler := NewHandler(cli, dapr, config.Secret, config.ImageBucket, config.VideoBucket, mc, config.Dapr)
-	handler.Update(e)
+	NewHandler(cli, dapr, config.Secret, config.Dapr).Update(e)
 
 	// Start server
 	go func() {
@@ -91,6 +65,14 @@ func main() {
 		e.Logger.Fatal(err)
 	}
 
+}
+
+type Config struct {
+	ListenOn     string
+	VideoService rpc.GrpcConfig
+	Jwt          sign.JWT
+	Secret       string
+	Dapr         DaprConfig
 }
 
 func handleErr(err error) {
@@ -118,20 +100,16 @@ type Handler struct {
 	secret      []byte
 	ImageBucket string
 	VideoBucket string
-	mc          *minio.Client
 	client      client.Client
 	dapr        DaprConfig
 }
 
-func NewHandler(cli pb.VideoServiceClient, client client.Client, secret string, bucket string, videoBucket string, mc *minio.Client, dapr DaprConfig) *Handler {
+func NewHandler(cli pb.VideoServiceClient, client client.Client, secret string, dapr DaprConfig) *Handler {
 	return &Handler{
-		cli:         cli,
-		secret:      []byte(secret),
-		ImageBucket: bucket,
-		VideoBucket: videoBucket,
-		mc:          mc,
-		client:      client,
-		dapr:        dapr,
+		cli:    cli,
+		secret: []byte(secret),
+		client: client,
+		dapr:   dapr,
 	}
 }
 
@@ -189,58 +167,20 @@ func (h *Handler) VideoRecent(c echo.Context) error {
 	return encoder.Marshal(c.Response().Writer, resp)
 }
 
-func (h *Handler) VideoCreate(ctx echo.Context) error {
+func (h *Handler) VideoCreate(ctx echo.Context) (err error) {
 	var req = new(pb.CreateVideoRequest)
-	var err error
+	if err := encoder.Unmarshal(ctx.Request().Body, req); err != nil {
+		return err
+	}
 	req.SubjectId, err = h.subjectId(ctx)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	if video, err := ctx.FormFile("video"); err == nil {
-		req.VideoUrl, err = h.uploadFile(ctx.Request().Context(), video, h.VideoBucket)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
-		}
-	}
-	if cover, err := ctx.FormFile("cover"); err == nil {
-		req.CoverUrl, err = h.uploadFile(ctx.Request().Context(), cover, h.ImageBucket)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
-		}
-	}
-	err = echo.FormFieldBinder(ctx).
-		String("title", &req.Title).
-		String("description", &req.Description).
-		String("category", &req.Category).
-		//Strings("tags", &req.Tags). // need to refactor
-		BindError()
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-
 	resp, err := h.cli.CreateVideo(ctx.Request().Context(), req)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 	return encoder.Marshal(ctx.Response().Writer, resp)
-}
-
-func (u *Handler) uploadFile(ctx context.Context, avatar *multipart.FileHeader, bucket string) (string, error) {
-	//	gen a uuid
-	id := uuid.New().String()
-	// open source file
-	src, err := avatar.Open()
-	if err != nil {
-		return "", err
-	}
-	defer src.Close()
-	_, err = u.mc.PutObject(ctx, bucket, id, src, -1, minio.PutObjectOptions{
-		ContentType: avatar.Header.Get("Content-Type"),
-	})
-	if err != nil {
-		return "", err
-	}
-	return id, nil
 }
 
 func (h *Handler) VideoGet(c echo.Context) error {
@@ -256,6 +196,12 @@ func (h *Handler) VideoGet(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 	return encoder.Marshal(c.Response().Writer, resp)
+}
+
+type DaprConfig struct {
+	Address    string // localhost:50001
+	PubSubName string // pubsub
+	TopicName  string // video
 }
 
 type ItemReq struct {
