@@ -3,8 +3,9 @@ module blob
 go 1.21
 
 require (
-	github.com/google/uuid v1.3.0
+	github.com/google/uuid v1.5.0
 	github.com/labstack/echo/v4 v4.11.3
+	github.com/labstack/gommon v0.4.0
 	github.com/minio/minio-go/v7 v7.0.65
 	github.com/sixwaaaay/sharing v0.9.1
 )
@@ -17,7 +18,6 @@ require (
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.16.7 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.5 // indirect
-	github.com/labstack/gommon v0.4.0 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
