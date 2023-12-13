@@ -16,6 +16,9 @@ package logic
 import (
 	"context"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	"github.com/sixwaaaay/shauser/internal/config"
 	"github.com/sixwaaaay/shauser/internal/data"
 	"github.com/sixwaaaay/shauser/user"
@@ -31,6 +34,12 @@ func NewUpdateUserLogic(conf *config.Config, userCommand *data.UserCommand) *Upd
 }
 
 func (l *UpdateUserLogic) UpdateUser(ctx context.Context, in *user.UpdateUserRequest) (*user.UpdateUserReply, error) {
+	if in.UserId == 0 {
+		return nil, status.Error(codes.InvalidArgument, "user id is empty")
+	}
+	if in.Name == "" {
+		return nil, status.Error(codes.InvalidArgument, "user name is empty")
+	}
 	var u data.User
 	u.ID = in.UserId
 	u.Username = in.Name

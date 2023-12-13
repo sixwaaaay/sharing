@@ -27,9 +27,8 @@ type UserServiceClient interface {
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginReply, error)
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterReply, error)
 	FollowAction(ctx context.Context, in *FollowActionRequest, opts ...grpc.CallOption) (*FollowActionReply, error)
-	GetFollowers(ctx context.Context, in *GetFollowersRequest, opts ...grpc.CallOption) (*GetFollowersReply, error)
-	GetFollowings(ctx context.Context, in *GetFollowingsRequest, opts ...grpc.CallOption) (*GetFollowingsReply, error)
-	GetFriends(ctx context.Context, in *GetFriendsRequest, opts ...grpc.CallOption) (*GetFriendsReply, error)
+	GetFollowers(ctx context.Context, in *FollowQueryReq, opts ...grpc.CallOption) (*UsersPage, error)
+	GetFollowings(ctx context.Context, in *FollowQueryReq, opts ...grpc.CallOption) (*UsersPage, error)
 	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UpdateUserReply, error)
 }
 
@@ -86,8 +85,8 @@ func (c *userServiceClient) FollowAction(ctx context.Context, in *FollowActionRe
 	return out, nil
 }
 
-func (c *userServiceClient) GetFollowers(ctx context.Context, in *GetFollowersRequest, opts ...grpc.CallOption) (*GetFollowersReply, error) {
-	out := new(GetFollowersReply)
+func (c *userServiceClient) GetFollowers(ctx context.Context, in *FollowQueryReq, opts ...grpc.CallOption) (*UsersPage, error) {
+	out := new(UsersPage)
 	err := c.cc.Invoke(ctx, "/sixwaaaay.user.UserService/GetFollowers", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -95,18 +94,9 @@ func (c *userServiceClient) GetFollowers(ctx context.Context, in *GetFollowersRe
 	return out, nil
 }
 
-func (c *userServiceClient) GetFollowings(ctx context.Context, in *GetFollowingsRequest, opts ...grpc.CallOption) (*GetFollowingsReply, error) {
-	out := new(GetFollowingsReply)
+func (c *userServiceClient) GetFollowings(ctx context.Context, in *FollowQueryReq, opts ...grpc.CallOption) (*UsersPage, error) {
+	out := new(UsersPage)
 	err := c.cc.Invoke(ctx, "/sixwaaaay.user.UserService/GetFollowings", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *userServiceClient) GetFriends(ctx context.Context, in *GetFriendsRequest, opts ...grpc.CallOption) (*GetFriendsReply, error) {
-	out := new(GetFriendsReply)
-	err := c.cc.Invoke(ctx, "/sixwaaaay.user.UserService/GetFriends", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -131,9 +121,8 @@ type UserServiceServer interface {
 	Login(context.Context, *LoginRequest) (*LoginReply, error)
 	Register(context.Context, *RegisterRequest) (*RegisterReply, error)
 	FollowAction(context.Context, *FollowActionRequest) (*FollowActionReply, error)
-	GetFollowers(context.Context, *GetFollowersRequest) (*GetFollowersReply, error)
-	GetFollowings(context.Context, *GetFollowingsRequest) (*GetFollowingsReply, error)
-	GetFriends(context.Context, *GetFriendsRequest) (*GetFriendsReply, error)
+	GetFollowers(context.Context, *FollowQueryReq) (*UsersPage, error)
+	GetFollowings(context.Context, *FollowQueryReq) (*UsersPage, error)
 	UpdateUser(context.Context, *UpdateUserRequest) (*UpdateUserReply, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
@@ -157,14 +146,11 @@ func (UnimplementedUserServiceServer) Register(context.Context, *RegisterRequest
 func (UnimplementedUserServiceServer) FollowAction(context.Context, *FollowActionRequest) (*FollowActionReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FollowAction not implemented")
 }
-func (UnimplementedUserServiceServer) GetFollowers(context.Context, *GetFollowersRequest) (*GetFollowersReply, error) {
+func (UnimplementedUserServiceServer) GetFollowers(context.Context, *FollowQueryReq) (*UsersPage, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetFollowers not implemented")
 }
-func (UnimplementedUserServiceServer) GetFollowings(context.Context, *GetFollowingsRequest) (*GetFollowingsReply, error) {
+func (UnimplementedUserServiceServer) GetFollowings(context.Context, *FollowQueryReq) (*UsersPage, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetFollowings not implemented")
-}
-func (UnimplementedUserServiceServer) GetFriends(context.Context, *GetFriendsRequest) (*GetFriendsReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetFriends not implemented")
 }
 func (UnimplementedUserServiceServer) UpdateUser(context.Context, *UpdateUserRequest) (*UpdateUserReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateUser not implemented")
@@ -273,7 +259,7 @@ func _UserService_FollowAction_Handler(srv interface{}, ctx context.Context, dec
 }
 
 func _UserService_GetFollowers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetFollowersRequest)
+	in := new(FollowQueryReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -285,13 +271,13 @@ func _UserService_GetFollowers_Handler(srv interface{}, ctx context.Context, dec
 		FullMethod: "/sixwaaaay.user.UserService/GetFollowers",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).GetFollowers(ctx, req.(*GetFollowersRequest))
+		return srv.(UserServiceServer).GetFollowers(ctx, req.(*FollowQueryReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _UserService_GetFollowings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetFollowingsRequest)
+	in := new(FollowQueryReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -303,25 +289,7 @@ func _UserService_GetFollowings_Handler(srv interface{}, ctx context.Context, de
 		FullMethod: "/sixwaaaay.user.UserService/GetFollowings",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).GetFollowings(ctx, req.(*GetFollowingsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _UserService_GetFriends_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetFriendsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UserServiceServer).GetFriends(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/sixwaaaay.user.UserService/GetFriends",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).GetFriends(ctx, req.(*GetFriendsRequest))
+		return srv.(UserServiceServer).GetFollowings(ctx, req.(*FollowQueryReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -378,10 +346,6 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetFollowings",
 			Handler:    _UserService_GetFollowings_Handler,
-		},
-		{
-			MethodName: "GetFriends",
-			Handler:    _UserService_GetFriends_Handler,
 		},
 		{
 			MethodName: "UpdateUser",

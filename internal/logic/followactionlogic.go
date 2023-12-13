@@ -16,6 +16,7 @@ package logic
 import (
 	"context"
 
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -28,32 +29,53 @@ import (
 type FollowActionLogic struct {
 	conf   *config.Config
 	follow *data.FollowCommand
+	logger *zap.Logger
 }
 
-func NewFollowActionLogic(conf *config.Config, follow *data.FollowCommand) *FollowActionLogic {
-	return &FollowActionLogic{conf: conf, follow: follow}
+func NewFollowActionLogic(conf *config.Config, follow *data.FollowCommand, logger *zap.Logger) *FollowActionLogic {
+	return &FollowActionLogic{conf: conf, follow: follow, logger: logger}
 }
 
+// FollowAction is a method of the FollowActionLogic struct.
+// It takes a context and a FollowActionRequest as parameters and returns a FollowActionReply and an error.
+//
+// The FollowActionRequest contains the UserID, SubjectID, and Action.
+// UserID and SubjectID should not be 0 and should not be the same.
+// Action should be either 1 or 2.
+//
+// If the Action is 1, a new Follow relationship is created where the UserID is the follower and the SubjectID is the target.
+// The new Follow relationship is then inserted into the database.
+// If there is an error during the insertion, it is returned.
+//
+// If the Action is 2, the Follow relationship where the UserID is the follower and the SubjectID is the target is deleted from the database.
+// If there is an error during the deletion, it is returned.
+//
+// If the Action is neither 1 nor 2, an error with the message "invalid action" is returned.
 func (l *FollowActionLogic) FollowAction(ctx context.Context, in *user.FollowActionRequest) (*user.FollowActionReply, error) {
 	if in.UserId == 0 || in.SubjectId == 0 || in.UserId == in.SubjectId {
-		return nil, status.Error(codes.InvalidArgument, "invalid user id")
+		return nil, status.Errorf(codes.InvalidArgument, "invalid arguments")
 	}
+
 	if in.Action == 1 {
-		rel := &data.Follow{
-			UserID: in.SubjectId,
-			Target: in.UserId,
-		}
-		err := l.follow.Insert(ctx, rel)
+		err := l.follow.Insert(ctx, &data.Follow{UserID: in.SubjectId, Target: in.UserId})
+
 		if err != nil {
-			return nil, err
+			l.logger.Error("insert follow failed", zap.Error(err))
+			return nil, status.Errorf(codes.Internal, "failed to follow user %v", in.UserId)
 		}
+
 		return &user.FollowActionReply{}, nil
+
 	} else if in.Action == 2 {
 		err := l.follow.Delete(ctx, in.SubjectId, in.UserId)
+
 		if err != nil {
-			return nil, err
+			l.logger.Error("delete follow failed", zap.Error(err))
+			return nil, status.Errorf(codes.Internal, "failed to unfollow user %v", in.UserId)
 		}
+
 		return &user.FollowActionReply{}, nil
 	}
+
 	return nil, status.Error(codes.InvalidArgument, "invalid action")
 }

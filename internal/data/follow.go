@@ -35,6 +35,9 @@ func NewFollowQuery(db *gorm.DB) *FollowQuery {
 // return the followTo ids that the user follow
 func (c *FollowQuery) FindFollowExits(ctx context.Context, userid int64, followTo []int64) ([]int64, error) {
 	var result []int64
+	if userid == 0 || len(followTo) == 0 {
+		return result, nil
+	}
 	session := c.db.WithContext(ctx)
 	session.Table("follows").
 		Where("target IN ?", followTo).
@@ -48,13 +51,8 @@ func (c *FollowQuery) FindFollowExits(ctx context.Context, userid int64, followT
 func (c *FollowQuery) FindFollowing(ctx context.Context, userid int64, token int64, limit int) ([]int64, error) {
 	var result []int64
 	session := c.db.WithContext(ctx)
-	session.Table("follows").
-		Where("user_id = ?", userid).
-		Where("id > ?", token).
-		Order("id desc").
-		Limit(limit).
-		Pluck("target", &result)
-	err := session.Error
+	tx := session.Raw("SELECT target FROM follows WHERE user_id = ? AND id < ? ORDER BY id desc LIMIT ?", userid, token, limit).Scan(&result)
+	err := tx.Error
 	return result, err
 }
 
@@ -62,13 +60,8 @@ func (c *FollowQuery) FindFollowing(ctx context.Context, userid int64, token int
 func (c *FollowQuery) FindFollowers(ctx context.Context, userid int64, token int64, limit int) ([]int64, error) {
 	var result []int64
 	session := c.db.WithContext(ctx)
-	session.Table("follows").
-		Where("target = ?", userid).
-		Where("id > ?", token).
-		Order("id desc").
-		Limit(limit).
-		Pluck("user_id", &result)
-	err := session.Error
+	tx := session.Raw("SELECT user_id FROM follows WHERE target = ? AND id > ? ORDER BY id asc LIMIT ?", userid, token, limit).Scan(&result)
+	err := tx.Error
 	return result, err
 }
 
@@ -76,7 +69,7 @@ func (c *FollowQuery) FindFollowers(ctx context.Context, userid int64, token int
 func (c *FollowQuery) FindFriends(ctx context.Context, userid int64, token int64, limit int) ([]int64, error) {
 	var result []int64
 	session := c.db.WithContext(ctx)
-	tx := session.Raw("SELECT target FROM follows WHERE user_id = ? AND target IN (SELECT user_id FROM follows WHERE target = ?) AND id > ? ORDER BY id asc LIMIT ?", userid, userid, token, limit).Scan(&result)
+	tx := session.Raw("SELECT target FROM follows WHERE user_id = ? AND target IN (SELECT user_id FROM follows WHERE target = ?) AND id > ? ORDER BY id LIMIT ?", userid, userid, token, limit).Scan(&result)
 	err := tx.Error
 	return result, err
 }

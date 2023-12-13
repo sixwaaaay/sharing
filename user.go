@@ -22,6 +22,7 @@ import (
 	"syscall"
 
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
 	"github.com/sixwaaaay/shauser/internal/config"
@@ -53,10 +54,13 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	server := NewServer(&newConfig, db)
+	logger, err := zap.NewProduction()
+	if err != nil {
+		panic(err)
+	}
+	server := NewServer(&newConfig, db, logger)
 	grpcServer := grpc.NewServer(
-		grpc.UnaryInterceptor(otelgrpc.UnaryServerInterceptor()),
-		grpc.StreamInterceptor(otelgrpc.StreamServerInterceptor()),
+		grpc.StatsHandler(otelgrpc.NewServerHandler()),
 	)
 	user.RegisterUserServiceServer(grpcServer, server)
 	ln, err := net.Listen("tcp", newConfig.ListenOn)

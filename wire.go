@@ -16,6 +16,7 @@ package main
 
 import (
 	"github.com/google/wire"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 
 	"github.com/sixwaaaay/shauser/internal/config"
@@ -24,23 +25,18 @@ import (
 	"github.com/sixwaaaay/shauser/internal/server"
 )
 
-func NewServer(config *config.Config, db *gorm.DB) *server.UserServiceServer {
+func NewServer(config *config.Config, db *gorm.DB, logger *zap.Logger) *server.UserServiceServer {
 	wire.Build(
 		server.NewUserServiceServer,
-		wire.Struct(new(server.ServerOption), "*"),
 		logic.NewFollowActionLogic,
-		logic.NewGetUserLogic,
-		logic.NewGetUsersLogic,
-		logic.NewGetFollowersLogic,
-		logic.NewGetFollowingsLogic,
-		logic.NewGetFriendsLogic,
-		logic.NewRegisterLogic,
-		logic.NewLoginLogic,
+		logic.NewUsersLogic,
+		logic.NewFollowQueryLogic,
+		logic.NewSignLogic,
 		logic.NewUpdateUserLogic,
 		data.NewUserQuery,
+		data.NewUserCommand,
 		data.NewFollowQuery,
 		data.NewFollowCommand,
-		data.NewUserCommand,
 	)
 	return &server.UserServiceServer{}
 }

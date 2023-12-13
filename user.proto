@@ -73,41 +73,20 @@ message FollowActionRequest {
   int32 action = 3;
 }
 
-
-
 message FollowActionReply {
 }
 
-message GetFollowersRequest {
+message FollowQueryReq {
   int64 user_id = 1;
   int64 subject_id = 2;
   int64 token = 3;
   int32 limit = 4;
 }
 
-message GetFollowersReply {
+message UsersPage {
   repeated User users = 1;
-}
-
-message GetFollowingsRequest {
-  int64 user_id = 1;
-  int64 subject_id = 2;
-  int32 limit = 3;
-  int64 token = 4;
-}
-
-message GetFollowingsReply {
-  repeated User users = 1;
-}
-
-message GetFriendsRequest {
-  int64 subject_id = 1;
-  int32 limit = 2;
-  int64 token = 3;
-}
-
-message GetFriendsReply {
-  repeated User users = 1;
+  int64 next_token = 2;
+  int32 all_count = 3;
 }
 
 message UpdateUserRequest {
@@ -128,8 +107,7 @@ service UserService {
   rpc Login(LoginRequest) returns (LoginReply);
   rpc Register(RegisterRequest) returns (RegisterReply);
   rpc FollowAction(FollowActionRequest) returns (FollowActionReply);
-  rpc GetFollowers(GetFollowersRequest) returns (GetFollowersReply);
-  rpc GetFollowings(GetFollowingsRequest) returns (GetFollowingsReply);
-  rpc GetFriends(GetFriendsRequest) returns (GetFriendsReply);
+  rpc GetFollowers(FollowQueryReq) returns (UsersPage);
+  rpc GetFollowings(FollowQueryReq) returns (UsersPage);
   rpc UpdateUser(UpdateUserRequest) returns (UpdateUserReply);
 }
