@@ -55,6 +55,5 @@ func (c *UserCommand) FindAccount(ctx context.Context, u *Account) error {
 
 func (c *UserCommand) UpdateUser(ctx context.Context, user *User) error {
 	session := c.db.WithContext(ctx)
-	err := session.Table("users").Where("id = ?", user.ID).Updates(user).Error
-	return err
+	return session.Table("users").Where("id = ?", user.ID).Updates(user).Error
 }

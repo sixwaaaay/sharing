@@ -11,36 +11,22 @@ import (
 	"github.com/sixwaaaay/shauser/internal/data"
 	"github.com/sixwaaaay/shauser/internal/logic"
 	"github.com/sixwaaaay/shauser/internal/server"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
 // Injectors from wire.go:
 
-func NewServer(config2 *config.Config, db *gorm.DB) *server.UserServiceServer {
+func NewServer(config2 *config.Config, db *gorm.DB, logger *zap.Logger) *server.UserServiceServer {
 	userQuery := data.NewUserQuery(db)
 	followQuery := data.NewFollowQuery(db)
-	getUserLogic := logic.NewGetUserLogic(config2, userQuery, followQuery)
-	getUsersLogic := logic.NewGetUsersLogic(config2, userQuery, followQuery)
+	usersLogic := logic.NewUsersLogic(config2, userQuery, followQuery, logger)
 	userCommand := data.NewUserCommand(db)
-	loginLogic := logic.NewLoginLogic(config2, userCommand)
-	registerLogic := logic.NewRegisterLogic(config2, userCommand)
+	signLogic := logic.NewSignLogic(config2, userCommand)
 	followCommand := data.NewFollowCommand(db)
-	followActionLogic := logic.NewFollowActionLogic(config2, followCommand)
-	getFollowersLogic := logic.NewGetFollowersLogic(config2, followQuery, getUsersLogic)
-	getFollowingsLogic := logic.NewGetFollowingsLogic(config2, followQuery, getUsersLogic)
-	getFriendsLogic := logic.NewGetFriendsLogic(config2, userQuery, followQuery)
+	followActionLogic := logic.NewFollowActionLogic(config2, followCommand, logger)
+	followQueryLogic := logic.NewFollowQueryLogic(config2, followQuery, userQuery, usersLogic, logger)
 	updateUserLogic := logic.NewUpdateUserLogic(config2, userCommand)
-	serverOption := server.ServerOption{
-		GetUserLogic:       getUserLogic,
-		GetUsersLogic:      getUsersLogic,
-		LoginLogic:         loginLogic,
-		RegisterLogic:      registerLogic,
-		FollowActionLogic:  followActionLogic,
-		GetFollowersLogic:  getFollowersLogic,
-		GetFollowingsLogic: getFollowingsLogic,
-		GetFriendsLogic:    getFriendsLogic,
-		UpdateUserLogic:    updateUserLogic,
-	}
-	userServiceServer := server.NewUserServiceServer(serverOption)
+	userServiceServer := server.NewUserServiceServer(usersLogic, signLogic, followActionLogic, followQueryLogic, updateUserLogic)
 	return userServiceServer
 }

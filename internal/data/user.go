@@ -54,3 +54,17 @@ func (c *UserQuery) FindMany(ctx context.Context, ids []int64) ([]*User, error) 
 	}
 	return users, nil
 }
+
+// FindFollowing find following count by user id
+func (c *UserQuery) FindFollowing(ctx context.Context, id int64) (int32, error) {
+	var count int32
+	err := c.db.WithContext(ctx).Raw("SELECT following FROM users WHERE id = ?", id).Scan(&count).Error
+	return count, err
+}
+
+// FindFollowers find followers count by user id
+func (c *UserQuery) FindFollowers(ctx context.Context, id int64) (int32, error) {
+	var count int32
+	err := c.db.WithContext(ctx).Raw("SELECT followers FROM users WHERE id = ?", id).Scan(&count).Error
+	return count, err
+}

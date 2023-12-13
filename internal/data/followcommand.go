@@ -43,7 +43,7 @@ func NewFollowCommand(db *gorm.DB) *FollowCommand {
 // Insert is a method of FollowCommand that inserts a new follow relationship into the database.
 // It takes a context and a pointer to a Follow object as arguments.
 // It returns an error if the insertion fails.
-func (c *FollowCommand) Insert(ctx context.Context, f *Follow) error {
+func (c *FollowCommand) Insert(ctx context.Context, f *Follow) (err error) {
 	// Generate a new unique ID.
 	id, err := c.uniqueID.NextID()
 	if err != nil {
@@ -55,7 +55,7 @@ func (c *FollowCommand) Insert(ctx context.Context, f *Follow) error {
 	// Start a new database transaction.
 	return c.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		// Insert the Follow object into the database.
-		if tx.Create(f).Error != nil {
+		if err := tx.Create(f).Error; err != nil {
 			return err
 		}
 		// Increment the follow count of the user who is following.
