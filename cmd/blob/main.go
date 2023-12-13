@@ -16,6 +16,7 @@ import (
 	"github.com/labstack/gommon/log"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
+	"github.com/sixwaaaay/must"
 	"github.com/sixwaaaay/sharing/pkg/configs"
 )
 
@@ -37,14 +38,9 @@ type Reply struct {
 var configFile = flag.String("f", "configs/config.yaml", "the config file")
 
 func main() {
-	config, err := configs.NewConfig[Conf](*configFile)
-	if err != nil {
-		panic(err)
-	}
-	client, err := NewMinioClient(config.Minio)
-	if err != nil {
-		panic(err)
-	}
+	config := must.Must(configs.NewConfig[Conf](*configFile))
+
+	client := must.Must(NewMinioClient(config.Minio))
 	e := newServer()
 
 	e.POST("/assets/new", func(c echo.Context) error {
@@ -75,7 +71,9 @@ func main() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
 	<-quit
-	err = svr.Shutdown(context.Background())
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	must.RunE(svr.Shutdown(ctx))
 }
 
 func GeneratePresignedURL(ctx context.Context, client *minio.Client, req Request) (string, error) {

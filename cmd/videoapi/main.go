@@ -27,6 +27,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
+	"github.com/sixwaaaay/must"
 	"github.com/sixwaaaay/sharing/pkg/configs"
 	"github.com/sixwaaaay/sharing/pkg/encoder"
 	"github.com/sixwaaaay/sharing/pkg/pb"
@@ -38,13 +39,15 @@ import (
 var configFile = flag.String("f", "configs/config.yaml", "the config file")
 
 func main() {
-	config, err := configs.NewConfig[Config](*configFile)
-	handleErr(err)
+
+	config := must.Must(configs.NewConfig[Config](*configFile))
+
 	e := newServer()
-	cli, err := rpc.NewVideoClient(config.VideoService)
-	handleErr(err)
-	dapr, err := client.NewClientWithAddressContext(context.Background(), config.Dapr.Address)
-	handleErr(err)
+
+	cli := must.Must(rpc.NewVideoClient(config.VideoService))
+
+	dapr := must.Must(client.NewClientWithAddressContext(context.Background(), config.Dapr.Address))
+
 	NewHandler(cli, dapr, config.Secret, config.Dapr).Update(e)
 
 	// Start server
@@ -64,7 +67,6 @@ func main() {
 	if err := e.Shutdown(ctx); err != nil {
 		e.Logger.Fatal(err)
 	}
-
 }
 
 type Config struct {
@@ -73,12 +75,6 @@ type Config struct {
 	Jwt          sign.JWT
 	Secret       string
 	Dapr         DaprConfig
-}
-
-func handleErr(err error) {
-	if err != nil {
-		panic(err)
-	}
 }
 
 func newServer() *echo.Echo {

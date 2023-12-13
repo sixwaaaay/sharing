@@ -25,6 +25,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
+	"github.com/sixwaaaay/must"
 	"github.com/sixwaaaay/sharing/pkg/configs"
 	"github.com/sixwaaaay/sharing/pkg/rpc"
 	"github.com/sixwaaaay/sharing/pkg/sign"
@@ -43,11 +44,11 @@ type Config struct {
 var configFile = flag.String("f", "configs/config.yaml", "the config file")
 
 func main() {
-	config, err := configs.NewConfig[Config](*configFile)
-	handleErr(err)
+	config := must.Must(configs.NewConfig[Config](*configFile))
+
 	e := newServer()
-	client, err := rpc.NewUserClient(config.UserService)
-	handleErr(err)
+
+	client := must.Must(rpc.NewUserClient(config.UserService))
 
 	// add user api
 	userApi := api.NewUserApi(client, config.Secret)
@@ -64,8 +65,6 @@ func main() {
 		}
 	}()
 
-	// Wait for interrupt signal to gracefully shutdown the server with a timeout of 10 seconds.
-	// Use a buffered channel to avoid missing signals as recommended for signal.Notify
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
 	<-quit
@@ -73,12 +72,6 @@ func main() {
 	defer cancel()
 	if err := e.Shutdown(ctx); err != nil {
 		e.Logger.Fatal(err)
-	}
-}
-
-func handleErr(err error) {
-	if err != nil {
-		panic(err)
 	}
 }
 
