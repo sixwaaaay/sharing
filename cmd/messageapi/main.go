@@ -25,6 +25,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/sixwaaaay/must"
 	"github.com/sixwaaaay/sharing/pkg/configs"
 	"github.com/sixwaaaay/sharing/pkg/encoder"
 	"github.com/sixwaaaay/sharing/pkg/pb"
@@ -43,11 +44,12 @@ type Config struct {
 var configFile = flag.String("f", "configs/config.yaml", "the config file")
 
 func main() {
-	config, err := configs.NewConfig[Config](*configFile)
-	handleErr(err)
+	config := must.Must(configs.NewConfig[Config](*configFile))
+
 	e := newServer()
-	client, err := rpc.NewMessageClient(config.CommentService)
-	handleErr(err)
+
+	client := must.Must(rpc.NewMessageClient(config.CommentService))
+
 	handler := NewHandler(client, config.Secret)
 	handler.Update(e)
 
@@ -69,12 +71,6 @@ func main() {
 		e.Logger.Fatal(err)
 	}
 
-}
-
-func handleErr(err error) {
-	if err != nil {
-		panic(err)
-	}
 }
 
 func newServer() *echo.Echo {

@@ -25,6 +25,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
+	"github.com/sixwaaaay/must"
 	"github.com/sixwaaaay/sharing/pkg/configs"
 	"github.com/sixwaaaay/sharing/pkg/rpc"
 	"github.com/sixwaaaay/sharing/pkg/sign"
@@ -42,15 +43,9 @@ type Config struct {
 var configFile = flag.String("f", "configs/config.yaml", "the config file")
 
 func main() {
-	config, err := configs.NewConfig[Config](*configFile)
-	if err != nil {
-		panic(err)
-	}
+	config := must.Must(configs.NewConfig[Config](*configFile))
 	e := newServer()
-	client, err := rpc.NewUserClient(config.UserService)
-	if err != nil {
-		panic(err)
-	}
+	client := must.Must(rpc.NewUserClient(config.UserService))
 	handler := NewAccountHandler(client, config.Jwt)
 	handler.Update(e)
 	oauth := NewOauth2(&config.Oauth, client, config.Jwt)
@@ -70,9 +65,7 @@ func main() {
 	<-quit
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	if err := e.Shutdown(ctx); err != nil {
-		e.Logger.Fatal(err)
-	}
+	must.RunE(e.Shutdown(ctx))
 }
 
 func newServer() *echo.Echo {
