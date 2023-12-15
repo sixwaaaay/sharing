@@ -21,6 +21,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/sixwaaaay/must"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -34,48 +35,31 @@ var configFile = flag.String("f", "configs/config.yaml", "the config file")
 
 func main() {
 	flag.Parse()
-	newConfig, err := config.NewConfig(*configFile)
-	if err != nil {
-		panic(err)
-	}
+	ctx := context.Background()
+	newConfig := must.Must(config.NewConfig(*configFile))
+	tp := must.Must(TracerProvider(&newConfig))
+	defer must.RunE(tp.Shutdown(ctx))
 
-	tp, err := TracerProvider(&newConfig)
-	if err != nil {
-		panic(err)
-	}
-	defer tp.Shutdown(context.Background())
-	mp, err := MeterProvider(&newConfig)
-	if err != nil {
-		panic(err)
-	}
-	defer mp.Shutdown(context.Background())
+	mp := must.Must(MeterProvider(&newConfig))
+	defer must.RunE(mp.Shutdown(ctx))
 
-	db, err := data.NewData(&newConfig)
-	if err != nil {
-		panic(err)
-	}
-	logger, err := zap.NewProduction()
-	if err != nil {
-		panic(err)
-	}
+	db := must.Must(data.NewData(&newConfig))
+
+	logger := must.Must(zap.NewDevelopment())
+	defer must.RunE(logger.Sync())
+
 	server := NewServer(&newConfig, db, logger)
-	grpcServer := grpc.NewServer(
-		grpc.StatsHandler(otelgrpc.NewServerHandler()),
-	)
+
+	grpcServer := grpc.NewServer(grpc.StatsHandler(otelgrpc.NewServerHandler()))
 	user.RegisterUserServiceServer(grpcServer, server)
-	ln, err := net.Listen("tcp", newConfig.ListenOn)
-	if err != nil {
-		panic(err)
-	}
+
+	ln := must.Must(net.Listen("tcp", newConfig.ListenOn))
 
 	// graceful shutdown
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
-	go func() {
-		<-ch
-		grpcServer.GracefulStop()
-	}()
-	if err := grpcServer.Serve(ln); err != nil {
-		panic(err)
-	}
+	go must.RunE(grpcServer.Serve(ln))
+
+	<-ch
+	grpcServer.GracefulStop()
 }
