@@ -5,6 +5,9 @@ on:
       - master
     tags:
       - '*'
+  pull_request:
+    paths:
+      - 'cmd/shauser/**'
 jobs:
   image-release:
     name: Release Image
@@ -20,7 +23,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: .
-          file: ./Dockerfile
+          context: ./cmd/shauser
+          file: ./cmd/shauser/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME || 'shauser' }}/shauser:${{ github.ref_name }}
+          tags: ${{ secrets.DOCKERHUB_USERNAME || 'shauser' }}/shauser:latest

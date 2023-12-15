@@ -22,6 +22,7 @@ import (
 	"syscall"
 
 	"github.com/sixwaaaay/must"
+	"github.com/sixwaaaay/token/rpc"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -50,7 +51,9 @@ func main() {
 
 	server := NewServer(&newConfig, db, logger)
 
-	grpcServer := grpc.NewServer(grpc.StatsHandler(otelgrpc.NewServerHandler()))
+	grpcServer := grpc.NewServer(
+		grpc.StatsHandler(otelgrpc.NewServerHandler()),
+		grpc.UnaryInterceptor(rpc.Handler([]byte(newConfig.Secret))))
 	user.RegisterUserServiceServer(grpcServer, server)
 
 	ln := must.Must(net.Listen("tcp", newConfig.ListenOn))

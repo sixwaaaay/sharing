@@ -21,6 +21,7 @@ type Config struct {
 	ListenOn     string // ListenOn is the address to listen on
 	DefaultLimit int32  // DefaultLimit is the default limit of the query
 	MaxLimit     int32  // MaxLimit is the max limit of the query
+	Secret       string // Secret is the secret used to sign the JWT
 	MySQL        struct {
 		DSN      string   // MySQLDSN is the DSN of the MySQL database
 		Replicas []string // MySQLDSN is the replicas database dsn of the MySQL database

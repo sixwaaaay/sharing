@@ -16,32 +16,32 @@ package logic
 import (
 	"context"
 
+	"github.com/sixwaaaay/token"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/sixwaaaay/shauser/internal/config"
 	"github.com/sixwaaaay/shauser/internal/data"
 	"github.com/sixwaaaay/shauser/user"
 )
 
 type UpdateUserLogic struct {
-	conf        *config.Config
 	userCommand *data.UserCommand
 }
 
-func NewUpdateUserLogic(conf *config.Config, userCommand *data.UserCommand) *UpdateUserLogic {
-	return &UpdateUserLogic{conf: conf, userCommand: userCommand}
+func NewUpdateUserLogic(userCommand *data.UserCommand) *UpdateUserLogic {
+	return &UpdateUserLogic{userCommand: userCommand}
 }
 
 func (l *UpdateUserLogic) UpdateUser(ctx context.Context, in *user.UpdateUserRequest) (*user.UpdateUserReply, error) {
-	if in.UserId == 0 {
-		return nil, status.Error(codes.InvalidArgument, "user id is empty")
+	userID, ok := token.ClaimStrI64(ctx, "user_id")
+	if !ok {
+		return nil, status.Errorf(codes.Unauthenticated, "invalid token")
 	}
 	if in.Name == "" {
 		return nil, status.Error(codes.InvalidArgument, "user name is empty")
 	}
 	var u data.User
-	u.ID = in.UserId
+	u.ID = userID
 	u.Username = in.Name
 	u.Bio = in.Bio
 	u.AvatarURL = in.AvatarUrl

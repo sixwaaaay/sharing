@@ -4,3 +4,4 @@ MySQL:
   Replicas: [ ] # support multiple mysql replicas dsn
 DefaultLimit: 20
 MaxLimit: 100
+Secret: "this is a secret"

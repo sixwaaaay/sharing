@@ -16,24 +16,22 @@ package logic
 import (
 	"context"
 
+	"github.com/sixwaaaay/token"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	"github.com/sixwaaaay/shauser/internal/data"
-
-	"github.com/sixwaaaay/shauser/internal/config"
 	"github.com/sixwaaaay/shauser/user"
 )
 
 type FollowActionLogic struct {
-	conf   *config.Config
 	follow *data.FollowCommand
 	logger *zap.Logger
 }
 
-func NewFollowActionLogic(conf *config.Config, follow *data.FollowCommand, logger *zap.Logger) *FollowActionLogic {
-	return &FollowActionLogic{conf: conf, follow: follow, logger: logger}
+func NewFollowActionLogic(follow *data.FollowCommand, logger *zap.Logger) *FollowActionLogic {
+	return &FollowActionLogic{follow: follow, logger: logger}
 }
 
 // FollowAction is a method of the FollowActionLogic struct.
@@ -52,12 +50,17 @@ func NewFollowActionLogic(conf *config.Config, follow *data.FollowCommand, logge
 //
 // If the Action is neither 1 nor 2, an error with the message "invalid action" is returned.
 func (l *FollowActionLogic) FollowAction(ctx context.Context, in *user.FollowActionRequest) (*user.FollowActionReply, error) {
-	if in.UserId == 0 || in.SubjectId == 0 || in.UserId == in.SubjectId {
+	userID, ok := token.ClaimStrI64(ctx, token.ClaimID)
+	if !ok {
+		return nil, status.Errorf(codes.Unauthenticated, "invalid token")
+	}
+
+	if in.UserId == 0 || in.UserId == userID {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid arguments")
 	}
 
 	if in.Action == 1 {
-		err := l.follow.Insert(ctx, &data.Follow{UserID: in.SubjectId, Target: in.UserId})
+		err := l.follow.Insert(ctx, &data.Follow{UserID: userID, Target: in.UserId})
 
 		if err != nil {
 			l.logger.Error("insert follow failed", zap.Error(err))
@@ -67,7 +70,7 @@ func (l *FollowActionLogic) FollowAction(ctx context.Context, in *user.FollowAct
 		return &user.FollowActionReply{}, nil
 
 	} else if in.Action == 2 {
-		err := l.follow.Delete(ctx, in.SubjectId, in.UserId)
+		err := l.follow.Delete(ctx, userID, in.UserId)
 
 		if err != nil {
 			l.logger.Error("delete follow failed", zap.Error(err))

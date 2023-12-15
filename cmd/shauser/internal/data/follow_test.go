@@ -34,19 +34,19 @@ func TestRelationFind(t *testing.T) {
 		assertions.NoError(err)
 		assertions.ElementsMatch([]int64{1}, like)
 	})
-	const FindFollowing = "SELECT `target` FROM `follows` WHERE user_id = ? AND id > ? ORDER BY id desc LIMIT 1"
+	const FindFollowing = "SELECT target FROM follows WHERE user_id = ? AND id < ? ORDER BY id desc LIMIT ?"
 	t.Run("FindFollowing success", func(t *testing.T) {
 		mock.ExpectQuery(FindFollowing).
-			WithArgs(int64(1), int64(3)).
+			WithArgs(int64(1), int64(3), int64(1)).
 			WillReturnRows(mock.NewRows([]string{"follow_to"}).AddRow(1).AddRow(2).AddRow(3))
 		like, err := model.FindFollowing(context.TODO(), 1, 3, 1)
 		assertions.NoError(err)
 		assertions.ElementsMatch([]int64{1, 2, 3}, like)
 	})
-	const FindFollowerFrom = "SELECT `user_id` FROM `follows` WHERE target = ? AND id > ? ORDER BY id desc LIMIT 1"
+	const FindFollowerFrom = "SELECT user_id FROM follows WHERE target = ? AND id < ? ORDER BY id desc LIMIT ?"
 	t.Run("FindFollowers success", func(t *testing.T) {
 		mock.ExpectQuery(FindFollowerFrom).
-			WithArgs(int64(5), int64(1)).
+			WithArgs(int64(5), int64(1), int64(1)).
 			WillReturnRows(mock.NewRows([]string{"user_id"}).AddRow(1))
 		like, err := model.FindFollowers(context.TODO(), 5, 1, 1)
 		assertions.NoError(err)

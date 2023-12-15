@@ -15,40 +15,6 @@ package data
 
 import "time"
 
-// UserDetail represents the detailed information of a user in the system.
-type UserDetail struct {
-	// ID is the unique identifier of the user.
-	ID int64 `gorm:"column:id;"`
-	// Username is the unique username of the user.
-	Username string `gorm:"column:username;"`
-	// Email is the email address of the user.
-	Email string `gorm:"column:email;"`
-	// Phone is the phone number of the user.
-	Phone string `gorm:"column:phone;"`
-	// AvatarURL is the URL of the user's avatar.
-	AvatarURL string `gorm:"column:avatar_url;"`
-	// BgURL is the URL of the user's background image.
-	BgURL string `gorm:"column:bg_url;"`
-	// Bio is a short biography written by the user.
-	Bio string `gorm:"column:bio;"`
-	// LikesGiven is the total number of likes given by the user to other users' posts.
-	LikesGiven int `gorm:"column:likes_given;"`
-	// LikesReceived is the total number of likes received by the user from other users' posts.
-	LikesReceived int `gorm:"column:likes_received;"`
-	// VideosPosted is the total number of videos posted by the user.
-	VideosPosted int `gorm:"column:videos_posted;"`
-	// Gender is the gender of the user. It's an integer where specific values represent specific genders.
-	Gender int `gorm:"column:gender"`
-	// DateOfBirth is the date of birth of the user.
-	DateOfBirth *string `gorm:"column:date_of_birth"`
-	// Nationality is the nationality of the user.
-	Nationality string `gorm:"column:nationality"`
-	// Following is the number of users that this user is following.
-	Following int `gorm:"column:following"`
-	// Followers is the number of users that are following this user.
-	Followers int `gorm:"column:followers"`
-}
-
 type User struct {
 	// ID is the unique identifier of the user.
 	ID int64 `gorm:"column:id;"`
@@ -70,8 +36,6 @@ type User struct {
 	LikesReceived int32 `gorm:"column:likes_received;"`
 	// VideosPosted is the total number of videos posted by the user.
 	VideosPosted int32 `gorm:"column:videos_posted;"`
-	// Nationality is the nationality of the user.
-	Nationality string `gorm:"column:nationality"`
 	// Following is the number of users that this user is following.
 	Following int32 `gorm:"column:following"`
 	// Followers is the number of users that are following this user.
