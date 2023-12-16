@@ -1,9 +1,7 @@
 ListenOn: :8080
-UserService:
-  Address: shauser:8080
-JWT:
-  SECRET: $JWT_SECRET
-  TTL: 1296000 # 15day 15 * 24 * 60 * 60
+UserServiceAddress: shauser:8080
+SECRET: $JWT_SECRET
+TTL: 360h # 15day 15 * 24 * 60 * 60
 Oauth:
   clientid: $OAUTH_CLIENT_ID
   clientsecret: $OAUTH_CLIENT_SECRET
