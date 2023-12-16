@@ -1,0 +1,8 @@
+ListenOn: :8080
+VideoService:
+  Address: shavideo:8080
+SECRET: $JWT_SECRET
+Dapr:
+  Address: localhost:50001
+  PubSubName: pubsub
+  TopicName: video

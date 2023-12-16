@@ -1,0 +1,900 @@
+openapi: 3.0.3
+info:
+  title: sharing
+  description: Sharing has a really interesting name
+  version: 1.0.0
+servers:
+  - url: "http://sharing/api/v1"
+    description: server
+paths:
+  /sign/in:
+    post:
+      summary: Authenticate user and login
+      operationId: login
+      requestBody:
+        description: User credentials
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: User object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginReply"
+  /sign/up:
+    post:
+      summary: Register a new user
+      operationId: register
+      requestBody:
+        description: User information for registration
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "200":
+          description: User object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegisterReply"
+  /users/{user_id}:
+    get:
+      summary: Get user by ID
+      operationId: getUser
+      parameters:
+        - name: user_id
+          in: path
+          description: ID of the user to retrieve
+          required: true
+          schema:
+            type: string
+            format: int64
+        - name: Authorization
+          in: header
+          description: Bearer token for authentication
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+  /assets/new:
+    post:
+      summary: generate new asset pre-signed url to upload
+      operationId: newAsset
+      requestBody:
+        description: asset information
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewAssetRequest"
+      responses:
+        "200":
+          description: asset object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NewAssetReply"
+
+  /follow:
+    post:
+      summary: Follow or unfollow a user
+      operationId: followAction
+      parameters:
+        - name: Authorization
+          in: header
+          description: Bearer token for authentication
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: User ID and action to perform
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FollowActionRequest"
+      responses:
+        "200":
+          description: Success response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FollowActionReply"
+  /follow/followers:
+    post:
+      summary: Get followers of a user
+      operationId: getFollowers
+      parameters:
+        - name: Authorization
+          in: header
+          description: Bearer token for authentication
+          required: false
+          schema:
+            type: string
+      requestBody:
+        description: User ID and action to perform
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GetFollowersRequest"
+      responses:
+        "200":
+          description: User object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetFollowersReply"
+  /follow/following:
+    post:
+      summary: Get users followed by a user
+      operationId: getFollowing
+      parameters:
+        - name: Authorization
+          in: header
+          description: Bearer token for authentication
+          required: false
+          schema:
+            type: string
+      requestBody:
+        description: User ID and action to perform
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GetFollowingsRequest"
+      responses:
+        "200":
+          description: User object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetFollowingsReply"
+  /follow/friends:
+    post:
+      summary: Get friends of a user
+      operationId: getFriends
+      parameters:
+        - name: Authorization
+          in: header
+          description: Bearer token for authentication
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: User ID and action to perform
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GetFriendsRequest"
+      responses:
+        "200":
+          description: User object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetFriendsReply"
+  /users:
+    patch:
+      summary: Update user profile
+      operationId: updateProfile
+      parameters:
+        - name: Authorization
+          in: header
+          description: Bearer token for authentication
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserProfileReq"
+      responses:
+        "200":
+          description: User object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateProfileResponse"
+  /comments:
+    patch:
+      summary: Create a comment
+      operationId: createComment
+      parameters:
+        - name: Authorization
+          in: header
+          description: Bearer token for authentication
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Comment information
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommentActionReq"
+      responses:
+        "200":
+          description: Comment object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommentActionReply"
+    post:
+      summary: Get comments for a video
+      operationId: getComments
+      parameters:
+        - name: Authorization
+          in: header
+          description: Bearer token for authentication
+          required: false
+          schema:
+            type: string
+      requestBody:
+        description: Comment information
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommentListReq"
+      responses:
+        "200":
+          description: Comment object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommentListReply"
+  /videos/{video_id}:
+    get:
+      summary: Get video by ID
+      operationId: getVideo
+      parameters:
+        - name: video_id
+          in: path
+          description: ID of the video to retrieve
+          required: true
+          schema:
+            type: string
+            format: int64
+        - name: Authorization
+          in: header
+          description: Bearer token for authentication
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Video object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetVideoReply"
+  /videos/user:
+    post:
+      summary: Get videos by user ID
+      operationId: getUserVideos
+      parameters:
+        - name: Authorization
+          in: header
+          description: Bearer token for authentication
+          required: false
+          schema:
+            type: string
+      requestBody:
+        description: User ID and action to perform
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GetUserVideosRequest"
+      responses:
+        "200":
+          description: Video object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetUserVideosReply"
+  /videos/liked:
+    post:
+      summary: Get liked videos by user ID
+      operationId: getLikedVideos
+      parameters:
+        - name: Authorization
+          in: header
+          description: Bearer token for authentication
+          required: false
+          schema:
+            type: string
+      requestBody:
+        description: User ID and action to perform
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GetLikedVideosRequest"
+      responses:
+        "200":
+          description: Video object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetLikedVideosReply"
+    patch:
+      summary: Like a video
+      operationId: likeVideo
+      parameters:
+        - name: Authorization
+          in: header
+          description: Bearer token for authentication
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Video ID and action to perform
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LikeVideoRequest"
+      responses:
+        "200":
+          description: Video object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LikeVideoReply"
+  /videos/recent:
+    post:
+      summary: Get recent videos by user ID
+      operationId: getRecentVideos
+      parameters:
+        - name: Authorization
+          in: header
+          description: Bearer token for authentication
+          required: false
+          schema:
+            type: string
+      requestBody:
+        description: User ID and action to perform
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GetRecentVideosRequest"
+      responses:
+        "200":
+          description: Video object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetRecentVideosReply"
+  /videos:
+    post:
+      summary: Upload a video
+      operationId: uploadVideo
+      parameters:
+        - name: Authorization
+          in: header
+          description: Bearer token for authentication
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VideoReq"
+      responses:
+        "200":
+          description: Video object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadVideoResponse"
+
+  /messages:
+    patch:
+      summary: Send a message
+      operationId: sendMessage
+      parameters:
+        - name: Authorization
+          in: header
+          description: Bearer token for authentication
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Message information
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendMessageRequest"
+      responses:
+        "200":
+          description: Message object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SendMessageReply"
+    post:
+      summary: Get messages
+      operationId: getMessages
+      parameters:
+        - name: Authorization
+          in: header
+          description: Bearer token for authentication
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Message information
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GetMessagesRequest"
+      responses:
+        "200":
+          description: Message object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetMessagesReply"
+components:
+  schemas:
+    RegisterRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+        name:
+          type: string
+      required:
+        - email
+        - password
+        - name
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required:
+        - email
+        - password
+    CommentActionReq:
+      type: object
+      properties:
+        video_id:
+          type: string
+          format: int64
+          minimum: 0
+        action:
+          type: integer
+          format: int32
+          minimum: 0
+        comment_text:
+          type: string
+        comment_id:
+          type: string
+          format: int64
+          minimum: 0
+      required:
+        - video_id
+        - action
+    CommentActionReply:
+      type: object
+      properties:
+        comment:
+          $ref: "#/components/schemas/Comment"
+    Comment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: int64
+        content:
+          type: string
+        create_at:
+          type: string
+          format: int64
+        user:
+          $ref: "#/components/schemas/User"
+    CommentListReq:
+      type: object
+      properties:
+        video_id:
+          type: string
+          format: int64
+          minimum: 0
+        token:
+          type: string
+          format: int64
+          minimum: 0
+        limit:
+          type: integer
+          format: int32
+          minimum: 0
+      required:
+        - video_id
+    CommentListReply:
+      type: object
+      properties:
+        comment_list:
+          type: array
+          items:
+            $ref: "#/components/schemas/Comment"
+    SendMessageRequest:
+      type: object
+      properties:
+        to_user_id:
+          type: string
+          format: int64
+          minimum: 0
+        content:
+          type: string
+        action_type:
+          type: integer
+          format: int32
+      required:
+        - to_user_id
+        - content
+        - action_type
+    SendMessageReply:
+      type: object
+    GetMessagesRequest:
+      type: object
+      properties:
+        to_user_id:
+          type: string
+          format: int64
+          minimum: 0
+        token:
+          type: string
+          format: int64
+          minimum: 0
+    GetMessagesReply:
+      type: object
+      properties:
+        message_list:
+          type: array
+          items:
+            $ref: "#/components/schemas/Message"
+    Message:
+      type: object
+      properties:
+        id:
+          type: string
+          format: int64
+        to_user_id:
+          type: string
+          format: int64
+        from_user_id:
+          type: string
+          format: int64
+        content:
+          type: string
+        create_time:
+          type: string
+          format: int64
+      required:
+        - id
+        - to_user_id
+        - from_user_id
+        - content
+        - create_time
+    Video:
+      type: object
+      properties:
+        id:
+          type: string
+          format: int64
+        author:
+          $ref: "#/components/schemas/User"
+        title:
+          type: string
+        description:
+          type: string
+        cover_url:
+          type: string
+        video_url:
+          type: string
+        is_liked:
+          type: boolean
+        upload_time:
+          type: string
+          format: int64
+        duration:
+          type: integer
+          format: int32
+      required:
+        - id
+
+    GetVideoReply:
+      type: object
+      properties:
+        video:
+          $ref: "#/components/schemas/Video"
+    GetUserVideosRequest:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: int64
+          minimum: 0
+        limit:
+          type: integer
+          format: int32
+          minimum: 0
+        token:
+          type: string
+          format: int64
+          minimum: 0
+      required:
+        - user_id
+    GetLikedVideosRequest:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: int64
+          minimum: 0
+        limit:
+          type: integer
+          format: int32
+          minimum: 0
+        token:
+          type: string
+          format: int64
+          minimum: 0
+      required:
+        - user_id
+    GetLikedVideosReply:
+      type: object
+      properties:
+        videos:
+          type: array
+          items:
+            $ref: "#/components/schemas/Video"
+
+    GetRecentVideosRequest:
+      type: object
+      properties:
+        limit:
+          type: integer
+          format: int32
+          minimum: 0
+        token:
+          type: string
+          format: int64
+          minimum: 0
+    GetRecentVideosReply:
+      type: object
+      properties:
+        videos:
+          type: array
+          items:
+            $ref: "#/components/schemas/Video"
+    UploadVideoResponse:
+      type: object
+    GetUserVideosReply:
+      type: object
+      properties:
+        videos:
+          type: array
+          items:
+            $ref: "#/components/schemas/Video"
+    RegisterReply:
+      type: object
+      properties:
+        account:
+          $ref: "#/components/schemas/User"
+        token:
+          type: string
+    LoginReply:
+      type: object
+      properties:
+        account:
+          $ref: "#/components/schemas/User"
+        token:
+          type: string
+    GetFollowersRequest:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: int64
+          minimum: 0
+        limit:
+          type: integer
+          format: int32
+          minimum: 0
+        token:
+          type: string
+          format: int64
+          minimum: 0
+      required:
+        - user_id
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: int64
+        name:
+          type: string
+        is_follow:
+          type: boolean
+        avatar_url:
+          type: string
+        bg_url:
+          type: string
+        bio:
+          type: string
+        likes_given:
+          type: integer
+          format: int32
+        likes_received:
+          type: integer
+          format: int32
+        videos_posted:
+          type: integer
+          format: int32
+        following:
+          type: integer
+          format: int32
+        followers:
+          type: integer
+          format: int32
+      required:
+        - id
+        - name
+    FollowActionRequest:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: int64
+        action:
+          type: integer
+          format: int32
+      required:
+        - user_id
+        - action
+
+    FollowActionReply:
+      type: object
+
+    LikeVideoRequest:
+      type: object
+      properties:
+        video_id:
+          type: string
+          format: int64
+        action:
+          type: integer
+          format: int32
+      required:
+        - user_id
+        - video_id
+        - action
+    LikeVideoReply:
+      type: object
+
+    GetFollowersReply:
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+    GetFollowingsRequest:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: int64
+        limit:
+          type: integer
+        token:
+          type: string
+      required:
+        - user_id
+        - limit
+        - token
+    GetFollowingsReply:
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+    GetFriendsRequest:
+      type: object
+      properties:
+        limit:
+          type: integer
+        token:
+          type: string
+      required:
+        - user_id
+        - limit
+        - token
+    GetFriendsReply:
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+    UpdateProfileResponse:
+      type: object
+      properties:
+        profile:
+          $ref: "#/components/schemas/User"
+
+    NewAssetRequest:
+      type: object
+      properties:
+        kind:
+          type: string
+          oneOf:
+            - type: string
+              enum:
+                - video
+                - img
+                - avatar
+    NewAssetReply:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+
+    VideoReq:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        video_url:
+          type: string
+        cover_url:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+    UserProfileReq:
+      type: object
+      properties:
+        name:
+          type: string
+        bio:
+          type: string
+        avatar_url:
+          type: string
+        bg_url:
+          type: string

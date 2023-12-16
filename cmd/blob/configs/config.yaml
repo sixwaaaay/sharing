@@ -1,0 +1,6 @@
+ListenOn: :8080
+MINIO:
+  Endpoint: string
+  AccessKey: string
+  SecretKey: string
+  UseSSL: false
