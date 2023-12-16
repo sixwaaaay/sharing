@@ -17,7 +17,7 @@ import (
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/sixwaaaay/must"
-	"github.com/sixwaaaay/sharing/pkg/configs"
+	"github.com/spf13/viper"
 )
 
 type Request struct {
@@ -38,7 +38,12 @@ type Reply struct {
 var configFile = flag.String("f", "configs/config.yaml", "the config file")
 
 func main() {
-	config := must.Must(configs.NewConfig[Conf](*configFile))
+	viper.SetConfigFile(*configFile)
+	viper.SetConfigType("yaml")
+	viper.AutomaticEnv()
+	var config Conf
+	must.RunE(viper.ReadInConfig())
+	must.RunE(viper.Unmarshal(&config))
 
 	client := must.Must(NewMinioClient(config.Minio))
 	e := newServer()

@@ -21,20 +21,19 @@ import (
 	"net/http"
 	"time"
 
+	pb "codeberg.org/sixwaaaay/sharing-pb"
 	"github.com/labstack/echo/v4"
-	"github.com/sixwaaaay/sharing/pkg/pb"
-	"github.com/sixwaaaay/sharing/pkg/sign"
 	"golang.org/x/oauth2"
 )
 
 type Oauth2 struct {
 	conf *oauth2.Config
 	uc   pb.UserServiceClient
-	jwt  sign.JWT
+	signer
 }
 
-func NewOauth2(conf *oauth2.Config, uc pb.UserServiceClient, jwt sign.JWT) *Oauth2 {
-	return &Oauth2{conf: conf, uc: uc, jwt: jwt}
+func NewOauth2(conf *oauth2.Config, uc pb.UserServiceClient, signer signer) *Oauth2 {
+	return &Oauth2{conf: conf, uc: uc, signer: signer}
 }
 
 func (O *Oauth2) Update(e *echo.Echo) {
@@ -95,13 +94,7 @@ func (O *Oauth2) Callback(c echo.Context) error {
 		return err
 	}
 
-	// generate jwt token
-	signedToken, err := sign.GenSignedToken(sign.SignOption{
-		Username: user.Name,
-		UserID:   reply.User.Id,
-		Duration: time.Duration(O.jwt.TTL) * time.Second,
-		Secret:   []byte(O.jwt.Secret),
-	})
+	signedToken, err := O.signer(reply.User.Id, user.Name)
 	if err != nil {
 		return err
 	}

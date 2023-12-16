@@ -15,24 +15,18 @@ package main
 
 import (
 	"regexp"
-	"time"
 
+	pb "codeberg.org/sixwaaaay/sharing-pb"
 	"github.com/labstack/echo/v4"
-	"github.com/sixwaaaay/sharing/pkg/encoder"
-	"github.com/sixwaaaay/sharing/pkg/pb"
-	"github.com/sixwaaaay/sharing/pkg/sign"
 )
 
 type AccountHandler struct {
 	client pb.UserServiceClient
-	jwt    sign.JWT
+	signer signer
 }
 
-func NewAccountHandler(client pb.UserServiceClient, jwt sign.JWT) *AccountHandler {
-	return &AccountHandler{
-		client: client,
-		jwt:    jwt,
-	}
+func NewAccountHandler(client pb.UserServiceClient, signer signer) *AccountHandler {
+	return &AccountHandler{client: client, signer: signer}
 }
 
 func (h *AccountHandler) Update(e *echo.Echo) {
@@ -85,22 +79,16 @@ func (h *AccountHandler) Login(ctx echo.Context) error {
 		return ctx.JSON(400, err)
 	}
 	u := reply.GetUser()
-	option := sign.SignOption{
-		Username: u.Name,
-		UserID:   u.Id,
-		Duration: time.Duration(h.jwt.TTL) * time.Second,
-		Secret:   []byte(h.jwt.Secret),
-	}
-	token, err := sign.GenSignedToken(option)
+	token, err := h.signer(u.Id, u.Name)
 	if err != nil {
 		return ctx.JSON(400, err)
 	}
 
-	resp := &pb.JSONLoginReply{
-		Account: u,
+	resp := &LoginReply{
+		Account: covert(u),
 		Token:   token,
 	}
-	return encoder.Marshal(ctx.Response(), resp)
+	return ctx.JSON(200, resp)
 }
 
 type RegisterRequest struct {
@@ -140,20 +128,50 @@ func (h *AccountHandler) Register(ctx echo.Context) error {
 		return ctx.JSON(400, err)
 	}
 	u := reply.GetUser()
-	option := sign.SignOption{
-		Username: u.Name,
-		UserID:   u.Id,
-		Duration: time.Duration(h.jwt.TTL) * time.Second,
-		Secret:   []byte(h.jwt.Secret),
-	}
-	token, err := sign.GenSignedToken(option)
+
+	token, err := h.signer(u.Id, u.Name)
 	if err != nil {
 		return ctx.JSON(400, err)
 	}
 
-	resp := &pb.JSONLoginReply{
-		Account: u,
+	resp := &LoginReply{
+		Account: covert(u),
 		Token:   token,
 	}
-	return encoder.Marshal(ctx.Response(), resp)
+	return ctx.JSON(200, resp)
+}
+
+type Account struct {
+	Id            int64  `json:"id"`
+	Name          string `json:"name"`
+	IsFollow      bool   `json:"is_follow"`
+	AvatarUrl     string `json:"avatar_url"`
+	BgUrl         string `json:"bg_url"`
+	Bio           string `json:"bio"`
+	LikesGiven    int32  `json:"likes_given"`
+	LikesReceived int32  `json:"likes_received"`
+	VideosPosted  int32  `json:"videos_posted"`
+	Following     int32  `json:"following"`
+	Followers     int32  `json:"followers"`
+}
+
+type LoginReply struct {
+	Account *Account `json:"account"`
+	Token   string   `json:"token"`
+}
+
+func covert(u *pb.User) *Account {
+	return &Account{
+		Id:            u.Id,
+		Name:          u.Name,
+		IsFollow:      u.IsFollow,
+		AvatarUrl:     u.AvatarUrl,
+		BgUrl:         u.BgUrl,
+		Bio:           u.Bio,
+		LikesGiven:    u.LikesGiven,
+		LikesReceived: u.LikesReceived,
+		VideosPosted:  u.VideosPosted,
+		Following:     u.Following,
+		Followers:     u.Followers,
+	}
 }

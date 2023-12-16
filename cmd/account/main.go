@@ -20,35 +20,51 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"time"
 
+	pb "codeberg.org/sixwaaaay/sharing-pb"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
 	"github.com/sixwaaaay/must"
-	"github.com/sixwaaaay/sharing/pkg/configs"
-	"github.com/sixwaaaay/sharing/pkg/rpc"
-	"github.com/sixwaaaay/sharing/pkg/sign"
+	"github.com/sixwaaaay/token"
+	"github.com/spf13/viper"
 	_ "go.uber.org/automaxprocs"
 	"golang.org/x/oauth2"
 )
 
 type Config struct {
-	ListenOn    string
-	UserService rpc.GrpcConfig
-	Jwt         sign.JWT
-	Oauth       oauth2.Config
+	ListenOn           string
+	UserServiceAddress string
+	SECRET             string
+	TTL                string
+	Oauth              oauth2.Config
 }
 
 var configFile = flag.String("f", "configs/config.yaml", "the config file")
 
 func main() {
-	config := must.Must(configs.NewConfig[Config](*configFile))
+	viper.SetConfigFile(*configFile)
+	viper.SetConfigType("yaml")
+	viper.AutomaticEnv()
+	var config Config
+	must.RunE(viper.ReadInConfig())
+	must.RunE(viper.Unmarshal(&config))
 	e := newServer()
-	client := must.Must(rpc.NewUserClient(config.UserService))
-	handler := NewAccountHandler(client, config.Jwt)
+
+	conn := must.Must(pb.Dial(config.UserServiceAddress))
+
+	client := pb.NewUserServiceClient(conn)
+
+	d := must.Must(time.ParseDuration(config.TTL))
+
+	s := signFunc([]byte(config.SECRET), d)
+
+	handler := NewAccountHandler(client, s)
 	handler.Update(e)
-	oauth := NewOauth2(&config.Oauth, client, config.Jwt)
+	oauth := NewOauth2(&config.Oauth, client, s)
 	oauth.Update(e)
 
 	// Start server
@@ -80,4 +96,24 @@ func newServer() *echo.Echo {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	return e
+}
+
+func sign(secret []byte, d time.Duration, id int64, name string) (string, error) {
+	t := jwt.NewWithClaims(jwt.SigningMethodHS256,
+		jwt.MapClaims{
+			"exp":           time.Now().Add(d).Unix(), // seconds
+			"iss":           "sharing",
+			token.ClaimID:   strconv.FormatInt(id, 10),
+			token.ClaimName: name,
+		})
+	s, err := t.SignedString(secret)
+	return s, err
+}
+
+type signer = func(id int64, name string) (string, error)
+
+func signFunc(secret []byte, d time.Duration) signer {
+	return func(id int64, name string) (string, error) {
+		return sign(secret, d, id, name)
+	}
 }
