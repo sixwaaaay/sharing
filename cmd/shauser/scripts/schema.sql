@@ -15,7 +15,7 @@ drop table if exists users;
 drop table if exists follows;
 create table users
 (
-    `id`                bigint(20),
+    `id`                bigint,
     `username`          varchar(255) not null,
     `password`          varchar(255) not null,
     `email`             varchar(255) not null,
@@ -26,11 +26,8 @@ create table users
     `likes_given`       int(11)      not null default 0,
     `likes_received`    int(11)      not null default 0,
     `videos_posted`     int(11)      not null default 0,
-    `date_of_birth`     date,
-    `nationality`       varchar(255),
     `following`         int(11)      not null default 0,
     `followers`         int(11)      not null default 0,
-    `last_login`        datetime,
     `registration_time` datetime              default current_timestamp,
     PRIMARY KEY (`id`),
     unique key `email` (`email`)
@@ -39,9 +36,9 @@ create table users
 
 create table follows
 (
-    `user_id`    bigint(20) NOT NULL,
-    `target`     bigint(20) NOT NULL,
-    `id`         bigint(20) NOT NULL,
+    `user_id`    bigint NOT NULL,
+    `target`     bigint NOT NULL,
+    `id`         bigint NOT NULL,
     `created_at` datetime   NOT NULL,
     PRIMARY KEY (`user_id`, `target`),
     KEY `user_created` (`user_id`, `id` DESC),

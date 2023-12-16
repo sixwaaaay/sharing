@@ -17,13 +17,13 @@ import (
 	"context"
 	"math"
 
+	"github.com/sixwaaaay/token"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/sixwaaaay/shauser/internal/data"
-
 	"github.com/sixwaaaay/shauser/internal/config"
+	"github.com/sixwaaaay/shauser/internal/data"
 	"github.com/sixwaaaay/shauser/user"
 )
 
@@ -44,12 +44,15 @@ func NewFollowQueryLogic(conf *config.Config, followQ *data.FollowQuery, userQ *
 // The FollowQueryReq contains the user ID, the limit of followings to retrieve, and a token for pagination.
 // It returns a UsersPage containing the retrieved users and an error if any occurred.
 func (l *FollowQueryLogic) GetFollowings(ctx context.Context, in *user.FollowQueryReq) (*user.UsersPage, error) {
+
+	userID, _ := token.ClaimStrI64(ctx, token.ClaimID)
+
 	if in.Limit == 0 || in.Limit > l.conf.MaxLimit {
 		in.Limit = l.conf.DefaultLimit
 	}
 
-	if in.Token == 0 {
-		in.Token = math.MaxInt64
+	if in.Page == 0 {
+		in.Page = math.MaxInt64
 	}
 
 	following, err := l.userQ.FindFollowing(ctx, in.UserId)
@@ -58,13 +61,13 @@ func (l *FollowQueryLogic) GetFollowings(ctx context.Context, in *user.FollowQue
 		return nil, status.Errorf(codes.Internal, "failed to find following for user %v: %v", in.UserId, err)
 	}
 
-	list, err := l.followQ.FindFollowing(ctx, in.UserId, in.Token, int(in.Limit))
+	list, err := l.followQ.FindFollowing(ctx, in.UserId, in.Page, int(in.Limit))
 	if err != nil {
 		l.logger.Error("get following failed", zap.Error(err))
 		return nil, status.Errorf(codes.Internal, "failed to find following for user %v: %v", in.UserId, err)
 	}
 
-	users, err := l.users(ctx, list, in.SubjectId)
+	users, err := l.users(ctx, list, userID)
 	if err != nil {
 		l.logger.Error("get users failed", zap.Error(err))
 		return nil, status.Errorf(codes.Internal, "failed to find following for user %v: %v", in.UserId, err)
@@ -73,9 +76,9 @@ func (l *FollowQueryLogic) GetFollowings(ctx context.Context, in *user.FollowQue
 	nextToken := l.nextPage(list, in.Limit)
 
 	return &user.UsersPage{
-		Users:     users,
-		NextToken: nextToken,
-		AllCount:  following,
+		Users:    users,
+		NextPage: nextToken,
+		AllCount: following,
 	}, nil
 
 }
@@ -85,12 +88,14 @@ func (l *FollowQueryLogic) GetFollowings(ctx context.Context, in *user.FollowQue
 // The FollowQueryReq contains the user ID, the limit of followers to retrieve, and a token for pagination.
 // It returns a UsersPage containing the retrieved users and an error if any occurred.
 func (l *FollowQueryLogic) GetFollowers(ctx context.Context, in *user.FollowQueryReq) (*user.UsersPage, error) {
+	userID, _ := token.ClaimStrI64(ctx, token.ClaimID)
+
 	if in.Limit == 0 || in.Limit > l.conf.MaxLimit {
 		in.Limit = l.conf.DefaultLimit
 	}
 
-	if in.Token == 0 {
-		in.Token = math.MaxInt64
+	if in.Page == 0 {
+		in.Page = math.MaxInt64
 	}
 
 	followers, err := l.userQ.FindFollowers(ctx, in.UserId)
@@ -99,13 +104,13 @@ func (l *FollowQueryLogic) GetFollowers(ctx context.Context, in *user.FollowQuer
 		return nil, status.Errorf(codes.Internal, "failed to find followers for user %v: %v", in.UserId, err)
 	}
 
-	list, err := l.followQ.FindFollowers(ctx, in.UserId, in.Token, int(in.Limit))
+	list, err := l.followQ.FindFollowers(ctx, in.UserId, in.Page, int(in.Limit))
 	if err != nil {
 		l.logger.Error("get followers failed", zap.Error(err))
 		return nil, status.Errorf(codes.Internal, "failed to find followers for user %v: %v", in.UserId, err)
 	}
 
-	users, err := l.users(ctx, list, in.SubjectId)
+	users, err := l.users(ctx, list, userID)
 	if err != nil {
 		l.logger.Error("get users failed", zap.Error(err))
 		return nil, status.Errorf(codes.Internal, "failed to find followers for user %v: %v", in.UserId, err)
@@ -114,9 +119,9 @@ func (l *FollowQueryLogic) GetFollowers(ctx context.Context, in *user.FollowQuer
 
 	l.logger.Info("GetFollowers completed")
 	return &user.UsersPage{
-		Users:     users,
-		NextToken: nextToken,
-		AllCount:  followers,
+		Users:    users,
+		NextPage: nextToken,
+		AllCount: followers,
 	}, nil
 }
 

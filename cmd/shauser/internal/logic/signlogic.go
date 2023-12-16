@@ -10,21 +10,19 @@ import (
 
 	"github.com/sixwaaaay/shauser/internal/data"
 
-	"github.com/sixwaaaay/shauser/internal/config"
 	"github.com/sixwaaaay/shauser/user"
 )
 
 // SignLogic is a struct that contains the configuration, user command and logger.
 type SignLogic struct {
-	conf        *config.Config    // Configuration for the SignLogic
 	userCommand *data.UserCommand // User command to be executed
 	logger      *zap.Logger       // Logger to log information and errors
 }
 
 // NewSignLogic is a constructor for the SignLogic struct.
 // It takes a configuration and a user command as parameters and returns a pointer to a SignLogic struct.
-func NewSignLogic(conf *config.Config, userCommand *data.UserCommand) *SignLogic {
-	return &SignLogic{conf: conf, userCommand: userCommand}
+func NewSignLogic(userCommand *data.UserCommand) *SignLogic {
+	return &SignLogic{userCommand: userCommand}
 }
 
 // Register is a method of the SignLogic struct.

@@ -60,7 +60,7 @@ func (c *FollowQuery) FindFollowing(ctx context.Context, userid int64, token int
 func (c *FollowQuery) FindFollowers(ctx context.Context, userid int64, token int64, limit int) ([]int64, error) {
 	var result []int64
 	session := c.db.WithContext(ctx)
-	tx := session.Raw("SELECT user_id FROM follows WHERE target = ? AND id > ? ORDER BY id asc LIMIT ?", userid, token, limit).Scan(&result)
+	tx := session.Raw("SELECT user_id FROM follows WHERE target = ? AND id < ? ORDER BY id desc LIMIT ?", userid, token, limit).Scan(&result)
 	err := tx.Error
 	return result, err
 }
