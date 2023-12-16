@@ -17,10 +17,9 @@ import (
 	"strconv"
 
 	pb "codeberg.org/sixwaaaay/sharing-pb"
+	"codeberg.org/sixwaaaay/sharing-pb/encoder"
 	"github.com/labstack/echo/v4"
 	"github.com/sixwaaaay/token/rpc"
-
-	"github.com/sixwaaaay/sharing/pkg/encoder"
 )
 
 func (u *UserApi) Profile(c echo.Context) error {

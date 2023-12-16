@@ -27,37 +27,41 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
 	"github.com/sixwaaaay/must"
-	"github.com/sixwaaaay/sharing/pkg/configs"
-	"github.com/sixwaaaay/sharing/pkg/rpc"
-	"github.com/sixwaaaay/sharing/pkg/sign"
+	"github.com/sixwaaaay/token/web"
+	"github.com/spf13/viper"
 	_ "go.uber.org/automaxprocs"
 
 	"github.com/sixwaaaay/sharing/cmd/userapi/api"
 )
 
 type Config struct {
-	ListenOn    string
-	UserService rpc.GrpcConfig
-	Jwt         sign.JWT
-	Secret      string
+	ListenOn           string
+	UserServiceAddress string
+	Secret             string
 }
 
 var configFile = flag.String("f", "configs/config.yaml", "the config file")
 
 func main() {
-	config := must.Must(configs.NewConfig[Config](*configFile))
+	viper.SetConfigFile(*configFile)
+	viper.SetConfigType("yaml")
+	viper.AutomaticEnv()
+	var config Config
+	must.RunE(viper.ReadInConfig())
+	must.RunE(viper.Unmarshal(&config))
 
 	e := newServer()
 
-	conn := must.Must(pb.Dial(config.UserService.Address))
+	conn := must.Must(pb.Dial(config.UserServiceAddress))
 	client := pb.NewUserServiceClient(conn)
 
+	auth := echo.WrapMiddleware(web.Middleware([]byte(config.Secret)))
 	// add user api
-	userApi := api.NewUserApi(client, config.Secret)
+	userApi := api.NewUserApi(client, auth)
 	userApi.Update(e)
 
 	// add follow api
-	followApi := api.NewFollowApi(client, config.Secret)
+	followApi := api.NewFollowApi(client, auth)
 	followApi.Update(e)
 
 	// Start server
