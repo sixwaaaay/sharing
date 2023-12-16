@@ -14,9 +14,11 @@
 package api
 
 import (
+	pb "codeberg.org/sixwaaaay/sharing-pb"
 	"github.com/labstack/echo/v4"
+	"github.com/sixwaaaay/token/rpc"
+
 	"github.com/sixwaaaay/sharing/pkg/encoder"
-	"github.com/sixwaaaay/sharing/pkg/pb"
 )
 
 type GetFollowersReply struct {
@@ -24,18 +26,25 @@ type GetFollowersReply struct {
 }
 
 func (f *FollowApi) Followers(c echo.Context) error {
-	var req pb.GetFollowersRequest
+	var req pb.FollowQueryReq
 	if err := encoder.Unmarshal(c.Request().Body, &req); err != nil {
 		return echo.NewHTTPError(403, "invalid request")
 	}
-	id, err := f.subjectId(c)
-	if err != nil {
-		return echo.NewHTTPError(403, "invalid token")
-	}
-	req.SubjectId = id
-	reply, err := f.uc.GetFollowers(c.Request().Context(), &req)
+	reply, err := f.uc.GetFollowers(rpc.Ctx4H(c.Request()), &req)
 	if err != nil {
 		return echo.NewHTTPError(500, "internal error")
 	}
 	return encoder.Marshal(c.Response().Writer, reply)
+}
+
+func (f *FollowApi) Following(c echo.Context) error {
+	var req pb.FollowQueryReq
+	if err := encoder.Unmarshal(c.Request().Body, &req); err != nil {
+		return echo.NewHTTPError(403, "invalid request")
+	}
+	users, err := f.uc.GetFollowings(rpc.Ctx4H(c.Request()), &req)
+	if err != nil {
+		return echo.NewHTTPError(403, "invalid token")
+	}
+	return encoder.Marshal(c.Response().Writer, users)
 }
