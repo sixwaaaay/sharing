@@ -14,50 +14,42 @@
 package api
 
 import (
+	"codeberg.org/sixwaaaay/sharing-pb"
+	"codeberg.org/sixwaaaay/sharing-pb/encoder"
 	"github.com/labstack/echo/v4"
 	"github.com/sixwaaaay/token/rpc"
-
-	"codeberg.org/sixwaaaay/sharing-pb"
-
-	"github.com/sixwaaaay/sharing/pkg/encoder"
-	"github.com/sixwaaaay/sharing/pkg/sign"
 )
 
 // UserApi defines '/users' api
 type UserApi struct {
-	uc     pb.UserServiceClient
-	secret []byte
+	uc pb.UserServiceClient
+
+	auth echo.MiddlewareFunc
 }
 
-func NewUserApi(uc pb.UserServiceClient, secret string) *UserApi {
-	return &UserApi{
-		uc:     uc,
-		secret: []byte(secret),
-	}
+func NewUserApi(uc pb.UserServiceClient, auth echo.MiddlewareFunc) *UserApi {
+	return &UserApi{uc: uc, auth: auth}
 }
 
 func (u *UserApi) Update(e *echo.Echo) {
-	e.GET("/users/:id", u.Profile, echo.WrapMiddleware(sign.Middleware(u.secret, false)))
-	e.PATCH("/users", u.UpdateProfile, echo.WrapMiddleware(sign.Middleware(u.secret, true)))
+	e.GET("/users/:id", u.Profile, u.auth)
+	e.PATCH("/users", u.UpdateProfile, u.auth)
 }
 
 // FollowApi defines '/follow' api
 type FollowApi struct {
-	uc     pb.UserServiceClient
-	secret []byte
+	uc   pb.UserServiceClient
+	auth echo.MiddlewareFunc
 }
 
-func NewFollowApi(uc pb.UserServiceClient, secret string) *FollowApi {
-	return &FollowApi{
-		uc:     uc,
-		secret: []byte(secret),
-	}
+func NewFollowApi(uc pb.UserServiceClient, auth echo.MiddlewareFunc) *FollowApi {
+	return &FollowApi{uc: uc, auth: auth}
 }
 
 func (f *FollowApi) Update(e *echo.Echo) {
-	e.POST("/follow/following", f.Following, echo.WrapMiddleware(sign.Middleware(f.secret, false)))
-	e.POST("/follow/followers", f.Followers, echo.WrapMiddleware(sign.Middleware(f.secret, false)))
-	e.POST("/follow", f.Follow, echo.WrapMiddleware(sign.Middleware(f.secret, true)))
+	e.POST("/follow/following", f.Following, f.auth)
+	e.POST("/follow/followers", f.Followers, f.auth)
+	e.POST("/follow", f.Follow, f.auth)
 }
 
 func (f *FollowApi) Follow(c echo.Context) error {

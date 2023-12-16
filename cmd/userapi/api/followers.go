@@ -15,10 +15,9 @@ package api
 
 import (
 	pb "codeberg.org/sixwaaaay/sharing-pb"
+	"codeberg.org/sixwaaaay/sharing-pb/encoder"
 	"github.com/labstack/echo/v4"
 	"github.com/sixwaaaay/token/rpc"
-
-	"github.com/sixwaaaay/sharing/pkg/encoder"
 )
 
 type GetFollowersReply struct {
