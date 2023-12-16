@@ -16,51 +16,42 @@ package api
 import (
 	"strconv"
 
+	pb "codeberg.org/sixwaaaay/sharing-pb"
 	"github.com/labstack/echo/v4"
+	"github.com/sixwaaaay/token/rpc"
+
 	"github.com/sixwaaaay/sharing/pkg/encoder"
-	"github.com/sixwaaaay/sharing/pkg/pb"
 )
 
-type ProfileRequest struct {
-	UserId    int64
-	SubjectID int64
-}
-
-func (r *ProfileRequest) Validate() error {
-	if r.UserId <= 0 {
-		return echo.NewHTTPError(403, "invalid user id")
-	}
-	if r.SubjectID < 0 {
-		return echo.NewHTTPError(403, "invalid token")
-	}
-	return nil
-}
-
-type ProfileResponse struct {
-	Profile *pb.User `json:"profile"`
-}
-
 func (u *UserApi) Profile(c echo.Context) error {
-	var req ProfileRequest
-	var err error
-	subjectId, _ := c.Request().Context().Value("x-id").(string)
-	if req.UserId, err = strconv.ParseInt(c.Param("id"), 10, 64); err != nil {
+	userID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
 		return echo.NewHTTPError(403, "invalid user id")
 	}
-	if req.SubjectID, err = strconv.ParseInt(subjectId, 10, 64); err != nil {
-		return echo.NewHTTPError(403, "invalid token")
-	}
-	if err := req.Validate(); err != nil {
-		return err
-	}
-
 	getUserRequest := &pb.GetUserRequest{
-		UserId:    req.UserId,
-		SubjectId: req.SubjectID,
+		UserId: userID,
 	}
-	user, err := u.uc.GetUser(c.Request().Context(), getUserRequest)
+	user, err := u.uc.GetUser(rpc.Ctx4H(c.Request()), getUserRequest)
 	if err != nil {
 		return err
 	}
 	return encoder.Marshal(c.Response(), user.User)
+}
+
+func (u *UserApi) UpdateProfile(ctx echo.Context) error {
+	var req = new(pb.UpdateUserRequest)
+	var err error
+	if err := encoder.Unmarshal(ctx.Request().Body, req); err != nil {
+		return echo.NewHTTPError(400, err)
+	}
+	r, err := u.uc.UpdateUser(rpc.Ctx4H(ctx.Request()), &pb.UpdateUserRequest{
+		Name:      req.Name,
+		Bio:       req.Bio,
+		AvatarUrl: req.AvatarUrl,
+		BgUrl:     req.BgUrl,
+	})
+	if err != nil {
+		return echo.NewHTTPError(500, err)
+	}
+	return encoder.Marshal(ctx.Response(), r)
 }

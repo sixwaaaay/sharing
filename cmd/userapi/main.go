@@ -22,6 +22,7 @@ import (
 	"os/signal"
 	"time"
 
+	pb "codeberg.org/sixwaaaay/sharing-pb"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
@@ -48,7 +49,8 @@ func main() {
 
 	e := newServer()
 
-	client := must.Must(rpc.NewUserClient(config.UserService))
+	conn := must.Must(pb.Dial(config.UserService.Address))
+	client := pb.NewUserServiceClient(conn)
 
 	// add user api
 	userApi := api.NewUserApi(client, config.Secret)
