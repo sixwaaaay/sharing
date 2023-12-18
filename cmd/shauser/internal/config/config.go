@@ -14,6 +14,7 @@
 package config
 
 import (
+	"github.com/redis/go-redis/v9"
 	"github.com/spf13/viper"
 )
 
@@ -33,6 +34,11 @@ type Config struct {
 		Version     string `yaml:"version"`     // OtelVersion is the version of service
 		Environment string `yaml:"environment"` // OtelEnvironment is the environment of service
 	} `yaml:"otel"` // Otel is the configuration for the OpenTelemetry collector
+	Cache struct {
+		Enabled bool   `yaml:"enabled"` // CacheEnabled is the flag to enable cache
+		TTL     string `yaml:"ttl"`     // CacheTTL is the expiration duration of cache
+	}
+	Redis redis.UniversalOptions
 }
 
 // NewConfig parses the config file and returns a Config struct

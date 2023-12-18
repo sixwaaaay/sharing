@@ -5,8 +5,11 @@ go 1.20
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.0
 	github.com/google/wire v0.5.0
-	github.com/sixwaaaay/cq v0.1.0
+	github.com/redis/go-redis/v9 v9.0.3
+	github.com/sixwaaaay/cq v0.2.1
 	github.com/sixwaaaay/must v0.1.0
+	github.com/sixwaaaay/token v0.0.0-20231216070301-25cf4b3b334f
+	github.com/sixwaaaay/token/rpc v0.0.0-20231216072017-93103e304fb4
 	github.com/sony/sonyflake v1.2.0
 	github.com/spf13/viper v1.18.1
 	github.com/stretchr/testify v1.8.4
@@ -45,11 +48,8 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.1.0 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
-	github.com/redis/go-redis/v9 v9.0.3 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
-	github.com/sixwaaaay/token v0.0.0-20231216070301-25cf4b3b334f // indirect
-	github.com/sixwaaaay/token/rpc v0.0.0-20231216072017-93103e304fb4 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
 	github.com/spf13/cast v1.6.0 // indirect

@@ -18,7 +18,7 @@ import (
 // Injectors from wire.go:
 
 func NewServer(config2 *config.Config, db *gorm.DB, logger *zap.Logger) *server.UserServiceServer {
-	userQuery := data.NewUserQuery(db)
+	userQuery := data.NewUserQuery(db, config2, logger)
 	followQuery := data.NewFollowQuery(db)
 	usersLogic := logic.NewUsersLogic(userQuery, followQuery, logger)
 	userCommand := data.NewUserCommand(db)

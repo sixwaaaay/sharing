@@ -5,3 +5,9 @@ MySQL:
 DefaultLimit: 20
 MaxLimit: 100
 Secret: "this is a secret"
+Cache:
+  Enabled: true
+  TTL: 10m # cache expire time 10 minutes
+Redis:
+  Addrs:
+    - "redis:6379"

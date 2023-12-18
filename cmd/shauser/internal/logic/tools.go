@@ -43,11 +43,11 @@ func makeUsers(ctx context.Context, UserIds []int64, subjectId int64, userQ *dat
 // It converts the user IDs to a map using the idsToMap function.
 // It converts each User in the slice to a User pointer using the covertUser function and checks if the user is followed by the subject.
 // It returns a slice of User pointers.
-func composeUsers(many []*data.User, list []int64) []*user.User {
+func composeUsers(many []data.User, list []int64) []*user.User {
 	users := make([]*user.User, 0, len(many))
 	m := idsToMap(list)
 	for _, u := range many {
-		t := covertUser(u)
+		t := covertUser(&u)
 		_, t.IsFollow = m[u.ID]
 		users = append(users, t)
 	}
