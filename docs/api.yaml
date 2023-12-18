@@ -129,14 +129,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/GetFollowersRequest"
+              $ref: "#/components/schemas/FollowUserQuery"
       responses:
         "200":
           description: User object
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/GetFollowersReply"
+                $ref: "#/components/schemas/UsersPage"
   /follow/following:
     post:
       summary: Get users followed by a user
@@ -154,39 +154,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/GetFollowingsRequest"
+              $ref: "#/components/schemas/FollowUserQuery"
       responses:
         "200":
           description: User object
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/GetFollowingsReply"
-  /follow/friends:
-    post:
-      summary: Get friends of a user
-      operationId: getFriends
-      parameters:
-        - name: Authorization
-          in: header
-          description: Bearer token for authentication
-          required: true
-          schema:
-            type: string
-      requestBody:
-        description: User ID and action to perform
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/GetFriendsRequest"
-      responses:
-        "200":
-          description: User object
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GetFriendsReply"
+                $ref: "#/components/schemas/UsersPage"
   /users:
     patch:
       summary: Update user profile
@@ -526,7 +501,7 @@ components:
           type: string
           format: int64
           minimum: 0
-        token:
+        page:
           type: string
           format: int64
           minimum: 0
@@ -568,7 +543,7 @@ components:
           type: string
           format: int64
           minimum: 0
-        token:
+        page:
           type: string
           format: int64
           minimum: 0
@@ -645,7 +620,7 @@ components:
           type: integer
           format: int32
           minimum: 0
-        token:
+        page:
           type: string
           format: int64
           minimum: 0
@@ -662,7 +637,7 @@ components:
           type: integer
           format: int32
           minimum: 0
-        token:
+        page:
           type: string
           format: int64
           minimum: 0
@@ -683,7 +658,7 @@ components:
           type: integer
           format: int32
           minimum: 0
-        token:
+        page:
           type: string
           format: int64
           minimum: 0
@@ -717,7 +692,7 @@ components:
           $ref: "#/components/schemas/User"
         token:
           type: string
-    GetFollowersRequest:
+    FollowUserQuery:
       type: object
       properties:
         user_id:
@@ -728,7 +703,7 @@ components:
           type: integer
           format: int32
           minimum: 0
-        token:
+        page:
           type: string
           format: int64
           minimum: 0
@@ -800,58 +775,24 @@ components:
     LikeVideoReply:
       type: object
 
-    GetFollowersReply:
+    UsersPage:
       type: object
       properties:
         users:
           type: array
           items:
             $ref: "#/components/schemas/User"
-    GetFollowingsRequest:
-      type: object
-      properties:
-        user_id:
+        all_count:
+          type: integer
+          format: int32
+        next_page:
           type: string
           format: int64
-        limit:
-          type: integer
-        token:
-          type: string
-      required:
-        - user_id
-        - limit
-        - token
-    GetFollowingsReply:
-      type: object
-      properties:
-        users:
-          type: array
-          items:
-            $ref: "#/components/schemas/User"
-    GetFriendsRequest:
-      type: object
-      properties:
-        limit:
-          type: integer
-        token:
-          type: string
-      required:
-        - user_id
-        - limit
-        - token
-    GetFriendsReply:
-      type: object
-      properties:
-        users:
-          type: array
-          items:
-            $ref: "#/components/schemas/User"
     UpdateProfileResponse:
       type: object
       properties:
         profile:
           $ref: "#/components/schemas/User"
-
     NewAssetRequest:
       type: object
       properties:
