@@ -44,7 +44,7 @@ services:
       - '16686:16686'
       - '4318:4318'
   shauser:
-    image: 'sixwaaaay/shauser:434930a99a118fdc4e642f7fbb08cf35f9d7315a-test'
+    image: 'sixwaaaay/shauser:8519dfafa6018bc16868b1b2d0539c062e225500-test'
     ports:
       - '5000:5000'
   graph:

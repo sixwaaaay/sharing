@@ -11,14 +11,14 @@ import io.sixwaaaay.sharingcomment.transmission.GetUserReq;
 import io.sixwaaaay.sharingcomment.transmission.GetMultipleUserReply;
 import io.sixwaaaay.sharingcomment.transmission.GetMultipleUserReq;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.service.annotation.PostExchange;
-
 
 
 public interface UserClient {
     @PostExchange("/sixwaaaay.user.UserService/GetUser")
-    GetUserReply getUser(@RequestBody GetUserReq req);
+    GetUserReply getUser(@RequestBody GetUserReq req, @RequestHeader("Authorization") String token);
 
     @PostExchange("/sixwaaaay.user.UserService/GetUsers")
-    GetMultipleUserReply getManyUser(@RequestBody GetMultipleUserReq req);
+    GetMultipleUserReply getManyUser(@RequestBody GetMultipleUserReq req, @RequestHeader("Authorization") String token);
 }

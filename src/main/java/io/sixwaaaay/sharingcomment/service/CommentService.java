@@ -11,6 +11,7 @@ import io.sixwaaaay.sharingcomment.client.VoteClient;
 import io.sixwaaaay.sharingcomment.domain.*;
 import io.sixwaaaay.sharingcomment.repository.CommentRepository;
 import io.sixwaaaay.sharingcomment.repository.CountRepository;
+import io.sixwaaaay.sharingcomment.request.Principal;
 import io.sixwaaaay.sharingcomment.transmission.GetMultipleUserReq;
 import io.sixwaaaay.sharingcomment.transmission.GetUserReq;
 import io.sixwaaaay.sharingcomment.transmission.VoteExistsReq;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static io.sixwaaaay.sharingcomment.util.TokenParser.principal;
 import static java.util.function.Function.identity;
 
 @Service
@@ -130,7 +132,7 @@ public class CommentService {
             countRepo.createCount(comment.getBelongTo()); // create count if not exist
         if (comment.getReplyTo() != null && comment.getReplyTo() != 0)
             commentRepo.increaseReplyCount(comment.getReplyTo());
-        composeSingleComment(comment, comment.getUserId());
+        composeSingleComment(comment);
         return comment;
     }
 
@@ -179,11 +181,11 @@ public class CommentService {
      * compose the comment, fill the user info and vote status
      *
      * @param comment the comment to be composed
-     * @param userId  the id of the user who is requesting
      */
-    private void composeSingleComment(Comment comment, Long userId) {
+    private void composeSingleComment(Comment comment) {
         if (enableUser) {
-            var user = userClient.getUser(new GetUserReq(comment.getUserId(), userId));
+            var token = principal.get().map(Principal::getToken).orElse("");
+            var user = userClient.getUser(new GetUserReq(comment.getUserId()), token);
             comment.setUser(user.getUser());
         }
     }
@@ -196,7 +198,7 @@ public class CommentService {
      */
     private void composeComment(List<Comment> comments, Long userId) {
         if (enableUser)
-            composeCommentAuthor(comments, userId);
+            composeCommentAuthor(comments);
         if (enableVote)
             composeCommentVoteStatus(comments, userId);
     }
@@ -206,13 +208,13 @@ public class CommentService {
      * compose the comment, fill the user info
      *
      * @param comments the comments to be composed
-     * @param userId   the id of the user who is requesting
      */
-    private void composeCommentAuthor(List<Comment> comments, Long userId) {
+    private void composeCommentAuthor(List<Comment> comments) {
         // get user id list
         var userList = flatComments(comments).map(Comment::getUserId).collect(Collectors.toUnmodifiableSet());
         // fetch user info
-        var users = userClient.getManyUser(new GetMultipleUserReq(userList, userId));
+        var token = principal.get().map(Principal::getToken).orElse("");
+        var users = userClient.getManyUser(new GetMultipleUserReq(userList), token);
         // covert to map
         var userMap = users.getUsers().stream().collect(Collectors.toMap(User::getId, identity()));
         // fill user info

@@ -19,7 +19,12 @@ import java.util.Optional;
 public class TokenParser {
     private final JwtParser jwtParser;
 
+    public static ThreadLocal<Optional<Principal>> principal = new ThreadLocal<>();
+
     public TokenParser(@Value("${jwt.secret}") String secret) {
+
+
+
         var secretKey = Keys.hmacShaKeyFor(secret.getBytes());
         jwtParser = Jwts.parser()
                 .verifyWith(secretKey)
@@ -33,14 +38,19 @@ public class TokenParser {
      * @return Optional of Principal
      */
     public Optional<Principal> parse(String token) {
-        if (token == null || token.isEmpty()) return Optional.empty();
         var PREFIX = "Bearer ";
-        if (!token.startsWith(PREFIX)) return Optional.empty();
-        token = token.substring(PREFIX.length());
-        var claimsJws = jwtParser.parseSignedClaims(token);
+        if (token == null || token.isEmpty() || !token.startsWith(PREFIX)) {
+            principal.set(Optional.empty());
+            return Optional.empty();
+        }
+
+        var tokenString = token.substring(PREFIX.length());
+        var claimsJws = jwtParser.parseSignedClaims(tokenString);
         var name = claimsJws.getPayload().get("name", String.class);
         var id = claimsJws.getPayload().get("id", String.class);
-        return Optional.of(new Principal(name, Long.parseLong(id)));
+        var value = new Principal(name, Long.parseLong(id), token);
+        principal.set(Optional.of(value));
+        return Optional.of(value);
     }
 
 }
