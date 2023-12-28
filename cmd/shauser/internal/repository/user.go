@@ -30,6 +30,7 @@ type UserQuery interface {
 	FindMany(ctx context.Context, ids []int64) ([]User, error)
 	FindFollowing(ctx context.Context, id int64) (int32, error)
 	FindFollowers(ctx context.Context, id int64) (int32, error)
+	FindByMail(ctx context.Context, mail string) (*User, error)
 }
 
 var _ UserQuery = (*userQuery)(nil)
@@ -96,6 +97,18 @@ func (c *userQuery) findMany(ctx context.Context, ids []int64) ([]User, error) {
 		return nil, err
 	}
 	return users, nil
+}
+
+// FindByMail is a method of the userQuery struct.
+// It takes a context and an email as parameters.
+// It returns a pointer to a User and an error.
+func (c *userQuery) FindByMail(ctx context.Context, mail string) (*User, error) {
+	var u User
+	err := c.db.WithContext(ctx).Where("email = ?", mail).First(&u).Error
+	if err != nil {
+		return nil, err
+	}
+	return &u, nil
 }
 
 // FindFollowing find following count by user id

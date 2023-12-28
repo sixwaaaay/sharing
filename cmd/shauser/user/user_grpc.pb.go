@@ -30,6 +30,7 @@ type UserServiceClient interface {
 	GetFollowers(ctx context.Context, in *FollowQueryReq, opts ...grpc.CallOption) (*UsersPage, error)
 	GetFollowings(ctx context.Context, in *FollowQueryReq, opts ...grpc.CallOption) (*UsersPage, error)
 	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UpdateUserReply, error)
+	GetByMail(ctx context.Context, in *GetByMailReq, opts ...grpc.CallOption) (*GetByMailReply, error)
 }
 
 type userServiceClient struct {
@@ -112,6 +113,15 @@ func (c *userServiceClient) UpdateUser(ctx context.Context, in *UpdateUserReques
 	return out, nil
 }
 
+func (c *userServiceClient) GetByMail(ctx context.Context, in *GetByMailReq, opts ...grpc.CallOption) (*GetByMailReply, error) {
+	out := new(GetByMailReply)
+	err := c.cc.Invoke(ctx, "/sixwaaaay.user.UserService/GetByMail", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServiceServer is the server API for UserService service.
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility
@@ -124,6 +134,7 @@ type UserServiceServer interface {
 	GetFollowers(context.Context, *FollowQueryReq) (*UsersPage, error)
 	GetFollowings(context.Context, *FollowQueryReq) (*UsersPage, error)
 	UpdateUser(context.Context, *UpdateUserRequest) (*UpdateUserReply, error)
+	GetByMail(context.Context, *GetByMailReq) (*GetByMailReply, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -154,6 +165,9 @@ func (UnimplementedUserServiceServer) GetFollowings(context.Context, *FollowQuer
 }
 func (UnimplementedUserServiceServer) UpdateUser(context.Context, *UpdateUserRequest) (*UpdateUserReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateUser not implemented")
+}
+func (UnimplementedUserServiceServer) GetByMail(context.Context, *GetByMailReq) (*GetByMailReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetByMail not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 
@@ -312,6 +326,24 @@ func _UserService_UpdateUser_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_GetByMail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetByMailReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GetByMail(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/sixwaaaay.user.UserService/GetByMail",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GetByMail(ctx, req.(*GetByMailReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserService_ServiceDesc is the grpc.ServiceDesc for UserService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -350,6 +382,10 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateUser",
 			Handler:    _UserService_UpdateUser_Handler,
+		},
+		{
+			MethodName: "GetByMail",
+			Handler:    _UserService_GetByMail_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

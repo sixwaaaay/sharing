@@ -97,6 +97,14 @@ message UpdateUserReply {
   User profile = 1;
 }
 
+message GetByMailReq {
+  string email = 1;
+}
+
+message GetByMailReply {
+  User user = 1;
+}
+
 service UserService {
   rpc GetUser(GetUserRequest) returns (GetUserReply);
   rpc GetUsers(GetUsersRequest) returns (GetUsersReply);
@@ -106,4 +114,5 @@ service UserService {
   rpc GetFollowers(FollowQueryReq) returns (UsersPage);
   rpc GetFollowings(FollowQueryReq) returns (UsersPage);
   rpc UpdateUser(UpdateUserRequest) returns (UpdateUserReply);
+  rpc GetByMail(GetByMailReq) returns (GetByMailReply);
 }

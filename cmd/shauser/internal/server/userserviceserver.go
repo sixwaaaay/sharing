@@ -20,6 +20,10 @@ func NewUserServiceServer(getUsersLogic *logic.UsersLogic, signLogic *logic.Sign
 	return &UserServiceServer{GetUsersLogic: getUsersLogic, SignLogic: signLogic, FollowActionLogic: followActionLogic, GetFollowingLogic: getFollowingLogic, UpdateUserLogic: updateUserLogic}
 }
 
+func (s *UserServiceServer) GetByMail(ctx context.Context, req *user.GetByMailReq) (*user.GetByMailReply, error) {
+	return s.GetUsersLogic.GetByMail(ctx, req)
+}
+
 func (s *UserServiceServer) GetUser(ctx context.Context, in *user.GetUserRequest) (*user.GetUserReply, error) {
 	return s.GetUsersLogic.GetUser(ctx, in)
 }

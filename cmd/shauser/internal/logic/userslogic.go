@@ -89,3 +89,22 @@ func (l *UsersLogic) GetUsers(ctx context.Context, in *user.GetUsersRequest) (*u
 
 	return &user.GetUsersReply{Users: users}, nil
 }
+
+// GetByMail is a method of the UsersLogic struct.
+// It takes a context and a GetByMailReq as parameters.
+// It returns a GetByMailReply and an error.
+//
+// The method first calls the FindByMail method of the userQ object, passing the context and the email from the request.
+// If there is an error in this process, it returns the error.
+// Then it converts the user repository to a different format using the covertUser function.
+// Finally, it returns a GetByMailReply containing the user repository.
+func (l *UsersLogic) GetByMail(ctx context.Context, req *user.GetByMailReq) (*user.GetByMailReply, error) {
+	if req.Email == "" {
+		return nil, status.Error(codes.InvalidArgument, "invalid email")
+	}
+	one, err := l.userQ.FindByMail(ctx, req.Email)
+	if err != nil {
+		return nil, err
+	}
+	return &user.GetByMailReply{User: covertUser(one)}, nil
+}
