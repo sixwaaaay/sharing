@@ -77,7 +77,7 @@ public class ApiTest {
 
         mockMvc.perform(MockMvcRequestBuilders.post("/comments")
                         .content(json)
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(MockMvcResultMatchers.status().is4xxClientError());
     }
 

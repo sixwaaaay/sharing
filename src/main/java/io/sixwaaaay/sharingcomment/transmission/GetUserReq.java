@@ -15,8 +15,6 @@ import lombok.Data;
 public class GetUserReq {
     @JsonProperty("user_id")
     private Long userId;
-    @JsonProperty("subject_id")
-    private Long subjectId;
 }
 
 

@@ -16,6 +16,4 @@ import java.util.Set;
 public class GetMultipleUserReq {
     @JsonProperty("user_ids")
     private Set<Long> userIds;
-    @JsonProperty("subject_id")
-    private Long subjectId;
 }

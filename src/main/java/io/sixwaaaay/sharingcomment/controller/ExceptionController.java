@@ -7,20 +7,18 @@ package io.sixwaaaay.sharingcomment.controller;
 
 import io.sixwaaaay.sharingcomment.request.error.NoUserExitsError;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ProblemDetail;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 @ControllerAdvice
-@ResponseBody
-public class ExceptionController {
-
-    @ResponseStatus(code = HttpStatus.BAD_REQUEST, reason = "malformed parameter")
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public void handleValidationExceptions(MethodArgumentNotValidException ex) {
-    }
+public class ExceptionController extends ResponseEntityExceptionHandler {
 
     @ResponseStatus(code = HttpStatus.UNAUTHORIZED)
     @ExceptionHandler(NoUserExitsError.class)
-    public void handleNoUserExitsError(NoUserExitsError ex) {
+    public ProblemDetail handleNoUserExitsError(NoUserExitsError ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
     }
 }
