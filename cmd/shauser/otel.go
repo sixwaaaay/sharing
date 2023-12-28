@@ -15,10 +15,12 @@ package main
 
 import (
 	"context"
-	"github.com/sixwaaaay/shauser/internal/config"
-	"go.opentelemetry.io/otel/propagation"
 	"os"
 	"time"
+
+	"go.opentelemetry.io/otel/propagation"
+
+	"github.com/sixwaaaay/shauser/internal/config"
 
 	"go.opentelemetry.io/contrib/instrumentation/runtime"
 	"go.opentelemetry.io/otel"

@@ -11,7 +11,7 @@
  * limitations under the License.
  */
 
-package data
+package repository
 
 import (
 	"context"
@@ -20,19 +20,24 @@ import (
 	"gorm.io/gorm"
 )
 
-// FollowCommand is a struct that represents a command to follow a user.
+type FollowCommand interface {
+	Insert(ctx context.Context, f *Follow) error
+	Delete(ctx context.Context, userid, followTo int64) error
+}
+
+// followCommand is a struct that represents a command to follow a user.
 // It contains a database connection and a unique ID generator.
-type FollowCommand struct {
+type followCommand struct {
 	// db is a pointer to a gorm.DB object, which represents a database connection.
 	db *gorm.DB
 	// uniqueID is a pointer to a sonyflake.Sonyflake object, which is used to generate unique IDs.
 	uniqueID *sonyflake.Sonyflake
 }
 
-// NewFollowCommand is a constructor function for FollowCommand.
-// It takes a database connection as an argument and returns a pointer to a FollowCommand object.
-func NewFollowCommand(db *gorm.DB) *FollowCommand {
-	return &FollowCommand{
+// NewFollowCommand is a constructor function for followCommand.
+// It takes a database connection as an argument and returns a pointer to a followCommand object.
+func NewFollowCommand(db *gorm.DB) FollowCommand {
+	return &followCommand{
 		// Initialize the db field with the provided database connection.
 		db: db,
 		// Initialize the uniqueID field with a new Sonyflake object.
@@ -40,10 +45,10 @@ func NewFollowCommand(db *gorm.DB) *FollowCommand {
 	}
 }
 
-// Insert is a method of FollowCommand that inserts a new follow relationship into the database.
+// Insert is a method of followCommand that inserts a new follow relationship into the database.
 // It takes a context and a pointer to a Follow object as arguments.
 // It returns an error if the insertion fails.
-func (c *FollowCommand) Insert(ctx context.Context, f *Follow) (err error) {
+func (c *followCommand) Insert(ctx context.Context, f *Follow) (err error) {
 	// Generate a new unique ID.
 	id, err := c.uniqueID.NextID()
 	if err != nil {
@@ -70,10 +75,10 @@ func (c *FollowCommand) Insert(ctx context.Context, f *Follow) (err error) {
 	})
 }
 
-// Delete is a method of FollowCommand that deletes a follow relationship from the database.
+// Delete is a method of followCommand that deletes a follow relationship from the database.
 // It takes a context and two user IDs as arguments: the ID of the user who is following and the ID of the user who is being followed.
 // It returns an error if the deletion fails.
-func (c *FollowCommand) Delete(ctx context.Context, userid, followTo int64) error {
+func (c *followCommand) Delete(ctx context.Context, userid, followTo int64) error {
 	// Start a new database transaction.
 	err := c.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		// Delete the follow relationship from the database.

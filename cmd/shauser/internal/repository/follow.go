@@ -11,7 +11,7 @@
  * limitations under the License.
  */
 
-package data
+package repository
 
 import (
 	"context"
@@ -19,21 +19,29 @@ import (
 	"gorm.io/gorm"
 )
 
-// FollowQuery is the struct for follow query
-type FollowQuery struct {
+type FollowQuery interface {
+	FindFollowExits(ctx context.Context, userid int64, followTo []int64) ([]int64, error)
+	FindFollowing(ctx context.Context, userid int64, token int64, limit int) ([]int64, error)
+	FindFollowers(ctx context.Context, userid int64, token int64, limit int) ([]int64, error)
+}
+
+var _ FollowQuery = (*followQuery)(nil)
+
+// followQuery is the struct for follow query
+type followQuery struct {
 	db *gorm.DB
 }
 
-// NewFollowQuery creates a new FollowQuery
-func NewFollowQuery(db *gorm.DB) *FollowQuery {
-	return &FollowQuery{
+// NewFollowQuery creates a new followQuery
+func NewFollowQuery(db *gorm.DB) FollowQuery {
+	return &followQuery{
 		db: db,
 	}
 }
 
 // FindFollowExits query whether the user follow the followTo ids
 // return the followTo ids that the user follow
-func (c *FollowQuery) FindFollowExits(ctx context.Context, userid int64, followTo []int64) ([]int64, error) {
+func (c *followQuery) FindFollowExits(ctx context.Context, userid int64, followTo []int64) ([]int64, error) {
 	var result []int64
 	if userid == 0 || len(followTo) == 0 {
 		return result, nil
@@ -48,7 +56,7 @@ func (c *FollowQuery) FindFollowExits(ctx context.Context, userid int64, followT
 }
 
 // FindFollowing query the user follow list
-func (c *FollowQuery) FindFollowing(ctx context.Context, userid int64, token int64, limit int) ([]int64, error) {
+func (c *followQuery) FindFollowing(ctx context.Context, userid int64, token int64, limit int) ([]int64, error) {
 	var result []int64
 	session := c.db.WithContext(ctx)
 	tx := session.Raw("SELECT target FROM follows WHERE user_id = ? AND id < ? ORDER BY id desc LIMIT ?", userid, token, limit).Scan(&result)
@@ -57,19 +65,10 @@ func (c *FollowQuery) FindFollowing(ctx context.Context, userid int64, token int
 }
 
 // FindFollowers query the user's follower list
-func (c *FollowQuery) FindFollowers(ctx context.Context, userid int64, token int64, limit int) ([]int64, error) {
+func (c *followQuery) FindFollowers(ctx context.Context, userid int64, token int64, limit int) ([]int64, error) {
 	var result []int64
 	session := c.db.WithContext(ctx)
 	tx := session.Raw("SELECT user_id FROM follows WHERE target = ? AND id < ? ORDER BY id desc LIMIT ?", userid, token, limit).Scan(&result)
-	err := tx.Error
-	return result, err
-}
-
-// FindFriends query the user's friend list
-func (c *FollowQuery) FindFriends(ctx context.Context, userid int64, token int64, limit int) ([]int64, error) {
-	var result []int64
-	session := c.db.WithContext(ctx)
-	tx := session.Raw("SELECT target FROM follows WHERE user_id = ? AND target IN (SELECT user_id FROM follows WHERE target = ?) AND id > ? ORDER BY id LIMIT ?", userid, userid, token, limit).Scan(&result)
 	err := tx.Error
 	return result, err
 }

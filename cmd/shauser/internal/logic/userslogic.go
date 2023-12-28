@@ -21,17 +21,17 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/sixwaaaay/shauser/internal/data"
+	"github.com/sixwaaaay/shauser/internal/repository"
 	"github.com/sixwaaaay/shauser/user"
 )
 
 type UsersLogic struct {
-	userQ   *data.UserQuery
-	followQ *data.FollowQuery
+	userQ   repository.UserQuery
+	followQ repository.FollowQuery
 	logger  *zap.Logger
 }
 
-func NewUsersLogic(userQ *data.UserQuery, followQ *data.FollowQuery, logger *zap.Logger) *UsersLogic {
+func NewUsersLogic(userQ repository.UserQuery, followQ repository.FollowQuery, logger *zap.Logger) *UsersLogic {
 	return &UsersLogic{userQ: userQ, followQ: followQ, logger: logger}
 }
 
@@ -44,9 +44,9 @@ func NewUsersLogic(userQ *data.UserQuery, followQ *data.FollowQuery, logger *zap
 // If the user is not found, it returns an error.
 // Then it checks if the user is following the subject (another user) by calling the FindFollowExits method.
 // If there is an error in this process, it returns the error.
-// Then it converts the user data to a different format using the covertUser function.
-// It also sets the IsFollow field of the user data to true if the user is following the subject.
-// Finally, it returns a GetUserReply containing the user data.
+// Then it converts the user repository to a different format using the covertUser function.
+// It also sets the IsFollow field of the user repository to true if the user is following the subject.
+// Finally, it returns a GetUserReply containing the user repository.
 func (l *UsersLogic) GetUser(ctx context.Context, in *user.GetUserRequest) (*user.GetUserReply, error) {
 	userID, _ := token.ClaimStrI64(ctx, token.ClaimID)
 

@@ -11,7 +11,7 @@
  * limitations under the License.
  */
 
-package data
+package repository
 
 import (
 	"context"
@@ -26,7 +26,7 @@ import (
 func TestUserFind(t *testing.T) {
 	assertions := assert.New(t)
 	mock, gormDB := mockDB(t)
-	model := NewUserQuery(gormDB)
+	model := NewUserQuery(gormDB, nil, nil)
 	const findOne = "SELECT `users`.`id`,`users`.`username`,`users`.`avatar_url`,`users`.`bg_url`,`users`.`bio`,`users`.`likes_given`,`users`.`likes_received`,`users`.`videos_posted`,`users`.`nationality`,`users`.`following`,`users`.`followers` " +
 		"FROM `users` WHERE `users`.`id` = ? LIMIT 1"
 	t.Run("FindOne success", func(t *testing.T) {

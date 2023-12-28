@@ -11,7 +11,7 @@
  * limitations under the License.
  */
 
-package data
+package repository
 
 import (
 	"context"
@@ -51,15 +51,5 @@ func TestRelationFind(t *testing.T) {
 		like, err := model.FindFollowers(context.TODO(), 5, 1, 1)
 		assertions.NoError(err)
 		assertions.ElementsMatch([]int64{1}, like)
-	})
-	const FindFriends = "SELECT target FROM follows WHERE user_id = ? AND target IN (SELECT user_id FROM follows WHERE target = ?) AND id > ? ORDER BY id asc LIMIT ?"
-	t.Run("FindFriends success", func(t *testing.T) {
-		mock.ExpectQuery(FindFriends).
-			WithArgs(int64(1), int64(1), int64(1), int64(1)).
-			WillReturnRows(mock.NewRows([]string{"target"}).AddRow(1))
-		like, err := model.FindFriends(context.TODO(), 1, 1, 1)
-		assertions.NoError(err)
-		assertions.ElementsMatch([]int64{1}, like)
-
 	})
 }

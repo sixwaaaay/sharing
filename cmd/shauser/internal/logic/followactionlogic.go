@@ -21,16 +21,16 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/sixwaaaay/shauser/internal/data"
+	"github.com/sixwaaaay/shauser/internal/repository"
 	"github.com/sixwaaaay/shauser/user"
 )
 
 type FollowActionLogic struct {
-	follow *data.FollowCommand
+	follow repository.FollowCommand
 	logger *zap.Logger
 }
 
-func NewFollowActionLogic(follow *data.FollowCommand, logger *zap.Logger) *FollowActionLogic {
+func NewFollowActionLogic(follow repository.FollowCommand, logger *zap.Logger) *FollowActionLogic {
 	return &FollowActionLogic{follow: follow, logger: logger}
 }
 
@@ -60,7 +60,7 @@ func (l *FollowActionLogic) FollowAction(ctx context.Context, in *user.FollowAct
 	}
 
 	if in.Action == 1 {
-		err := l.follow.Insert(ctx, &data.Follow{UserID: userID, Target: in.UserId})
+		err := l.follow.Insert(ctx, &repository.Follow{UserID: userID, Target: in.UserId})
 
 		if err != nil {
 			l.logger.Error("insert follow failed", zap.Error(err))

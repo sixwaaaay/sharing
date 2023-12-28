@@ -8,7 +8,7 @@ package main
 
 import (
 	"github.com/sixwaaaay/shauser/internal/config"
-	"github.com/sixwaaaay/shauser/internal/data"
+	"github.com/sixwaaaay/shauser/internal/repository"
 	"github.com/sixwaaaay/shauser/internal/logic"
 	"github.com/sixwaaaay/shauser/internal/server"
 	"go.uber.org/zap"
@@ -18,12 +18,12 @@ import (
 // Injectors from wire.go:
 
 func NewServer(config2 *config.Config, db *gorm.DB, logger *zap.Logger) *server.UserServiceServer {
-	userQuery := data.NewUserQuery(db, config2, logger)
-	followQuery := data.NewFollowQuery(db)
+	userQuery := repository.NewUserQuery(db, config2, logger)
+	followQuery := repository.NewFollowQuery(db)
 	usersLogic := logic.NewUsersLogic(userQuery, followQuery, logger)
-	userCommand := data.NewUserCommand(db)
+	userCommand := repository.NewUserCommand(db)
 	signLogic := logic.NewSignLogic(userCommand)
-	followCommand := data.NewFollowCommand(db)
+	followCommand := repository.NewFollowCommand(db)
 	followActionLogic := logic.NewFollowActionLogic(followCommand, logger)
 	followQueryLogic := logic.NewFollowQueryLogic(config2, followQuery, userQuery, usersLogic, logger)
 	updateUserLogic := logic.NewUpdateUserLogic(userCommand)

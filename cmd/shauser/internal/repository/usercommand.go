@@ -11,7 +11,7 @@
  * limitations under the License.
  */
 
-package data
+package repository
 
 import (
 	"context"
@@ -20,22 +20,30 @@ import (
 	"gorm.io/gorm"
 )
 
-// UserCommand is the implementation of dal.userCommand
-type UserCommand struct {
+type UserCommand interface {
+	Insert(ctx context.Context, u *Account) error
+	FindAccount(ctx context.Context, u *Account) error
+	UpdateUser(ctx context.Context, user *User) error
+}
+
+var _ UserCommand = (*userCommand)(nil)
+
+// userCommand is the implementation of dal.userCommand
+type userCommand struct {
 	db       *gorm.DB
 	uniqueID *sonyflake.Sonyflake
 }
 
 // NewUserCommand creates a new user command model
-func NewUserCommand(db *gorm.DB) *UserCommand {
-	return &UserCommand{
+func NewUserCommand(db *gorm.DB) UserCommand {
+	return &userCommand{
 		db:       db,
 		uniqueID: sonyflake.NewSonyflake(sonyflake.Settings{}),
 	}
 }
 
 // Insert insert a user
-func (c *UserCommand) Insert(ctx context.Context, u *Account) error {
+func (c *userCommand) Insert(ctx context.Context, u *Account) error {
 	uid, err := c.uniqueID.NextID()
 	if err != nil {
 		return err
@@ -48,12 +56,12 @@ func (c *UserCommand) Insert(ctx context.Context, u *Account) error {
 
 // FindAccount find an account
 // currently only support find by email
-func (c *UserCommand) FindAccount(ctx context.Context, u *Account) error {
+func (c *userCommand) FindAccount(ctx context.Context, u *Account) error {
 	session := c.db.WithContext(ctx)
 	return session.Table("users").Where("email = ?", u.Email).First(u).Error
 }
 
-func (c *UserCommand) UpdateUser(ctx context.Context, user *User) error {
+func (c *userCommand) UpdateUser(ctx context.Context, user *User) error {
 	session := c.db.WithContext(ctx)
 	return session.Table("users").Where("id = ?", user.ID).Updates(user).Error
 }

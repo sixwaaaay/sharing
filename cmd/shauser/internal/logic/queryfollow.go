@@ -23,19 +23,19 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/sixwaaaay/shauser/internal/config"
-	"github.com/sixwaaaay/shauser/internal/data"
+	"github.com/sixwaaaay/shauser/internal/repository"
 	"github.com/sixwaaaay/shauser/user"
 )
 
 type FollowQueryLogic struct {
 	conf     *config.Config
-	followQ  *data.FollowQuery
-	userQ    *data.UserQuery
+	followQ  repository.FollowQuery
+	userQ    repository.UserQuery
 	getUsers *UsersLogic
 	logger   *zap.Logger
 }
 
-func NewFollowQueryLogic(conf *config.Config, followQ *data.FollowQuery, userQ *data.UserQuery, getUsers *UsersLogic, logger *zap.Logger) *FollowQueryLogic {
+func NewFollowQueryLogic(conf *config.Config, followQ repository.FollowQuery, userQ repository.UserQuery, getUsers *UsersLogic, logger *zap.Logger) *FollowQueryLogic {
 	return &FollowQueryLogic{conf: conf, followQ: followQ, userQ: userQ, getUsers: getUsers, logger: logger}
 }
 

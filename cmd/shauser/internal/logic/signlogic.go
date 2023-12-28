@@ -8,20 +8,20 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/sixwaaaay/shauser/internal/data"
+	"github.com/sixwaaaay/shauser/internal/repository"
 
 	"github.com/sixwaaaay/shauser/user"
 )
 
 // SignLogic is a struct that contains the configuration, user command and logger.
 type SignLogic struct {
-	userCommand *data.UserCommand // User command to be executed
-	logger      *zap.Logger       // Logger to log information and errors
+	userCommand repository.UserCommand // User command to be executed
+	logger      *zap.Logger            // Logger to log information and errors
 }
 
 // NewSignLogic is a constructor for the SignLogic struct.
 // It takes a configuration and a user command as parameters and returns a pointer to a SignLogic struct.
-func NewSignLogic(userCommand *data.UserCommand) *SignLogic {
+func NewSignLogic(userCommand repository.UserCommand) *SignLogic {
 	return &SignLogic{userCommand: userCommand}
 }
 
@@ -38,7 +38,7 @@ func (l *SignLogic) Register(ctx context.Context, in *user.RegisterRequest) (*us
 		return nil, status.Error(codes.InvalidArgument, "invalid argument")
 	}
 
-	account := &data.Account{
+	account := &repository.Account{
 		Username: in.Name,
 		Email:    in.Email,
 	}
@@ -73,7 +73,7 @@ func (l *SignLogic) Login(ctx context.Context, in *user.LoginRequest) (*user.Log
 	if in.Password == "" || in.Email == "" {
 		return nil, status.Error(codes.InvalidArgument, "invalid argument")
 	}
-	account := &data.Account{
+	account := &repository.Account{
 		Email: in.Email,
 	}
 	err := l.userCommand.FindAccount(ctx, account)

@@ -11,10 +11,11 @@
  * limitations under the License.
  */
 
-package data
+package repository
 
 import "time"
 
+// User represents the information of a user in the system.
 type User struct {
 	// ID is the unique identifier of the user.
 	ID int64 `gorm:"column:id;"`

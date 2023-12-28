@@ -20,8 +20,8 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/sixwaaaay/shauser/internal/config"
-	"github.com/sixwaaaay/shauser/internal/data"
 	"github.com/sixwaaaay/shauser/internal/logic"
+	"github.com/sixwaaaay/shauser/internal/repository"
 	"github.com/sixwaaaay/shauser/internal/server"
 )
 
@@ -33,10 +33,10 @@ func NewServer(config *config.Config, db *gorm.DB, logger *zap.Logger) *server.U
 		logic.NewFollowQueryLogic,
 		logic.NewSignLogic,
 		logic.NewUpdateUserLogic,
-		data.NewUserQuery,
-		data.NewUserCommand,
-		data.NewFollowQuery,
-		data.NewFollowCommand,
+		repository.NewUserQuery,
+		repository.NewUserCommand,
+		repository.NewFollowQuery,
+		repository.NewFollowCommand,
 	)
 	return &server.UserServiceServer{}
 }

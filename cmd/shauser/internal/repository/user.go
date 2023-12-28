@@ -11,7 +11,7 @@
  * limitations under the License.
  */
 
-package data
+package repository
 
 import (
 	"context"
@@ -25,16 +25,25 @@ import (
 	"github.com/sixwaaaay/shauser/internal/config"
 )
 
-// UserQuery  is the struct for user query
-type UserQuery struct {
+type UserQuery interface {
+	FindOne(ctx context.Context, id int64) (*User, error)
+	FindMany(ctx context.Context, ids []int64) ([]User, error)
+	FindFollowing(ctx context.Context, id int64) (int32, error)
+	FindFollowers(ctx context.Context, id int64) (int32, error)
+}
+
+var _ UserQuery = (*userQuery)(nil)
+
+// userQuery  is the struct for user query
+type userQuery struct {
 	db     *gorm.DB
 	cache  *cq.Cache[User]
 	enable bool
 }
 
-// NewUserQuery creates a new UserQuery
-func NewUserQuery(db *gorm.DB, conf *config.Config, logger *zap.Logger) *UserQuery {
-	u := &UserQuery{
+// NewUserQuery creates a new userQuery
+func NewUserQuery(db *gorm.DB, conf *config.Config, logger *zap.Logger) UserQuery {
+	u := &userQuery{
 		db: db,
 	}
 
@@ -55,7 +64,7 @@ func NewUserQuery(db *gorm.DB, conf *config.Config, logger *zap.Logger) *UserQue
 }
 
 // FindOne find one user by id
-func (c *UserQuery) FindOne(ctx context.Context, id int64) (*User, error) {
+func (c *userQuery) FindOne(ctx context.Context, id int64) (*User, error) {
 	if c.enable {
 		return c.cache.FindOne(ctx, id)
 	}
@@ -64,14 +73,14 @@ func (c *UserQuery) FindOne(ctx context.Context, id int64) (*User, error) {
 
 // FindMany find many users by ids
 // Even if there is no any user matched, it will return an empty slice
-func (c *UserQuery) FindMany(ctx context.Context, ids []int64) ([]User, error) {
+func (c *userQuery) FindMany(ctx context.Context, ids []int64) ([]User, error) {
 	if c.enable {
 		return c.cache.FindMany(ctx, ids)
 	}
 	return c.findMany(ctx, ids)
 }
 
-func (c *UserQuery) findOne(ctx context.Context, id int64) (*User, error) {
+func (c *userQuery) findOne(ctx context.Context, id int64) (*User, error) {
 	var u User
 	err := c.db.WithContext(ctx).Take(&u, id).Error
 	if err != nil {
@@ -80,7 +89,7 @@ func (c *UserQuery) findOne(ctx context.Context, id int64) (*User, error) {
 	return &u, nil
 }
 
-func (c *UserQuery) findMany(ctx context.Context, ids []int64) ([]User, error) {
+func (c *userQuery) findMany(ctx context.Context, ids []int64) ([]User, error) {
 	var users []User
 	err := c.db.WithContext(ctx).Where("id IN ?", ids).Find(&users).Error
 	if err != nil {
@@ -90,14 +99,14 @@ func (c *UserQuery) findMany(ctx context.Context, ids []int64) ([]User, error) {
 }
 
 // FindFollowing find following count by user id
-func (c *UserQuery) FindFollowing(ctx context.Context, id int64) (int32, error) {
+func (c *userQuery) FindFollowing(ctx context.Context, id int64) (int32, error) {
 	var count int32
 	err := c.db.WithContext(ctx).Raw("SELECT following FROM users WHERE id = ?", id).Scan(&count).Error
 	return count, err
 }
 
 // FindFollowers find followers count by user id
-func (c *UserQuery) FindFollowers(ctx context.Context, id int64) (int32, error) {
+func (c *userQuery) FindFollowers(ctx context.Context, id int64) (int32, error) {
 	var count int32
 	err := c.db.WithContext(ctx).Raw("SELECT followers FROM users WHERE id = ?", id).Scan(&count).Error
 	return count, err

@@ -28,7 +28,7 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/sixwaaaay/shauser/internal/config"
-	"github.com/sixwaaaay/shauser/internal/data"
+	"github.com/sixwaaaay/shauser/internal/repository"
 	"github.com/sixwaaaay/shauser/user"
 )
 
@@ -44,7 +44,7 @@ func main() {
 	mp := must.Must(MeterProvider(&newConfig))
 	defer must.RunE(mp.Shutdown(ctx))
 
-	db := must.Must(data.NewData(&newConfig))
+	db := must.Must(repository.NewDB(&newConfig))
 
 	logger := must.Must(zap.NewDevelopment())
 	defer must.RunE(logger.Sync())

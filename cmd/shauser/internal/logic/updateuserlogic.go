@@ -20,15 +20,15 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/sixwaaaay/shauser/internal/data"
+	"github.com/sixwaaaay/shauser/internal/repository"
 	"github.com/sixwaaaay/shauser/user"
 )
 
 type UpdateUserLogic struct {
-	userCommand *data.UserCommand
+	userCommand repository.UserCommand
 }
 
-func NewUpdateUserLogic(userCommand *data.UserCommand) *UpdateUserLogic {
+func NewUpdateUserLogic(userCommand repository.UserCommand) *UpdateUserLogic {
 	return &UpdateUserLogic{userCommand: userCommand}
 }
 
@@ -40,7 +40,7 @@ func (l *UpdateUserLogic) UpdateUser(ctx context.Context, in *user.UpdateUserReq
 	if in.Name == "" {
 		return nil, status.Error(codes.InvalidArgument, "user name is empty")
 	}
-	var u data.User
+	var u repository.User
 	u.ID = userID
 	u.Username = in.Name
 	u.Bio = in.Bio
