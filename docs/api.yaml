@@ -52,7 +52,7 @@ paths:
       summary: Get user by ID
       operationId: getUser
       security:
-        - { }
+        - {}
         - bearerAuth: []
       parameters:
         - name: user_id
@@ -83,7 +83,7 @@ paths:
       summary: Get users
       operationId: getUsers
       security:
-        - { }
+        - {}
         - bearerAuth: []
       parameters:
         - name: Authorization
@@ -140,8 +140,8 @@ paths:
       summary: Get followers of a user
       operationId: getFollowers
       security:
-        - { }
-        - bearerAuth: [ ]
+        - {}
+        - bearerAuth: []
       parameters:
         - name: Authorization
           in: header
@@ -183,7 +183,7 @@ paths:
       summary: Get users followed by a user
       operationId: getFollowing
       security:
-        - { }
+        - {}
         - bearerAuth: []
       parameters:
         - name: Authorization
@@ -268,8 +268,8 @@ paths:
       summary: Create a comment
       operationId: createComment
       security:
-        - { }
-        - bearerAuth: [ ]
+        - {}
+        - bearerAuth: []
       parameters:
         - name: Authorization
           in: header
@@ -519,7 +519,7 @@ components:
     bearerAuth: # arbitrary name for the security scheme
       type: http
       scheme: bearer
-      bearerFormat: JWT   # optional, arbitrary value for documentation purposes
+      bearerFormat: JWT # optional, arbitrary value for documentation purposes
   schemas:
     RegisterRequest:
       type: object
