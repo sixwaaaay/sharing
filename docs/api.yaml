@@ -11,6 +11,8 @@ paths:
     post:
       summary: Authenticate user and login
       operationId: login
+      security:
+        - {}
       requestBody:
         description: User credentials
         required: true
@@ -29,6 +31,8 @@ paths:
     post:
       summary: Register a new user
       operationId: register
+      security:
+        - {}
       requestBody:
         description: User information for registration
         required: true
@@ -47,6 +51,9 @@ paths:
     get:
       summary: Get user by ID
       operationId: getUser
+      security:
+        - { }
+        - bearerAuth: []
       parameters:
         - name: user_id
           in: path
@@ -75,6 +82,9 @@ paths:
     get:
       summary: Get users
       operationId: getUsers
+      security:
+        - { }
+        - bearerAuth: []
       parameters:
         - name: Authorization
           in: header
@@ -129,6 +139,9 @@ paths:
     post:
       summary: Get followers of a user
       operationId: getFollowers
+      security:
+        - { }
+        - bearerAuth: [ ]
       parameters:
         - name: Authorization
           in: header
@@ -169,6 +182,9 @@ paths:
     post:
       summary: Get users followed by a user
       operationId: getFollowing
+      security:
+        - { }
+        - bearerAuth: []
       parameters:
         - name: Authorization
           in: header
@@ -251,6 +267,9 @@ paths:
     patch:
       summary: Create a comment
       operationId: createComment
+      security:
+        - { }
+        - bearerAuth: [ ]
       parameters:
         - name: Authorization
           in: header
@@ -493,7 +512,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/GetMessagesReply"
+security:
+  - bearerAuth: []
 components:
+  securitySchemes:
+    bearerAuth: # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT   # optional, arbitrary value for documentation purposes
   schemas:
     RegisterRequest:
       type: object
