@@ -11,6 +11,8 @@ paths:
     post:
       summary: Authenticate user and login
       operationId: login
+      security:
+        - {}
       requestBody:
         description: User credentials
         required: true
@@ -29,6 +31,8 @@ paths:
     post:
       summary: Register a new user
       operationId: register
+      security:
+        - {}
       requestBody:
         description: User information for registration
         required: true
@@ -47,6 +51,9 @@ paths:
     get:
       summary: Get user by ID
       operationId: getUser
+      security:
+        - {}
+        - bearerAuth: []
       parameters:
         - name: user_id
           in: path
@@ -67,7 +74,152 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
+                type: object
+                properties:
+                  user:
+                    $ref: "#/components/schemas/User"
+  /users:
+    get:
+      summary: Get users
+      operationId: getUsers
+      security:
+        - {}
+        - bearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          description: Bearer token for authentication
+          required: false
+          schema:
+            type: string
+        - name: ids
+          in: query
+          description: IDs of the users to retrieve
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              format: int64
+      responses:
+        "200":
+          description: User object
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/User"
+    patch:
+      summary: Update user profile
+      operationId: updateProfile
+      parameters:
+        - name: Authorization
+          in: header
+          description: Bearer token for authentication
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserProfileReq"
+      responses:
+        "200":
+          description: User object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateProfileResponse"
+  /users/{user_id}/followers:
+    post:
+      summary: Get followers of a user
+      operationId: getFollowers
+      security:
+        - {}
+        - bearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          description: Bearer token for authentication
+          required: false
+          schema:
+            type: string
+        - name: user_id
+          in: path
+          description: ID of the user to retrieve
+          required: true
+          schema:
+            type: string
+            format: int64
+        - name: page
+          in: query
+          description: page number
+          required: false
+          schema:
+            type: string
+            format: int64
+        - name: limit
+          in: query
+          description: limit number
+          required: false
+          schema:
+            type: integer
+            format: int32
+      responses:
+        "200":
+          description: User object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UsersPage"
+
+  /users/{user_id}/following:
+    post:
+      summary: Get users followed by a user
+      operationId: getFollowing
+      security:
+        - {}
+        - bearerAuth: []
+      parameters:
+        - name: Authorization
+          in: header
+          description: Bearer token for authentication
+          required: false
+          schema:
+            type: string
+        - name: user_id
+          in: path
+          description: ID of the user to retrieve
+          required: true
+          schema:
+            type: string
+            format: int64
+        - name: page
+          in: query
+          description: page number
+          required: false
+          schema:
+            type: string
+            format: int64
+        - name: limit
+          in: query
+          description: limit number
+          required: false
+          schema:
+            type: integer
+            format: int32
+      responses:
+        "200":
+          description: User object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UsersPage"
   /assets/new:
     post:
       summary: generate new asset pre-signed url to upload
@@ -86,7 +238,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/NewAssetReply"
-
   /follow:
     post:
       summary: Follow or unfollow a user
@@ -112,83 +263,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FollowActionReply"
-  /follow/followers:
-    post:
-      summary: Get followers of a user
-      operationId: getFollowers
-      parameters:
-        - name: Authorization
-          in: header
-          description: Bearer token for authentication
-          required: false
-          schema:
-            type: string
-      requestBody:
-        description: User ID and action to perform
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/FollowUserQuery"
-      responses:
-        "200":
-          description: User object
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UsersPage"
-  /follow/following:
-    post:
-      summary: Get users followed by a user
-      operationId: getFollowing
-      parameters:
-        - name: Authorization
-          in: header
-          description: Bearer token for authentication
-          required: false
-          schema:
-            type: string
-      requestBody:
-        description: User ID and action to perform
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/FollowUserQuery"
-      responses:
-        "200":
-          description: User object
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UsersPage"
-  /users:
-    patch:
-      summary: Update user profile
-      operationId: updateProfile
-      parameters:
-        - name: Authorization
-          in: header
-          description: Bearer token for authentication
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UserProfileReq"
-      responses:
-        "200":
-          description: User object
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UpdateProfileResponse"
   /comments:
     patch:
       summary: Create a comment
       operationId: createComment
+      security:
+        - {}
+        - bearerAuth: []
       parameters:
         - name: Authorization
           in: header
@@ -431,7 +512,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/GetMessagesReply"
+security:
+  - bearerAuth: []
 components:
+  securitySchemes:
+    bearerAuth: # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT # optional, arbitrary value for documentation purposes
   schemas:
     RegisterRequest:
       type: object
@@ -692,23 +780,6 @@ components:
           $ref: "#/components/schemas/User"
         token:
           type: string
-    FollowUserQuery:
-      type: object
-      properties:
-        user_id:
-          type: string
-          format: int64
-          minimum: 0
-        limit:
-          type: integer
-          format: int32
-          minimum: 0
-        page:
-          type: string
-          format: int64
-          minimum: 0
-      required:
-        - user_id
     User:
       type: object
       properties:
