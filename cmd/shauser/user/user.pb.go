@@ -164,7 +164,7 @@ type GetUserRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	UserId int64 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	UserId int64 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty" path:"user_id"`
 }
 
 func (x *GetUserRequest) Reset() {
@@ -258,7 +258,7 @@ type GetUsersRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	UserIds []int64 `protobuf:"varint,1,rep,packed,name=user_ids,json=userIds,proto3" json:"user_ids,omitempty"`
+	UserIds []int64 `protobuf:"varint,1,rep,packed,name=user_ids,json=userIds,proto3" json:"user_ids,omitempty" query:"ids"`
 }
 
 func (x *GetUsersRequest) Reset() {
@@ -657,9 +657,9 @@ type FollowQueryReq struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	UserId int64 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	Page   int64 `protobuf:"varint,2,opt,name=page,proto3" json:"page,omitempty"`
-	Limit  int32 `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
+	UserId int64 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty" param:"user_id"`
+	Page   int64 `protobuf:"varint,2,opt,name=page,proto3" json:"page,omitempty" query:"page"`
+	Limit  int32 `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty" query:"limit"`
 }
 
 func (x *FollowQueryReq) Reset() {

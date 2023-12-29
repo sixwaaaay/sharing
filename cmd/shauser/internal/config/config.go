@@ -16,13 +16,16 @@ package config
 import (
 	"github.com/redis/go-redis/v9"
 	"github.com/spf13/viper"
+	"golang.org/x/oauth2"
 )
 
 type Config struct {
-	ListenOn     string // ListenOn is the address to listen on
+	ListenOn     string // ListenOn is the address gRPC server listening on
+	HTTP         string // HTTP is the address of the HTTP server
 	DefaultLimit int32  // DefaultLimit is the default limit of the query
 	MaxLimit     int32  // MaxLimit is the max limit of the query
 	Secret       string // Secret is the secret used to sign the JWT
+	TTL          string // TTL is the expiration duration of JWT
 	MySQL        struct {
 		DSN      string   // MySQLDSN is the DSN of the MySQL database
 		Replicas []string // MySQLDSN is the replicas database dsn of the MySQL database
@@ -39,6 +42,7 @@ type Config struct {
 		TTL     string `yaml:"ttl"`     // CacheTTL is the expiration duration of cache
 	}
 	Redis redis.UniversalOptions
+	Oauth oauth2.Config
 }
 
 // NewConfig parses the config file and returns a Config struct

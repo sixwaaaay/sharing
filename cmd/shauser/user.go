@@ -15,8 +15,10 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -29,6 +31,7 @@ import (
 
 	"github.com/sixwaaaay/shauser/internal/config"
 	"github.com/sixwaaaay/shauser/internal/repository"
+	"github.com/sixwaaaay/shauser/internal/web"
 	"github.com/sixwaaaay/shauser/user"
 )
 
@@ -58,11 +61,22 @@ func main() {
 
 	ln := must.Must(net.Listen("tcp", newConfig.ListenOn))
 
+	m := web.M(newConfig, server)
 	// graceful shutdown
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
-	go must.RunE(grpcServer.Serve(ln))
+	go func() {
+		if err := m.Start(newConfig.HTTP); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			logger.Error("failed to start http server", zap.Error(err))
+		}
+	}()
+	go func() {
+		if err := grpcServer.Serve(ln); err != nil && !errors.Is(err, grpc.ErrServerStopped) {
+			logger.Error("failed to start grpc server", zap.Error(err))
+		}
+	}()
 
 	<-ch
 	grpcServer.GracefulStop()
+	must.RunE(m.Shutdown(ctx))
 }
