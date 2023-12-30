@@ -56,13 +56,14 @@ public class CommentController {
      */
     @GetMapping("/reply")
     public ReplyResult getReplyCommentList(
+            @RequestParam("belong_to") Long belongTo,
             @RequestParam("reply_to") Long replyTo,
             @RequestParam("page") Optional<Long> id,
             @RequestParam(value = "size", defaultValue = "10") Integer size,
             @RequestHeader(value = "Authorization", required = false) String header
     ) {
         var principal = tokenParser.parse(header);
-        return commentService.getReplyCommentList(replyTo, id.orElse(0L), size, principal.map(Principal::getId).orElse(0L));
+        return commentService.getReplyCommentList(belongTo, replyTo, id.orElse(0L), size, principal.map(Principal::getId).orElse(0L));
     }
 
     /**

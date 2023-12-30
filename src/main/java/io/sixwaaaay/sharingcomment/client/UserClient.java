@@ -6,19 +6,20 @@
 package io.sixwaaaay.sharingcomment.client;
 
 
-import io.sixwaaaay.sharingcomment.transmission.GetUserReply;
-import io.sixwaaaay.sharingcomment.transmission.GetUserReq;
 import io.sixwaaaay.sharingcomment.transmission.GetMultipleUserReply;
-import io.sixwaaaay.sharingcomment.transmission.GetMultipleUserReq;
-import org.springframework.web.bind.annotation.RequestBody;
+import io.sixwaaaay.sharingcomment.transmission.GetUserReply;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.service.annotation.PostExchange;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.service.annotation.GetExchange;
+
+import java.util.Collection;
 
 
 public interface UserClient {
-    @PostExchange("/sixwaaaay.user.UserService/GetUser")
-    GetUserReply getUser(@RequestBody GetUserReq req, @RequestHeader("Authorization") String token);
+    @GetExchange("/users/{user_id}")
+    GetUserReply getUser(@PathVariable("user_id") long id, @RequestHeader(value = "Authorization", required = false) String token);
 
-    @PostExchange("/sixwaaaay.user.UserService/GetUsers")
-    GetMultipleUserReply getManyUser(@RequestBody GetMultipleUserReq req, @RequestHeader("Authorization") String token);
+    @GetExchange("/users")
+    GetMultipleUserReply getManyUser(@RequestParam("ids") Collection<Long> ids, @RequestHeader(value = "Authorization", required = false) String token);
 }

@@ -18,8 +18,8 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: AOT Compilation
         run: |
-            mvn -q -Pnative compile -DskipTests
-            mvn -q -Pnative spring-boot:process-aot -DskipTests
+          mvn -q -Pnative compile -DskipTests
+          mvn -q -Pnative spring-boot:process-aot -DskipTests
       - name: docker-compose up
         run: docker-compose up -d
       - name: Unit Test
@@ -38,7 +38,6 @@ jobs:
           VOTE_SERVICE_BASE_URL: http://localhost:8081
           USER_SERVICE_BASE_URL: http://localhost:5000
           REDIS_HOST: localhost
-          SERVICE_VOTE_ENABLED: false
 
   release:
     runs-on: ubuntu-latest

@@ -33,6 +33,7 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
 
     /**
      * select ... from comment where
+     * belong_to = ?
      * reply_to = ?
      * order by id asc
      * limit ?
@@ -43,7 +44,7 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
      * @return the list of comments
      */
     @Cacheable("comments-reply")
-    List<Comment> findByReplyToAndIdGreaterThanOrderByIdAsc(Long replyTo, Long id, Limit limit);
+    List<Comment> findByBelongToAndReplyToAndIdGreaterThanOrderByIdAsc(Long belongTo, Long replyTo, Long id, Limit limit);
 
 
     /**
