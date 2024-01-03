@@ -1,0 +1,40 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "GrpcUser";
+
+package sixwaaaay.user;
+
+message User {
+  int64 id = 1;
+  string name = 2;
+  bool is_follow = 5;
+  string avatar_url = 6;
+  string bg_url = 7;
+  string bio = 8;
+  int32 likes_given = 9;
+  int32 likes_received = 10;
+  int32 videos_posted = 11;
+  int32 following = 12;
+  int32 followers = 13;
+}
+
+message GetUserRequest {
+  int64 user_id = 1;
+}
+
+message GetUserReply {
+  User user = 1;
+}
+
+message GetUsersRequest {
+  repeated int64 user_ids = 1;
+}
+
+message GetUsersReply {
+  repeated User users = 1;
+}
+
+service UserService {
+  rpc GetUser(GetUserRequest) returns (GetUserReply);
+  rpc GetUsers(GetUsersRequest) returns (GetUsersReply);
+}
