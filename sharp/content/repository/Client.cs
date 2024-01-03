@@ -1,6 +1,8 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Security.Claims;
+using System.Text.Json.Serialization;
 using Grpc.Core;
 using Grpc.Core.Interceptors;
+using Grpc.Net.Client;
 using Riok.Mapperly.Abstractions;
 
 namespace content.repository;
@@ -87,6 +89,12 @@ public interface IVoteRepository
     Task<IReadOnlyList<long>> VotedOfVideos(long[] videoIds);
 
     Task<IReadOnlyList<long>> VotedVideos(long userId, long page, int size);
+}
+
+public enum VoteType
+{
+    CancelVote,
+    Vote
 }
 
 public class VoteRepository(HttpClient client) : IVoteRepository
@@ -193,3 +201,49 @@ public class VoteRepository(HttpClient client) : IVoteRepository
 [JsonSerializable(typeof(VoteRepository.ScanReq))]
 [JsonSerializable(typeof(VoteRepository.ScanResp))]
 internal partial class VoteJsonContext : JsonSerializerContext;
+
+
+public static class Extension
+{
+    public static IServiceCollection AddVoteRepository(this IServiceCollection services) =>
+        services.AddScoped<IVoteRepository, VoteRepository>();
+
+    public static IServiceCollection AddUserRepository(this IServiceCollection services) =>
+        services.AddScoped<IUserRepository, UserRepository>();
+
+    public static IServiceCollection AddGrpcUser(this IServiceCollection services) =>
+        services.AddSingleton<ChannelBase>(sp => GrpcChannel.ForAddress(
+            sp.GetRequiredService<IConfiguration>().GetConnectionString("User") ??
+            throw new InvalidOperationException(@"User connection string is null.")));
+
+    public static IServiceCollection AddVoteClient(this IServiceCollection services) =>
+        services.AddSingleton<HttpClient>(sp =>
+        {
+            var connectionString = sp.GetRequiredService<IConfiguration>().GetConnectionString("Vote") ??
+                                   throw new InvalidOperationException(@"Vote connection string is null.");
+            return new HttpClient
+            {
+                BaseAddress = new Uri(connectionString.TrimEnd('/')),
+            };
+        });
+
+    public static IApplicationBuilder UseToken(this IApplicationBuilder app) =>
+        app.Use(async (context, next) =>
+        {
+            var userRepository = context.RequestServices.GetService<IUserRepository>() ??
+                                 throw new NullReferenceException();
+            userRepository.Token = context.Request.Headers.Authorization;
+
+            var voteRepository = context.RequestServices.GetService<IVoteRepository>() ??
+                                 throw new NullReferenceException();
+            voteRepository.CurrentUser  = context.User.UserId();
+
+            await next.Invoke();
+        });
+    
+    public static long UserId(this ClaimsPrincipal user)
+    {
+        var id = user.Claims.FirstOrDefault(c => c.Type == "Id")?.Value;
+        return id == null ? 0 : long.Parse(id);
+    }
+}
