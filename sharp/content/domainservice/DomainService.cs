@@ -131,8 +131,6 @@ public record VideoDto
     public string CoverUrl { get; init; } = string.Empty;
     public string VideoUrl { get; init; } = string.Empty;
     public int Duration { get; init; }
-    public string Category { get; init; } = string.Empty;
-    public string Tags { get; init; } = string.Empty;
     public int ViewCount { get; init; }
     public int LikeCount { get; init; }
     public DateTime CreatedAt { get; init; }
