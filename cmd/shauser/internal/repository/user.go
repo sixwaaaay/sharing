@@ -83,20 +83,16 @@ func (c *userQuery) FindMany(ctx context.Context, ids []int64) ([]User, error) {
 
 func (c *userQuery) findOne(ctx context.Context, id int64) (*User, error) {
 	var u User
-	err := c.db.WithContext(ctx).Take(&u, id).Error
-	if err != nil {
-		return nil, err
-	}
-	return &u, nil
+	session := c.db.WithContext(ctx)
+	err := session.Take(&u, id).Error
+	return &u, err
 }
 
 func (c *userQuery) findMany(ctx context.Context, ids []int64) ([]User, error) {
 	var users []User
-	err := c.db.WithContext(ctx).Where("id IN ?", ids).Find(&users).Error
-	if err != nil {
-		return nil, err
-	}
-	return users, nil
+	session := c.db.WithContext(ctx)
+	err := session.Where("id IN ?", ids).Find(&users).Error
+	return users, err
 }
 
 // FindByMail is a method of the userQuery struct.
@@ -104,23 +100,23 @@ func (c *userQuery) findMany(ctx context.Context, ids []int64) ([]User, error) {
 // It returns a pointer to a User and an error.
 func (c *userQuery) FindByMail(ctx context.Context, mail string) (*User, error) {
 	var u User
-	err := c.db.WithContext(ctx).Where("email = ?", mail).First(&u).Error
-	if err != nil {
-		return nil, err
-	}
-	return &u, nil
+	session := c.db.WithContext(ctx)
+	err := session.Where("email = ?", mail).First(&u).Error
+	return &u, err
 }
 
 // FindFollowing find following count by user id
 func (c *userQuery) FindFollowing(ctx context.Context, id int64) (int32, error) {
 	var count int32
-	err := c.db.WithContext(ctx).Raw("SELECT following FROM users WHERE id = ?", id).Scan(&count).Error
+	session := c.db.WithContext(ctx)
+	err := session.Raw("SELECT following FROM users WHERE id = ?", id).Scan(&count).Error
 	return count, err
 }
 
 // FindFollowers find followers count by user id
 func (c *userQuery) FindFollowers(ctx context.Context, id int64) (int32, error) {
 	var count int32
-	err := c.db.WithContext(ctx).Raw("SELECT followers FROM users WHERE id = ?", id).Scan(&count).Error
+	session := c.db.WithContext(ctx)
+	err := session.Raw("SELECT followers FROM users WHERE id = ?", id).Scan(&count).Error
 	return count, err
 }

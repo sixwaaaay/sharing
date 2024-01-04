@@ -15,57 +15,94 @@ package repository
 
 import (
 	"context"
+	"math"
+	"os"
 	"testing"
 
-	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
+	"go.uber.org/zap"
+
+	"github.com/sixwaaaay/shauser/internal/config"
 )
+
+const dsn = "MYSQL_DSN"
+
+type Ca struct {
+	Enabled bool   `yaml:"enabled"`
+	TTL     string `yaml:"ttl"`
+}
 
 func TestUserFind(t *testing.T) {
 	assertions := assert.New(t)
-	mock, gormDB := mockDB(t)
-	model := NewUserQuery(gormDB, nil, nil)
-	const findOne = "SELECT `users`.`id`,`users`.`username`,`users`.`avatar_url`,`users`.`bg_url`,`users`.`bio`,`users`.`likes_given`,`users`.`likes_received`,`users`.`videos_posted`,`users`.`nationality`,`users`.`following`,`users`.`followers` " +
-		"FROM `users` WHERE `users`.`id` = ? LIMIT 1"
+	DSN := os.Getenv(dsn)
+
+	c := config.Config{
+		Cache: struct {
+			Enabled bool   `yaml:"enabled"`
+			TTL     string `yaml:"ttl"`
+		}(Ca{Enabled: false}),
+		MySQL: struct {
+			DSN      string
+			Replicas []string
+		}{DSN: DSN},
+	}
+
+	gormDB, err := NewDB(&c)
+	assertions.NoError(err)
+	query := NewUserQuery(gormDB, &c, zap.L())
 	t.Run("FindOne success", func(t *testing.T) {
-		mock.ExpectQuery(findOne).
-			WithArgs(1).
-			WillReturnRows(sqlmock.NewRows([]string{"id", "username"}).AddRow(1, "test"))
-		user, err := model.FindOne(context.TODO(), 1)
+		one, err := query.FindOne(context.Background(), 1)
 		assertions.NoError(err)
-		assertions.Equal("test", user.Username)
+		assertions.NotNil(one)
 	})
 	t.Run("FindOne error", func(t *testing.T) {
-		mock.ExpectQuery(findOne).
-			WithArgs(1).
-			WillReturnRows(sqlmock.NewRows([]string{"id", "username"}))
-		user, err := model.FindOne(context.TODO(), 1)
-		// method will return gorm.ErrRecordNotFound if no record found
+		_, err := query.FindOne(context.Background(), 0)
 		assertions.Error(err)
-		assertions.Equal(gorm.ErrRecordNotFound, err)
-		assertions.Nil(user)
 	})
-	const findManyUser = "SELECT `users`.`id`,`users`.`username`,`users`.`avatar_url`,`users`.`bg_url`,`users`.`bio`,`users`.`likes_given`,`users`.`likes_received`,`users`.`videos_posted`,`users`.`nationality`,`users`.`following`,`users`.`followers` FROM `users` WHERE id IN (?,?)"
 	t.Run("FindMany success", func(t *testing.T) {
-		mock.ExpectQuery(findManyUser).
-			WithArgs(1, 2).
-			WillReturnRows(sqlmock.NewRows([]string{"id", "username"}).AddRow(1, "test1").AddRow(2, "test2"))
-		users, err := model.FindMany(context.TODO(), []int64{1, 2})
+
+		many, err := query.FindMany(context.Background(), []int64{1, 2})
 		assertions.NoError(err)
-		assertions.Equal(2, len(users))
-		assertions.Equal("test1", users[0].Username)
-		assertions.Equal("test2", users[1].Username)
+		assertions.NotNil(many)
 	})
 
 	t.Run("FindMany nothing", func(t *testing.T) {
-		mock.ExpectQuery(findManyUser).
-			WithArgs(1, 2).
-			WillReturnRows(sqlmock.NewRows([]string{"id", "username"}))
-		users, err := model.FindMany(context.TODO(), []int64{1, 2})
+		many, err := query.FindMany(context.Background(), []int64{math.MaxInt64})
 		assertions.NoError(err)
-		assertions.Len(users, 0)
+		assertions.NotNil(many)
+	})
+
+	t.Run("FindByEmail success", func(t *testing.T) {
+		one, err := query.FindByMail(context.Background(), "1@x.com")
+		assertions.NoError(err)
+		assertions.NotNil(one)
+	})
+
+	t.Run("QueryFollowing success", func(t *testing.T) {
+		one, err := query.FindFollowing(context.Background(), 1)
+		assertions.NoError(err)
+		assertions.NotNil(one)
+	})
+
+	t.Run("QueryFollowers success", func(t *testing.T) {
+		one, err := query.FindFollowers(context.Background(), 1)
+		assertions.NoError(err)
+		assertions.NotNil(one)
+	})
+
+	c.Cache.Enabled = true
+	query = NewUserQuery(gormDB, &c, zap.L())
+	t.Run("FindOne success", func(t *testing.T) {
+		one, err := query.FindOne(context.Background(), 1)
+		assertions.NoError(err)
+		assertions.NotNil(one)
+	})
+
+	t.Run("FindMany success", func(t *testing.T) {
+
+		many, err := query.FindMany(context.Background(), []int64{1, 2})
+		assertions.NoError(err)
+		assertions.NotNil(many)
 	})
 
 	user := &User{
@@ -78,23 +115,9 @@ func TestUserFind(t *testing.T) {
 	//	generate sql
 	s := tx.Statement.SQL.String()
 	t.Log(s)
+	assertions.NoError(tx.Error)
 
-}
-
-func mockDB(t *testing.T) (sqlmock.Sqlmock, *gorm.DB) {
-	db, mock, err := sqlmock.New(
-		sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual),
-	)
-	assert.NoError(t, err)
-	opts := &gorm.Config{
-		QueryFields:            true,
-		SkipDefaultTransaction: true,
-	}
-	d := mysql.New(mysql.Config{
-		SkipInitializeWithVersion: true,
-		Conn:                      db,
-	})
-	gormDB, err := gorm.Open(d, opts)
-	assert.NoError(t, err)
-	return mock, gormDB
+	c.MySQL.Replicas = []string{DSN}
+	gormDB, err = NewDB(&c)
+	assertions.NoError(err)
 }

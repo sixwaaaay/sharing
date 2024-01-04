@@ -50,18 +50,20 @@ func (c *userCommand) Insert(ctx context.Context, u *Account) error {
 	}
 	u.ID = int64(uid)
 	session := c.db.WithContext(ctx)
-	err = session.Table("users").Create(u).Error
-	return err
+	tx := session.Table("users").Create(u)
+	return tx.Error
 }
 
 // FindAccount find an account
 // currently only support find by email
 func (c *userCommand) FindAccount(ctx context.Context, u *Account) error {
 	session := c.db.WithContext(ctx)
-	return session.Table("users").Where("email = ?", u.Email).First(u).Error
+	tx := session.Table("users").Where("email = ?", u.Email).First(u)
+	return tx.Error
 }
 
 func (c *userCommand) UpdateUser(ctx context.Context, user *User) error {
 	session := c.db.WithContext(ctx)
-	return session.Table("users").Where("id = ?", user.ID).Updates(user).Error
+	tx := session.Table("users").Where("id = ?", user.ID).Updates(user)
+	return tx.Error
 }

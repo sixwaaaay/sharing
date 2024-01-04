@@ -40,33 +40,33 @@ var configFile = flag.String("f", "configs/config.yaml", "the config file")
 func main() {
 	flag.Parse()
 	ctx := context.Background()
-	newConfig := must.Must(config.NewConfig(*configFile))
-	tp := must.Must(TracerProvider(&newConfig))
+	conf := must.Must(config.NewConfig(*configFile))
+	tp := must.Must(TracerProvider(&conf))
 	defer must.RunE(tp.Shutdown(ctx))
 
-	mp := must.Must(MeterProvider(&newConfig))
-	defer must.RunE(mp.Shutdown(ctx))
+	mp := must.Must(MeterProvider(&conf))
+	defer mp.Shutdown(ctx)
 
-	db := must.Must(repository.NewDB(&newConfig))
+	db := must.Must(repository.NewDB(&conf))
 
 	logger := must.Must(zap.NewDevelopment())
-	defer must.RunE(logger.Sync())
+	defer logger.Sync()
 
-	server := NewServer(&newConfig, db, logger)
+	server := NewServer(&conf, db, logger)
 
 	grpcServer := grpc.NewServer(
 		grpc.StatsHandler(otelgrpc.NewServerHandler()),
-		grpc.UnaryInterceptor(rpc.Handler([]byte(newConfig.Secret))))
+		grpc.UnaryInterceptor(rpc.Handler([]byte(conf.Secret))))
 	user.RegisterUserServiceServer(grpcServer, server)
 
-	ln := must.Must(net.Listen("tcp", newConfig.ListenOn))
+	ln := must.Must(net.Listen("tcp", conf.ListenOn))
 
-	m := web.M(newConfig, server)
+	m := web.M(conf, server)
 	// graceful shutdown
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
-		if err := m.Start(newConfig.HTTP); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		if err := m.Start(conf.HTTP); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			logger.Error("failed to start http server", zap.Error(err))
 		}
 	}()

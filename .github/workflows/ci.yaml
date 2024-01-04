@@ -3,15 +3,49 @@ on:
   push:
     branches:
       - main
-    tags:
-      - '*'
   pull_request:
     paths:
       - 'cmd/shauser/**'
 jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cmd/shauser
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Docker Compose
+        run: |
+          docker compose up -d
+
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: "1.21"
+      - name: Install dependencies
+        run: |
+          go mod download
+      - name: Run tests
+        run: |
+          go test -v ./... -coverprofile=coverage.txt -covermode=atomic
+        env:
+          MYSQL_DSN: "mysql_user:mysql@tcp(localhost:3306)/users?charset=utf8mb4&parseTime=True&loc=Local&allowNativePasswords=true"
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v2
+        with:
+          file: ./cmd/shauser/coverage.txt
+          flags: users
+          fail_ci_if_error: true
+
   image-release:
     name: Release Image
     runs-on: ubuntu-latest
+    needs:
+      - test
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

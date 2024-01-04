@@ -64,14 +64,13 @@ func (c *followCommand) Insert(ctx context.Context, f *Follow) (err error) {
 			return err
 		}
 		// Increment the follow count of the user who is following.
-		if err := tx.Raw("UPDATE users SET following = following + 1 WHERE id = ?", f.UserID).Error; err != nil {
-			return err
+		res := tx.Raw("UPDATE users SET following = following + 1 WHERE id = ?", f.UserID)
+		if res.Error != nil {
+			return res.Error
 		}
 		// Increment the follower count of the user who is being followed.
-		if err := tx.Raw("UPDATE users SET followers = followers + 1 WHERE id = ?", f.Target).Error; err != nil {
-			return err
-		}
-		return nil
+		res = tx.Raw("UPDATE users SET followers = followers + 1 WHERE id = ?", f.Target)
+		return res.Error
 	})
 }
 
@@ -82,20 +81,20 @@ func (c *followCommand) Delete(ctx context.Context, userid, followTo int64) erro
 	// Start a new database transaction.
 	err := c.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		// Delete the follow relationship from the database.
-		if res := tx.Exec("DELETE FROM follows WHERE user_id = ? AND target = ?", userid, followTo); res.Error != nil {
+		res := tx.Exec("DELETE FROM follows WHERE user_id = ? AND target = ?", userid, followTo)
+		if res.Error != nil {
 			return res.Error
 		} else if res.RowsAffected == 0 { // If no rows were affected by the deletion, return an error.
 			return gorm.ErrRecordNotFound
 		}
 		// Decrement the follow count of the user who was following.
-		if err := tx.Exec("UPDATE users SET following = following - 1 WHERE id = ?", userid).Error; err != nil {
-			return err
+		res = tx.Exec("UPDATE users SET following = following - 1 WHERE id = ?", userid)
+		if res.Error != nil {
+			return res.Error
 		}
 		// Decrement the follower count of the user who was being followed.
-		if err := tx.Exec("UPDATE users SET followers = followers - 1 WHERE id = ?", followTo).Error; err != nil {
-			return err
-		}
-		return nil
+		res = tx.Exec("UPDATE users SET followers = followers - 1 WHERE id = ?", followTo)
+		return res.Error
 	})
 	return err
 }

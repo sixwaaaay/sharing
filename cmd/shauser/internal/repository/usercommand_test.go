@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 sixwaaaay.
+ * Copyright (c) 2024 sixwaaaay.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,13 +17,14 @@ import (
 	"context"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/sixwaaaay/shauser/internal/config"
 )
 
-func TestRelationFind(t *testing.T) {
+func TestName(t *testing.T) {
 
 	assertions := assert.New(t)
 	DSN := os.Getenv(dsn)
@@ -41,49 +42,27 @@ func TestRelationFind(t *testing.T) {
 
 	gormDB, err := NewDB(&c)
 	assertions.NoError(err)
+	command := NewUserCommand(gormDB)
 
-	model := NewFollowQuery(gormDB)
-
-	t.Run("FindFollowExits", func(t *testing.T) {
-		like, err := model.FindFollowExits(context.TODO(), 1, []int64{})
-		assertions.NoError(err)
-		assertions.Empty(like)
-	})
-
-	t.Run("FindFollowExits success", func(t *testing.T) {
-		_, err := model.FindFollowExits(context.TODO(), 1, []int64{1, 2})
-		assertions.NoError(err)
-	})
-
-	t.Run("FindFollowing success", func(t *testing.T) {
-		_, err := model.FindFollowing(context.TODO(), 1, 3, 1)
-		assertions.NoError(err)
-	})
-
-	t.Run("FindFollowers success", func(t *testing.T) {
-		_, err := model.FindFollowers(context.TODO(), 5, 1, 1)
-		assertions.NoError(err)
-	})
-
-	command := NewFollowCommand(gormDB)
-
-	t.Run("command", func(t *testing.T) {
-		err := command.Insert(context.Background(), &Follow{
-			UserID: 1,
-			Target: 2,
+	t.Run("Create success", func(t *testing.T) {
+		err := command.Insert(context.Background(), &Account{
+			Email: time.Now().String() + "@test.com",
 		})
 		assertions.NoError(err)
+	})
 
-		err = command.Insert(context.Background(), &Follow{
-			UserID: 1,
-			Target: 2,
+	t.Run("FindAccount success", func(t *testing.T) {
+		err := command.FindAccount(context.Background(), &Account{
+			Email: "2@x.com",
 		})
-		assertions.Error(err)
-
-		err = command.Delete(context.Background(), 1, 2)
 		assertions.NoError(err)
+	})
 
-		err = command.Delete(context.Background(), 1, 2)
-		assertions.Error(err)
+	t.Run("UpdateUser success", func(t *testing.T) {
+		err := command.UpdateUser(context.Background(), &User{
+			ID:        1,
+			AvatarURL: "http://example.com/1.jpg",
+		})
+		assertions.NoError(err)
 	})
 }
