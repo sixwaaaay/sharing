@@ -1,4 +1,0 @@
-ListenOn: :8080
-CommentService:
-  Address: shacomment:8080
-SECRET: $JWT_SECRET

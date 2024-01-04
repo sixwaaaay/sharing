@@ -1,4 +1,0 @@
-ListenOn: :8091
-CommentService:
-  Address: shamessage:8090
-SECRET: $JWT_SECRET

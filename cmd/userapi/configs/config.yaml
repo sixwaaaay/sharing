@@ -1,3 +1,0 @@
-ListenOn: :8080
-UserServiceAddress: shauser:8080
-SECRET: $JWT_SECRET
