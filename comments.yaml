@@ -10,6 +10,9 @@ paths:
     get:
       summary: "GET comments/main"
       operationId: "getMainCommentList"
+      security:
+        - { }
+        - BearerAuth: [ ]
       parameters:
         - name: "belong_to"
           in: "query"
@@ -30,11 +33,6 @@ paths:
             type: "integer"
             format: "int32"
             default: "10"
-        - name: "Authorization"
-          in: "header"
-          required: false
-          schema:
-            type: "string"
       responses:
         "200":
           description: "OK"
@@ -46,6 +44,9 @@ paths:
     get:
       summary: "GET comments/reply"
       operationId: "getReplyCommentList"
+      security:
+        - { }
+        - BearerAuth: [ ]
       parameters:
         - name: "belong_to"
           in: "query"
@@ -72,11 +73,6 @@ paths:
             type: "integer"
             format: "int32"
             default: "10"
-        - name: "Authorization"
-          in: "header"
-          required: false
-          schema:
-            type: "string"
       responses:
         "200":
           description: "OK"
@@ -88,12 +84,8 @@ paths:
     post:
       summary: "POST comments"
       operationId: "createComment"
-      parameters:
-        - name: "Authorization"
-          in: "header"
-          required: true
-          schema:
-            type: "string"
+      security:
+        - BearerAuth: [ ]
       requestBody:
         content:
           application/json:
@@ -111,6 +103,8 @@ paths:
     delete:
       summary: "DELETE comments/{id}"
       operationId: "deleteComment"
+      security:
+        - BearerAuth: [ ]
       parameters:
         - name: "id"
           in: "path"
@@ -118,11 +112,6 @@ paths:
           schema:
             type: "integer"
             format: "int64"
-        - name: "Authorization"
-          in: "header"
-          required: true
-          schema:
-            type: "string"
       requestBody:
         content:
           application/json:
@@ -136,6 +125,8 @@ paths:
     post:
       summary: "POST comments/action/like/{id}"
       operationId: "voteComment"
+      security:
+        - BearerAuth: [ ]
       parameters:
         - name: "id"
           in: "path"
@@ -143,17 +134,14 @@ paths:
           schema:
             type: "integer"
             format: "int64"
-        - name: "Authorization"
-          in: "header"
-          required: true
-          schema:
-            type: "string"
       responses:
         "200":
           description: "OK"
     delete:
       summary: "DELETE comments/action/like/{id}"
       operationId: "cancelVoteComment"
+      security:
+        - BearerAuth: [ ]
       parameters:
         - name: "id"
           in: "path"
@@ -161,15 +149,18 @@ paths:
           schema:
             type: "integer"
             format: "int64"
-        - name: "Authorization"
-          in: "header"
-          required: true
-          schema:
-            type: "string"
       responses:
         "200":
           description: "OK"
+security:
+  - BearerAuth: [ ]
+
 components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     User:
       type: "object"
