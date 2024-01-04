@@ -11,7 +11,7 @@ require (
 	github.com/google/wire v0.5.0
 	github.com/labstack/echo/v4 v4.11.4
 	github.com/labstack/gommon v0.4.2
-	github.com/redis/go-redis/v9 v9.0.3
+	github.com/redis/go-redis/v9 v9.3.1
 	github.com/sixwaaaay/cq v0.2.1
 	github.com/sixwaaaay/must v0.1.0
 	github.com/sixwaaaay/token v0.1.1
@@ -19,6 +19,7 @@ require (
 	github.com/sony/sonyflake v1.2.0
 	github.com/spf13/viper v1.18.1
 	github.com/stretchr/testify v1.8.4
+	go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho v0.46.1
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.46.1
 	go.opentelemetry.io/contrib/instrumentation/runtime v0.46.1
 	go.opentelemetry.io/otel v1.21.0
@@ -66,7 +67,6 @@ require (
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
-	go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho v0.46.1 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.21.0 // indirect
 	go.opentelemetry.io/otel/metric v1.21.0 // indirect
 	go.opentelemetry.io/otel/trace v1.21.0 // indirect
