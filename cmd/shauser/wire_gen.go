@@ -8,8 +8,8 @@ package main
 
 import (
 	"github.com/sixwaaaay/shauser/internal/config"
-	"github.com/sixwaaaay/shauser/internal/repository"
 	"github.com/sixwaaaay/shauser/internal/logic"
+	"github.com/sixwaaaay/shauser/internal/repository"
 	"github.com/sixwaaaay/shauser/internal/server"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
