@@ -57,3 +57,4 @@ INSERT INTO users.users (id, username, PASSWORD, email, phone, avatar_url, bio, 
     (494639258401767535, '44xxxxx', '$2a$10$oiqZFbgq.tbiEMwVSQ8Ob.9Kl3uJj88O3yh3.tNjOHvtzCcJyce0i', '44@x.com', '', '', '', '', 0, 0, 0, 0, 0),
     (494639267713122415, '55xxxxx', '$2a$10$3IZ1AnSCBYCddSzoR8Fg7u8ZRDgs/wcBz38opzFTeoD9aVYf0LFjW', '55@x.com', '', '', '', '', 0, 0, 0, 0, 0),
     (494639286319054959, '66xxxxx', '$2a$10$5XFK9i5DJHgpnlYE8ukH0utCUKQCdmexjHuZASrMD43QGxejZsbPy', '66@x.com', '', '', '', '', 0, 0, 0, 0, 0);
+
