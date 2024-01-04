@@ -17,3 +17,6 @@
 # IDE
 .vscode
 .idea
+
+# Go workspace file
+go.work

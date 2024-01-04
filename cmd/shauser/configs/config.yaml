@@ -1,0 +1,25 @@
+ListenOn: :8080
+HTTP: :8081
+MySQL:
+  DSN: mysql_user:mysql@tcp(localhost:3306)/users?charset=utf8mb4&parseTime=True&loc=Local&allowNativePasswords=true
+  Replicas: [] # support multiple mysql replicas dsn
+DefaultLimit: 20
+MaxLimit: 100
+Secret: "this is a secret"
+TTL: 360h # 15day 15 * 24 * 60 * 60
+Cache:
+  Enabled: true
+  TTL: 10m # cache expire time 10 minutes
+Redis:
+  Addrs:
+    - "redis:6379"
+Oauth:
+  clientid: $OAUTH_CLIENT_ID
+  clientsecret: $OAUTH_CLIENT_SECRET
+  endpoint:
+    authurl: https://github.com/login/oauth/authorize
+    tokenurl: https://github.com/login/oauth/access_token
+  redirecturl: ${REDIRECT_URL}/oauth/callback/github
+  scopes:
+    - user:email
+    - read:user
