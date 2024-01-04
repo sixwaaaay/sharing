@@ -7,12 +7,13 @@ namespace content.Tests;
 
 public class UnitTest(ITestOutputHelper testOutputHelper)
 {
+    private readonly string _connectString = Environment.GetEnvironmentVariable("CONNECTION_STRING") !;
+
     [TestSubject(typeof(VideoRepository))]
     [Fact(DisplayName = "Video Repository")]
     public async void Test1()
     {
-        var environmentVariable = Environment.GetEnvironmentVariable("CONNECTION_STRING") !;
-        await using var dataSource = new MySqlDataSource(environmentVariable);
+        await using var dataSource = new MySqlDataSource(_connectString);
         var videoRepository = (IVideoRepository)new VideoRepository(dataSource);
         var video = new Video
         {
@@ -57,12 +58,41 @@ public class UnitTest(ITestOutputHelper testOutputHelper)
         Assert.NotEmpty(videos3);
     }
 
+    [Fact(DisplayName = "Command")]
+    public async void TestInsert()
+    {
+        await using var dataSource = new MySqlDataSource(_connectString);
+        var videoRepository = (IVideoRepository)new VideoRepository(dataSource);
+        var video = new Video
+        {
+            Id = 1,
+            UserId = 2,
+            Title = "title",
+            Des = "des",
+            CoverUrl = "coverUrl",
+            VideoUrl = "videoUrl",
+            Duration = 1,
+            Category = "category",
+            Tags = "tags",
+            ViewCount = 1,
+            LikeCount = 1,
+            CreatedAt = DateTime.Now,
+            UpdatedAt = DateTime.Now,
+            Processed = 1
+        };
+        video = await videoRepository.Save(video);
+
+        await videoRepository.UpdateVoteCounter(1, VoteType.Vote);
+        await videoRepository.UpdateVoteCounter(1, VoteType.CancelVote);
+    }
+
+
     [Fact(DisplayName = "simultaneously get videos")]
     public async Task Test3()
     {
         var now = DateTime.Now;
         var tasks = new List<Task>();
-        await using var dataSource = new MySqlDataSource(Environment.GetEnvironmentVariable("CONNECTION_STRING") !);
+        await using var dataSource = new MySqlDataSource(_connectString);
         for (var i = 0; i < 10000; i++)
         {
             var videoRepository = new VideoRepository(dataSource);
@@ -74,6 +104,7 @@ public class UnitTest(ITestOutputHelper testOutputHelper)
             });
             tasks.Add(task);
         }
+
         await Task.WhenAll(tasks);
         testOutputHelper.WriteLine($"{DateTime.Now - now}");
     }

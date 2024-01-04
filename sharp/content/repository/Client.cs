@@ -243,7 +243,7 @@ public static class Extension
     
     public static long UserId(this ClaimsPrincipal user)
     {
-        var id = user.Claims.FirstOrDefault(c => c.Type == "Id")?.Value;
+        var id = user.Claims.FirstOrDefault(c => c.Type == "id")?.Value;
         return id == null ? 0 : long.Parse(id);
     }
 }
