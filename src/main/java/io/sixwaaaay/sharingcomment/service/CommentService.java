@@ -12,8 +12,6 @@ import io.sixwaaaay.sharingcomment.domain.*;
 import io.sixwaaaay.sharingcomment.repository.CommentRepository;
 import io.sixwaaaay.sharingcomment.repository.CountRepository;
 import io.sixwaaaay.sharingcomment.request.Principal;
-import io.sixwaaaay.sharingcomment.transmission.GetMultipleUserReq;
-import io.sixwaaaay.sharingcomment.transmission.GetUserReq;
 import io.sixwaaaay.sharingcomment.transmission.VoteExistsReq;
 import io.sixwaaaay.sharingcomment.transmission.VoteReq;
 import org.springframework.beans.factory.annotation.Value;
@@ -78,7 +76,7 @@ public class CommentService {
         var mainComments = commentRepo.findByBelongToAndIdLessThanAndReplyToNullOrderByIdDesc(belongTo, id, Limit.of(size));
 //       for each main comment which has reply comments, get the latest 2 reply comments
         mainComments.stream().filter(comment -> comment.getReplyCount() != 0).forEach(comment -> {
-            var replyComments = commentRepo.findByReplyToAndIdGreaterThanOrderByIdAsc(comment.getId(), 0L, Limit.of(2));
+            var replyComments = commentRepo.findByBelongToAndReplyToAndIdGreaterThanOrderByIdAsc(belongTo, comment.getId(), 0L, Limit.of(2));
             comment.setReplyComments(replyComments);
         });
 
@@ -96,14 +94,15 @@ public class CommentService {
      * Then, it composes the comments by filling in the user info and vote status.
      * Finally, it sets the comments and the next page id to the result.
      *
-     * @param replyTo the id of the comment which the comments are replies to
-     * @param id      the id of the latest comment in the previous page
-     * @param size    the number of comments to be retrieved
-     * @param userId  the id of the user who is requesting
+     * @param belongTo the id of the object which the comments belong to
+     * @param replyTo  the id of the comment which the comments are replies to
+     * @param id       the id of the latest comment in the previous page
+     * @param size     the number of comments to be retrieved
+     * @param userId   the id of the user who is requesting
      * @return a ReplyResult object that contains the comments for the current page and the id of the next page
      */
-    public ReplyResult getReplyCommentList(Long replyTo, Long id, Integer size, Long userId) {
-        var comments = commentRepo.findByReplyToAndIdGreaterThanOrderByIdAsc(replyTo, id, Limit.of(size));
+    public ReplyResult getReplyCommentList(Long belongTo, Long replyTo, Long id, Integer size, Long userId) {
+        var comments = commentRepo.findByBelongToAndReplyToAndIdGreaterThanOrderByIdAsc(belongTo, replyTo, id, Limit.of(size));
         composeComment(comments, userId);
         var result = new ReplyResult();
         result.setComments(comments);
@@ -185,7 +184,7 @@ public class CommentService {
     private void composeSingleComment(Comment comment) {
         if (enableUser) {
             var token = principal.get().map(Principal::getToken).orElse("");
-            var user = userClient.getUser(new GetUserReq(comment.getUserId()), token);
+            var user = userClient.getUser(comment.getUserId(), token);
             comment.setUser(user.getUser());
         }
     }
@@ -211,10 +210,13 @@ public class CommentService {
      */
     private void composeCommentAuthor(List<Comment> comments) {
         // get user id list
-        var userList = flatComments(comments).map(Comment::getUserId).collect(Collectors.toUnmodifiableSet());
+        var userList = flatComments(comments).map(Comment::getUserId).distinct().toList();
+        if (userList.isEmpty()) {
+            return;
+        } // return if no user id, avoid unnecessary request and missing parameter error
         // fetch user info
         var token = principal.get().map(Principal::getToken).orElse("");
-        var users = userClient.getManyUser(new GetMultipleUserReq(userList), token);
+        var users = userClient.getManyUser(userList, token);
         // covert to map
         var userMap = users.getUsers().stream().collect(Collectors.toMap(User::getId, identity()));
         // fill user info
@@ -232,6 +234,9 @@ public class CommentService {
             return;
         }
         var commentIdList = flatComments(comments).map(Comment::getId).toList();
+        if (commentIdList.isEmpty()) {
+            return;
+        } // return if no comment id, avoid unnecessary request and missing parameter error
         //  check if voted
         var voteExistsReply = voteClient.exists(new VoteExistsReq(userId, commentIdList));
         // convert to set

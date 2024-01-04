@@ -13,7 +13,6 @@ import io.sixwaaaay.sharingcomment.request.CommentRequest;
 import io.sixwaaaay.sharingcomment.request.Principal;
 import io.sixwaaaay.sharingcomment.request.error.NoUserExitsError;
 import io.sixwaaaay.sharingcomment.service.CommentService;
-import io.sixwaaaay.sharingcomment.util.TokenParser;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -22,12 +21,12 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Optional;
 
+import static io.sixwaaaay.sharingcomment.util.TokenParser.principal;
+
 @RestController
 @RequestMapping("/comments")
 @AllArgsConstructor
 public class CommentController {
-
-    private final TokenParser tokenParser;
 
     private final CommentService commentService;
 
@@ -40,12 +39,11 @@ public class CommentController {
     @GetMapping("/main")
     public CommentResult getMainCommentList(
             @RequestParam("belong_to") Long belongTo,
-            @RequestParam("page") Optional<Long> id,
-            @RequestParam(value = "size", defaultValue = "10") Integer size,
-            @RequestHeader(value = "Authorization", required = false) String header
+            @RequestParam(value = "page") Optional<Long> id,
+            @RequestParam(value = "size", defaultValue = "10") Integer size
     ) {
-        var principal = tokenParser.parse(header);
-        return commentService.getMainCommentList(belongTo, id.orElse(Long.MAX_VALUE), size, principal.map(Principal::getId).orElse(0L));
+        var userId = principal.get().map(Principal::getId).orElse(0L);
+        return commentService.getMainCommentList(belongTo, id.orElse(Long.MAX_VALUE), size, userId);
     }
 
     /**
@@ -56,13 +54,13 @@ public class CommentController {
      */
     @GetMapping("/reply")
     public ReplyResult getReplyCommentList(
+            @RequestParam("belong_to") Long belongTo,
             @RequestParam("reply_to") Long replyTo,
             @RequestParam("page") Optional<Long> id,
-            @RequestParam(value = "size", defaultValue = "10") Integer size,
-            @RequestHeader(value = "Authorization", required = false) String header
+            @RequestParam(value = "size", defaultValue = "10") Integer size
     ) {
-        var principal = tokenParser.parse(header);
-        return commentService.getReplyCommentList(replyTo, id.orElse(0L), size, principal.map(Principal::getId).orElse(0L));
+        var userId = principal.get().map(Principal::getId).orElse(0L);
+        return commentService.getReplyCommentList(belongTo, replyTo, id.orElse(0L), size, userId);
     }
 
     /**
@@ -71,10 +69,10 @@ public class CommentController {
      * @return the created comment
      */
     @PostMapping
-    public Comment createComment(@Valid @RequestBody CommentRequest request, @RequestHeader(value = "Authorization") String header) {
-        var principal = tokenParser.parse(header);
+    public Comment createComment(@Valid @RequestBody CommentRequest request) {
         var comment = new Comment();
-        comment.setUserId(principal.orElseThrow(NoUserExitsError::supply).getId()); // throw exception if principal is empty
+        var id = principal.get().map(Principal::getId).orElseThrow(NoUserExitsError::supply);
+        comment.setUserId(id); // throw exception if principal is empty
         comment.setBelongTo(request.getBelongTo());
         comment.setContent(request.getContent());
         comment.setReplyTo(request.getReplyTo());
@@ -88,12 +86,11 @@ public class CommentController {
     @DeleteMapping("/{id}")
     public void deleteComment(
             @PathVariable("id") Long id,
-            @RequestHeader(value = "Authorization") String header,
             @RequestBody CommentRequest request
     ) {
-        var principal = tokenParser.parse(header);
+        var userId = principal.get().map(Principal::getId).orElseThrow(NoUserExitsError::supply);
         var comment = new Comment();
-        comment.setUserId(principal.orElseThrow(NoUserExitsError::supply).getId()); // throw exception if principal is empty
+        comment.setUserId(userId); // throw exception if principal is empty
         comment.setId(id);
         comment.setReplyTo(request.getReplyTo());
         commentService.deleteComment(comment);
@@ -102,28 +99,24 @@ public class CommentController {
     /**
      * vote a comment
      *
-     * @param id     the id of comment
-     * @param header the header of request
+     * @param id the id of comment
      */
     @PostMapping("/action/like/{id}")
     public void voteComment(
-            @PathVariable long id,
-            @RequestHeader(value = "Authorization") String header) {
-        var principal = tokenParser.parse(header);
-        commentService.voteComment(principal.map(Principal::getId).orElseThrow(NoUserExitsError::supply), id);
+            @PathVariable long id) {
+        var userId = principal.get().map(Principal::getId).orElseThrow(NoUserExitsError::supply);
+        commentService.voteComment(userId, id);
     }
 
     /**
      * cancel vote a comment
      *
-     * @param id     the id of comment
-     * @param header the header of request
+     * @param id the id of comment
      */
     @DeleteMapping("/action/like/{id}")
     public void cancelVoteComment(
-            @PathVariable long id,
-            @RequestHeader(value = "Authorization") String header) {
-        var principal = tokenParser.parse(header);
-        commentService.cancelVoteComment(principal.map(Principal::getId).orElseThrow(NoUserExitsError::supply), id);
+            @PathVariable long id) {
+        var userId = principal.get().map(Principal::getId).orElseThrow(NoUserExitsError::supply);
+        commentService.cancelVoteComment(userId, id);
     }
 }
