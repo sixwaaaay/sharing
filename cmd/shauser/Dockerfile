@@ -31,5 +31,3 @@ COPY --from=builder /app/shauser /app/shauser
 COPY configs /app/configs
 EXPOSE 8080
 ENTRYPOINT ["/app/shauser"]
-
-
