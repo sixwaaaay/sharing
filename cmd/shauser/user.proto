@@ -1,0 +1,119 @@
+/*
+ * Copyright (c) 2023 sixwaaaay.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+syntax = "proto3";
+package sixwaaaay.user;
+import "tagger/tagger.proto";
+option go_package = "./user";
+
+message User {
+  int64 id = 1;
+  string name = 2;
+  bool is_follow = 5;
+  string avatar_url = 6;
+  string bg_url = 7;
+  string bio = 8;
+  int32 likes_given = 9;
+  int32 likes_received = 10;
+  int32 videos_posted = 11;
+  int32 following = 12;
+  int32 followers = 13;
+}
+
+message GetUserRequest {
+  int64 user_id = 1 [(tagger.tags) = "param:\"user_id\""];
+}
+
+message GetUserReply {
+  User user = 1;
+}
+
+message GetUsersRequest {
+  repeated int64 user_ids = 1[(tagger.tags) = "query:\"ids\""];
+}
+
+message GetUsersReply {
+  repeated User users = 1;
+}
+
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginReply {
+  User user = 1;
+}
+
+message RegisterRequest {
+  string email = 1;
+  string password = 2;
+  string name = 3;
+}
+
+message RegisterReply {
+  User user = 1;
+}
+
+message FollowActionRequest {
+  int64 user_id = 1;
+  int32 action = 2;
+}
+
+message FollowActionReply {
+}
+
+message FollowQueryReq {
+  int64 user_id = 1[(tagger.tags) = "param:\"user_id\""];
+  int64 page = 2[(tagger.tags) = "query:\"page\""];
+  int32 limit = 3[(tagger.tags) = "query:\"limit\""];
+}
+
+message UsersPage {
+  repeated User users = 1;
+  int64 next_page = 2;
+  int32 all_count = 3;
+}
+
+message UpdateUserRequest {
+  int64 user_id = 1;
+  string name = 2;
+  string bio = 3;
+  string avatar_url = 4;
+  string bg_url = 5;
+}
+
+message UpdateUserReply {
+  User profile = 1;
+}
+
+message GetByMailReq {
+  string email = 1;
+}
+
+message GetByMailReply {
+  User user = 1;
+}
+
+service UserService {
+  rpc GetUser(GetUserRequest) returns (GetUserReply);
+  rpc GetUsers(GetUsersRequest) returns (GetUsersReply);
+  rpc Login(LoginRequest) returns (LoginReply);
+  rpc Register(RegisterRequest) returns (RegisterReply);
+  rpc FollowAction(FollowActionRequest) returns (FollowActionReply);
+  rpc GetFollowers(FollowQueryReq) returns (UsersPage);
+  rpc GetFollowings(FollowQueryReq) returns (UsersPage);
+  rpc UpdateUser(UpdateUserRequest) returns (UpdateUserReply);
+  rpc GetByMail(GetByMailReq) returns (GetByMailReply);
+}
