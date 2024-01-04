@@ -1,0 +1,8 @@
+component_management:
+  individual_components:
+    - component_id: users
+      path:
+        - cmd/shauser/**
+    - component_id: content
+      path:
+        - sharp/**
