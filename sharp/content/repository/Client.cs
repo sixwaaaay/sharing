@@ -9,17 +9,50 @@ namespace content.repository;
 
 public class User
 {
-    public long Id { get; init; }
-    public string Name { get; init; } = string.Empty;
-    public bool IsFollow { get; init; }
-    public string AvatarUrl { get; set; } = string.Empty;
-    public string BgUrl { get; set; } = string.Empty;
-    public string Bio { get; set; } = string.Empty;
-    public int LikesGiven { get; init; }
-    public int LikesReceived { get; init; }
-    public int VideosPosted { get; init; }
-    public int Following { get; init; }
-    public int Followers { get; init; }
+    public long Id {
+        get;
+        init;
+    }
+    public string Name {
+        get;
+        init;
+    } = string.Empty;
+    public bool IsFollow {
+        get;
+        init;
+    }
+    public string AvatarUrl {
+        get;
+        set;
+    } = string.Empty;
+    public string BgUrl {
+        get;
+        set;
+    } = string.Empty;
+    public string Bio {
+        get;
+        set;
+    } = string.Empty;
+    public int LikesGiven {
+        get;
+        init;
+    }
+    public int LikesReceived {
+        get;
+        init;
+    }
+    public int VideosPosted {
+        get;
+        init;
+    }
+    public int Following {
+        get;
+        init;
+    }
+    public int Followers {
+        get;
+        init;
+    }
 }
 
 [Mapper]
@@ -32,7 +65,10 @@ public static partial class UserExtension
 
 public interface IUserRepository
 {
-    string? Token { get; set; }
+    string? Token {
+        get;
+        set;
+    }
 
     Task<User> FindById(long id);
     Task<IReadOnlyList<User>> FindAllByIds(IEnumerable<long> ids);
@@ -57,7 +93,10 @@ public class UserRepository : IUserRepository
         return metadata;
     }
 
-    public string? Token { get; set; }
+    public string? Token {
+        get;
+        set;
+    }
 
     public async Task<User> FindById(long id)
     {
@@ -82,7 +121,10 @@ public class UserRepository : IUserRepository
 
 public interface IVoteRepository
 {
-    long CurrentUser { get; set; }
+    long CurrentUser {
+        get;
+        set;
+    }
 
     Task UpdateVote(long videoId, VoteType type);
 
@@ -99,7 +141,10 @@ public enum VoteType
 
 public class VoteRepository(HttpClient client) : IVoteRepository
 {
-    public long CurrentUser { get; set; }
+    public long CurrentUser {
+        get;
+        set;
+    }
 
     public async Task UpdateVote(long videoId, VoteType type)
     {
@@ -115,8 +160,8 @@ public class VoteRepository(HttpClient client) : IVoteRepository
             TargetId = videoId,
         };
         var resp = type switch
-        {
-            VoteType.Vote => await client.PostAsJsonAsync("/item/add", row, VoteJsonContext.Default.VoteRow),
+    {
+        VoteType.Vote => await client.PostAsJsonAsync("/item/add", row, VoteJsonContext.Default.VoteRow),
             VoteType.CancelVote => await client.PostAsJsonAsync("/item/delete", row, VoteJsonContext.Default.VoteRow),
             _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
         };
@@ -206,41 +251,41 @@ internal partial class VoteJsonContext : JsonSerializerContext;
 public static class Extension
 {
     public static IServiceCollection AddVoteRepository(this IServiceCollection services) =>
-        services.AddScoped<IVoteRepository, VoteRepository>();
+    services.AddScoped<IVoteRepository, VoteRepository>();
 
     public static IServiceCollection AddUserRepository(this IServiceCollection services) =>
-        services.AddScoped<IUserRepository, UserRepository>();
+    services.AddScoped<IUserRepository, UserRepository>();
 
     public static IServiceCollection AddGrpcUser(this IServiceCollection services) =>
-        services.AddSingleton<ChannelBase>(sp => GrpcChannel.ForAddress(
-            sp.GetRequiredService<IConfiguration>().GetConnectionString("User") ??
-            throw new InvalidOperationException(@"User connection string is null.")));
+    services.AddSingleton<ChannelBase>(sp => GrpcChannel.ForAddress(
+                                           sp.GetRequiredService<IConfiguration>().GetConnectionString("User") ??
+                                           throw new InvalidOperationException(@"User connection string is null.")));
 
     public static IServiceCollection AddVoteClient(this IServiceCollection services) =>
-        services.AddSingleton<HttpClient>(sp =>
+    services.AddSingleton<HttpClient>(sp =>
+    {
+        var connectionString = sp.GetRequiredService<IConfiguration>().GetConnectionString("Vote") ??
+                               throw new InvalidOperationException(@"Vote connection string is null.");
+        return new HttpClient
         {
-            var connectionString = sp.GetRequiredService<IConfiguration>().GetConnectionString("Vote") ??
-                                   throw new InvalidOperationException(@"Vote connection string is null.");
-            return new HttpClient
-            {
-                BaseAddress = new Uri(connectionString.TrimEnd('/')),
-            };
-        });
+            BaseAddress = new Uri(connectionString.TrimEnd('/')),
+        };
+    });
 
     public static IApplicationBuilder UseToken(this IApplicationBuilder app) =>
-        app.Use(async (context, next) =>
-        {
-            var userRepository = context.RequestServices.GetService<IUserRepository>() ??
-                                 throw new NullReferenceException();
-            userRepository.Token = context.Request.Headers.Authorization;
+    app.Use(async (context, next) =>
+    {
+        var userRepository = context.RequestServices.GetService<IUserRepository>() ??
+                             throw new NullReferenceException();
+        userRepository.Token = context.Request.Headers.Authorization;
 
-            var voteRepository = context.RequestServices.GetService<IVoteRepository>() ??
-                                 throw new NullReferenceException();
-            voteRepository.CurrentUser  = context.User.UserId();
+        var voteRepository = context.RequestServices.GetService<IVoteRepository>() ??
+                             throw new NullReferenceException();
+        voteRepository.CurrentUser  = context.User.UserId();
 
-            await next.Invoke();
-        });
-    
+        await next.Invoke();
+    });
+
     public static long UserId(this ClaimsPrincipal user)
     {
         var id = user.Claims.FirstOrDefault(c => c.Type == "Id")?.Value;

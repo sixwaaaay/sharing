@@ -52,9 +52,9 @@ public class VideoRepository(MySqlDataSource dataSource) : IVideoRepository
     {
         await using var connection = await dataSource.OpenConnectionAsync();
         return await connection.QuerySingleAsync<Video>(
-            "SELECT id, user_id, title, des, cover_url, video_url, duration, category, tags, view_count, like_count, created_at, updated_at, processed " +
-            "FROM videos WHERE id = @id",
-            new { id });
+                   "SELECT id, user_id, title, des, cover_url, video_url, duration, category, tags, view_count, like_count, created_at, updated_at, processed " +
+                   "FROM videos WHERE id = @id",
+                   new { id });
     }
 
     [DapperAot(false)]
@@ -99,9 +99,9 @@ public class VideoRepository(MySqlDataSource dataSource) : IVideoRepository
     {
         await using var connection = await dataSource.OpenConnectionAsync();
         var videos = await connection.QueryAsync<Video>(
-            "SELECT id,user_id, title, des, cover_url, video_url, duration, category, tags, view_count, like_count, created_at, updated_at, processed " +
-            "FROM videos WHERE user_id = @userId AND id < @page ORDER BY id DESC LIMIT @size",
-            new { userId, page, size });
+                         "SELECT id,user_id, title, des, cover_url, video_url, duration, category, tags, view_count, like_count, created_at, updated_at, processed " +
+                         "FROM videos WHERE user_id = @userId AND id < @page ORDER BY id DESC LIMIT @size",
+                         new { userId, page, size });
         return videos.ToList();
     }
 
@@ -109,9 +109,9 @@ public class VideoRepository(MySqlDataSource dataSource) : IVideoRepository
     {
         await using var connection = await dataSource.OpenConnectionAsync();
         var videos = await connection.QueryAsync<Video>(
-            "SELECT id ,user_id, title, des, cover_url, video_url, duration, category, tags, view_count, like_count, created_at, updated_at, processed " +
-            "FROM videos WHERE id < @page ORDER BY id DESC LIMIT @size",
-            new { page, size });
+                         "SELECT id ,user_id, title, des, cover_url, video_url, duration, category, tags, view_count, like_count, created_at, updated_at, processed " +
+                         "FROM videos WHERE id < @page ORDER BY id DESC LIMIT @size",
+                         new { page, size });
         return videos.ToList();
     }
 
@@ -120,26 +120,26 @@ public class VideoRepository(MySqlDataSource dataSource) : IVideoRepository
         await using var connection = await dataSource.OpenConnectionAsync();
         await using var transaction = await connection.BeginTransactionAsync();
         var result = await connection.QuerySingleAsync<long>(
-            "INSERT INTO videos (user_id, title, des, cover_url, video_url, duration, category, tags, view_count, like_count, created_at, updated_at, processed) VALUES (@UserId, @Title, @Des, @CoverUrl, @VideoUrl, @Duration, @Category, @Tags, @ViewCount, @LikeCount, @CreatedAt, @UpdatedAt, @Processed); SELECT LAST_INSERT_ID();",
-            new
-            {
-                video.UserId,
-                video.Title,
-                video.Des,
-                video.CoverUrl,
-                video.VideoUrl,
-                video.Duration,
-                video.Category,
-                video.Tags,
-                video.ViewCount,
-                video.LikeCount,
-                video.CreatedAt,
-                video.UpdatedAt,
-                video.Processed
-            }, transaction);
+                         "INSERT INTO videos (user_id, title, des, cover_url, video_url, duration, category, tags, view_count, like_count, created_at, updated_at, processed) VALUES (@UserId, @Title, @Des, @CoverUrl, @VideoUrl, @Duration, @Category, @Tags, @ViewCount, @LikeCount, @CreatedAt, @UpdatedAt, @Processed); SELECT LAST_INSERT_ID();",
+                         new
+        {
+            video.UserId,
+            video.Title,
+            video.Des,
+            video.CoverUrl,
+            video.VideoUrl,
+            video.Duration,
+            video.Category,
+            video.Tags,
+            video.ViewCount,
+            video.LikeCount,
+            video.CreatedAt,
+            video.UpdatedAt,
+            video.Processed
+        }, transaction);
         var affectedRows = await connection.ExecuteAsync(
-            "UPDATE counter SET counter = counter + 1 WHERE id = @id",
-            new { id = video.UserId }, transaction);
+                               "UPDATE counter SET counter = counter + 1 WHERE id = @id",
+                               new { id = video.UserId }, transaction);
         if (affectedRows == 0)
         {
             await connection.ExecuteAsync(
@@ -156,19 +156,19 @@ public class VideoRepository(MySqlDataSource dataSource) : IVideoRepository
         await using var connection = await dataSource.OpenConnectionAsync();
         await connection.ExecuteAsync(
             type switch
-            {
-                VoteType.Vote => "UPDATE videos SET like_count = like_count + 1 WHERE id = @id",
-                VoteType.CancelVote => "UPDATE videos SET like_count = like_count - 1 WHERE id = @id",
-                _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
-            },
-            new { id });
+    {
+        VoteType.Vote => "UPDATE videos SET like_count = like_count + 1 WHERE id = @id",
+        VoteType.CancelVote => "UPDATE videos SET like_count = like_count - 1 WHERE id = @id",
+        _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+        },
+        new { id });
     }
 }
 
 public static class VideoRepositoryExtensions
 {
     public static IServiceCollection AddVideoRepository(this IServiceCollection services) =>
-        services.AddSingleton<IVideoRepository, VideoRepository>();
+    services.AddSingleton<IVideoRepository, VideoRepository>();
 }
 
 /// <summary>
@@ -181,12 +181,14 @@ internal class InClause<T>(IEnumerable<T> values)
     /// Gets the parameters for the IN clause, each with a unique name and a value.
     /// </summary>
     private IEnumerable<(string, T)> Parameters =>
-        values.Select((value, index) => ($"p{index}", value));
+    values.Select((value, index) => ($"p{index}", value));
 
     /// <summary>
     /// Gets the condition for the IN clause, which can be used in a SQL query.
     /// </summary>
-    public string Condition => $"({string.Join(", ", Parameters.Select(p => $"@{p.Item1}"))})";
+    public string Condition => $"({string.Join(", ", Parameters.Select(p => $"@ {
+        p.Item1
+    }"))})";
 
     /// <summary>
     /// Adds the parameters for the IN clause to the specified SQL command.

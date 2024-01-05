@@ -20,12 +20,12 @@ var secret = builder.Configuration.GetSection("Secret").Value?? throw new Invali
 
 builder.Services.AddAuthentication("Bearer").AddJwtBearer(
     option =>
-    {
-        option.TokenValidationParameters.IssuerSigningKey = new SymmetricSecurityKey
-            (Encoding.UTF8.GetBytes(secret));
-        option.TokenValidationParameters.ValidateAudience = false;
-        option.TokenValidationParameters.ValidateIssuer = false;
-    }
+{
+    option.TokenValidationParameters.IssuerSigningKey = new SymmetricSecurityKey
+    (Encoding.UTF8.GetBytes(secret));
+    option.TokenValidationParameters.ValidateAudience = false;
+    option.TokenValidationParameters.ValidateIssuer = false;
+}
 );
 
 builder.Services.AddAuthorization();

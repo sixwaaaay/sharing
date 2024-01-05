@@ -42,8 +42,14 @@ public class DomainTest
         var mockVideoRepo = new Mock<IVideoRepository>();
         var mockUserRepo = new Mock<IUserRepository>();
         var mockVoteRepo = new Mock<IVoteRepository>();
-        var videos = new List<Video> { new() { Id = 1, UserId = 1 }, new() { Id = 2, UserId = 2 } };
-        var users = new List<User> { new() { Id = 1 }, new() { Id = 2 } };
+        var videos = new List<Video> { new() { Id = 1, UserId = 1 }, new() {
+                Id = 2, UserId = 2
+            }
+        };
+        var users = new List<User> { new() { Id = 1 }, new() {
+                Id = 2
+            }
+        };
         mockVideoRepo.Setup(repo => repo.FindAllByIds(It.IsAny<long[]>())).ReturnsAsync(videos);
         mockUserRepo.Setup(repo => repo.FindAllByIds(It.IsAny<IEnumerable<long>>())).ReturnsAsync(users);
         mockVoteRepo.Setup(repo => repo.VotedOfVideos(It.IsAny<long[]>())).ReturnsAsync(new List<long>());
