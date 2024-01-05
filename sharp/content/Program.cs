@@ -10,30 +10,30 @@ using MySqlConnector;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
-builder.Services.ConfigureHttpJsonOptions(options =>
-{
-    options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
-    options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;
+builder.Services.ConfigureHttpJsonOptions(options => {
+  options.SerializerOptions.TypeInfoResolverChain.Insert(
+      0, AppJsonSerializerContext.Default);
+  options.SerializerOptions.PropertyNamingPolicy =
+      JsonNamingPolicy.SnakeCaseLower;
 });
 
-var secret = builder.Configuration.GetSection("Secret").Value?? throw new InvalidOperationException("Secret is null");
+var secret = builder.Configuration.GetSection("Secret").Value ??
+             throw new InvalidOperationException("Secret is null");
 
-builder.Services.AddAuthentication("Bearer").AddJwtBearer(
-    option =>
-{
-    option.TokenValidationParameters.IssuerSigningKey = new SymmetricSecurityKey
-    (Encoding.UTF8.GetBytes(secret));
-    option.TokenValidationParameters.ValidateAudience = false;
-    option.TokenValidationParameters.ValidateIssuer = false;
-}
-);
+builder.Services.AddAuthentication("Bearer").AddJwtBearer(option => {
+  option.TokenValidationParameters.IssuerSigningKey =
+      new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
+  option.TokenValidationParameters.ValidateAudience = false;
+  option.TokenValidationParameters.ValidateIssuer = false;
+});
 
 builder.Services.AddAuthorization();
 
 builder.Services.AddProblemDetails();
 
-builder.Services.AddMySqlDataSource(builder.Configuration.GetConnectionString("Default") ??
-                                    throw new InvalidOperationException("Connection string is null"));
+builder.Services.AddMySqlDataSource(
+    builder.Configuration.GetConnectionString("Default") ??
+    throw new InvalidOperationException("Connection string is null"));
 builder.Services.AddVideoRepository();
 
 builder.Services.AddGrpcUser();
@@ -56,7 +56,8 @@ app.MapEndpoints();
 
 app.Run();
 
-[JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.SnakeCaseLower)]
+[JsonSourceGenerationOptions(PropertyNamingPolicy =
+                                 JsonKnownNamingPolicy.SnakeCaseLower)]
 [JsonSerializable(typeof(ProblemDetails))]
 [JsonSerializable(typeof(VideoRequest))]
 [JsonSerializable(typeof(VoteRequest))]
