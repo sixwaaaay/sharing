@@ -7,9 +7,18 @@ namespace content.domainservice;
 public record Pagination<T> where T : class
 {
 
-    public int AllCount { get; init; }
-    public long? NextPage { get; init; }
-    public IReadOnlyList<T> Items { get; init; } = [];
+    public int AllCount {
+        get;
+        init;
+    }
+    public long? NextPage {
+        get;
+        init;
+    }
+    public IReadOnlyList<T> Items {
+        get;
+        init;
+    } = [];
 }
 
 
@@ -26,7 +35,7 @@ public interface IDomainService
 }
 
 public class DomainService(IVideoRepository videoRepo, IUserRepository userRepo, IVoteRepository voteRepo)
-    : IDomainService
+        : IDomainService
 {
     public async Task<VideoDto> FindById(long id)
     {
@@ -55,7 +64,7 @@ public class DomainService(IVideoRepository videoRepo, IUserRepository userRepo,
 
 
     private static IEnumerable<VideoDto> Compose(IEnumerable<User> users, IEnumerable<Video> videos,
-        IEnumerable<long> voteVideoIds)
+            IEnumerable<long> voteVideoIds)
     {
         var userDict = users.ToDictionary(u => u.Id);
         var voteSet = new HashSet<long>(voteVideoIds);
@@ -145,5 +154,5 @@ public record VideoDto
 public static class DomainServiceExtensions
 {
     public static IServiceCollection AddDomainService(this IServiceCollection services) =>
-        services.AddScoped<IDomainService, DomainService>();
+    services.AddScoped<IDomainService, DomainService>();
 }

@@ -91,7 +91,7 @@ public class VoteRepositoryTest
 
         voteRepository.CurrentUser = 0;
 
-        // Act 
+        // Act
         result = await voteRepository.VotedOfVideos([12345, 23456, 4567]);
         // Assert
         Assert.NotNull(result);
