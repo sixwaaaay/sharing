@@ -6,7 +6,6 @@
 package io.sixwaaaay.sharingcomment.transmission;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.List;
