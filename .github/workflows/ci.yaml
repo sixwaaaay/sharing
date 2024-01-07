@@ -8,6 +8,9 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./graal
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -41,7 +44,10 @@ jobs:
 
   release:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    defaults:
+      run:
+        working-directory: ./graal
+#    if: github.ref == 'refs/heads/main'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
