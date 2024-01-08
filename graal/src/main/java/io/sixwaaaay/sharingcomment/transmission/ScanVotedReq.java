@@ -13,12 +13,15 @@
 
 package io.sixwaaaay.sharingcomment.transmission;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 @Data
 public class ScanVotedReq {
     private Integer limit;
+    @JsonProperty("subject_id")
     private Long subjectId;
+    @JsonProperty("target_type")
     private String targetType;
     private Long token;
     private String type;

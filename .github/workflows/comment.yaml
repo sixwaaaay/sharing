@@ -11,7 +11,7 @@
 # limitations under the License.
 #
 
-name: CI
+name: Comment
 on:
   push:
     branches:
@@ -54,6 +54,14 @@ jobs:
           VOTE_SERVICE_BASE_URL: http://localhost:8081
           USER_SERVICE_BASE_URL: http://localhost:5000
           REDIS_HOST: localhost
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          fail_ci_if_error: true
+          flags: comments
+          files: ./graal/target/site/jacoco/jacoco.xml
+          verbose: true
 
   release:
     runs-on: ubuntu-latest

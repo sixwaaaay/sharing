@@ -100,6 +100,23 @@ class SharingCommentApplicationTests {
     }
 
     @Test
+    public void deleteComments() throws Exception {
+        // todo: add payload
+        var token = jwtUtil.generateToken("n", "1");
+        var json = "{ \"content\": \"This is a test comment\", \"reply_to\": null, \"belong_to\": 1 }";
+        mockMvc.perform(MockMvcRequestBuilders.delete("/comments/21")
+                        .content(json)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/comments/1")
+                        .content(json)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().is4xxClientError());
+    }
+
+    @Test
     public void voteComment() throws Exception {
         var token = jwtUtil.generateToken("n", "1");
         mockMvc.perform(MockMvcRequestBuilders.post("/comments/action/like/1")

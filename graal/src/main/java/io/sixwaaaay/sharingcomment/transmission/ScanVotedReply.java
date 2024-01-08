@@ -13,11 +13,13 @@
 
 package io.sixwaaaay.sharingcomment.transmission;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.util.List;
 
 @Data
 public class ScanVotedReply {
+    @JsonProperty("target_ids")
     private List<Long> targetIds;
 }
