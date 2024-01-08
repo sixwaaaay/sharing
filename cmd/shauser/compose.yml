@@ -1,0 +1,43 @@
+#
+#    Copyright (c) 2023-2024 sixwaaaay.
+#    Licensed under the Apache License, Version 2.0 (the "License");
+#    you may not use this file except in compliance with the License.
+#    You may obtain a copy of the License at
+#         http://www.apache.org/licenses/LICENSE-2.
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
+#
+services:
+  mysql:
+    image: mysql:8.2.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: users
+      MYSQL_USER: mysql_user
+      MYSQL_PASSWORD: mysql
+    ports:
+      - 3306:3306
+    volumes:
+      - ./scripts/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 60s
+      retries: 10
+
+  redis:
+    image: redis:7.2.3-alpine3.18
+    ports:
+      - 6379:6379
+    volumes:
+      - redis-data:/data
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+volumes:
+  mysql-data:
+  redis-data:
