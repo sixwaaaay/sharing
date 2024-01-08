@@ -1,6 +1,14 @@
 /*
- * Copyright (c)  sixwaaaay
- * All rights reserved.
+ * Copyright (c) 2023-2024 sixwaaaay.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package io.sixwaaaay.sharingcomment;
@@ -89,6 +97,25 @@ class SharingCommentApplicationTests {
                         .content(json)
                         .contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(MockMvcResultMatchers.status().is4xxClientError());
+    }
+
+    @Test
+    public void voteComment() throws Exception {
+        var token = jwtUtil.generateToken("n", "1");
+        mockMvc.perform(MockMvcRequestBuilders.post("/comments/action/like/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/comments/action/like/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/comments/action/like/1")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().is4xxClientError());
+
     }
 
 
