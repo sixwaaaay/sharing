@@ -28,7 +28,7 @@ public record Video
 
     public DateTime UpdatedAt { get; init; }
 
-    public short Processed { get; init; }
+    public short Processed { get; init; } = 1;
 }
 
 public interface IVideoRepository
@@ -113,7 +113,7 @@ public class VideoRepository(MySqlDataSource dataSource) : IVideoRepository
         await using var connection = await dataSource.OpenConnectionAsync();
         await using var transaction = await connection.BeginTransactionAsync();
         var result = await connection.QuerySingleAsync<long>(
-            "INSERT INTO videos (user_id, title, des, cover_url, video_url, duration, view_count, like_count, created_at, updated_at, processed) VALUES (@UserId, @Title, @Des, @CoverUrl, @VideoUrl, @Duration, @Category, @Tags, @ViewCount, @LikeCount, @CreatedAt, @UpdatedAt, @Processed); SELECT LAST_INSERT_ID();",
+            "INSERT INTO videos (user_id, title, des, cover_url, video_url, duration, view_count, like_count, created_at, updated_at, processed) VALUES (@UserId, @Title, @Des, @CoverUrl, @VideoUrl, @Duration, @ViewCount, @LikeCount, @CreatedAt, @UpdatedAt, @Processed); SELECT LAST_INSERT_ID();",
             new
             {
                 video.UserId,

@@ -75,7 +75,7 @@ public class EndpointsTests
     }
 
     [Fact]
-    public void CreateVideo_CallsServiceWithExpectedVideo()
+    public async void CreateVideo_CallsServiceWithExpectedVideo()
     {
         var request = new VideoRequest
         {
@@ -85,7 +85,7 @@ public class EndpointsTests
             VideoUrl = "http://validurl.com"
         };
 
-        Endpoints.CreateVideo(_mockService.Object, _user, request);
+        await Endpoints.CreateVideo(_mockService.Object, new Probe(""), _user, request);
 
         _mockService.Verify(s => s.Save(It.Is<Video>(v =>
             v.Title == request.Title &&
@@ -113,7 +113,6 @@ public class EndpointsTests
     {
         var request = new VideoRequest
         {
-            Title = null,
             Des = "Valid Description",
             VideoUrl = "http://validurl.com"
         };
@@ -153,7 +152,6 @@ public class EndpointsTests
         var request = new VideoRequest
         {
             Title = "Valid Title",
-            Des = null,
             VideoUrl = "http://validurl.com"
         };
 
@@ -193,7 +191,6 @@ public class EndpointsTests
         {
             Title = "Valid Title",
             Des = "Valid Description",
-            VideoUrl = null
         };
 
         Assert.Throws<ArgumentException>(() => request.Validate());

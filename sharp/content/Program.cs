@@ -16,7 +16,7 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;
 });
 
-var secret = builder.Configuration.GetSection("Secret").Value?? throw new InvalidOperationException("Secret is null");
+var secret = builder.Configuration.GetSection("Secret").Value ?? throw new InvalidOperationException("Secret is null");
 
 builder.Services.AddAuthentication("Bearer").AddJwtBearer(
     option =>
@@ -28,25 +28,23 @@ builder.Services.AddAuthentication("Bearer").AddJwtBearer(
     }
 );
 
-builder.Services.AddAuthorization();
-
-builder.Services.AddProblemDetails();
+builder.Services.AddAuthorization().AddProbe();
+builder.Services.AddProblemDetails().AddResponseCompression();
 
 builder.Services.AddMySqlDataSource(builder.Configuration.GetConnectionString("Default") ??
                                     throw new InvalidOperationException("Connection string is null"));
 builder.Services.AddVideoRepository();
 
-builder.Services.AddGrpcUser();
-builder.Services.AddUserRepository();
+builder.Services.AddGrpcUser().AddUserRepository();
 
-builder.Services.AddVoteClient();
-builder.Services.AddVoteRepository();
+builder.Services.AddVoteClient().AddVoteRepository();
 
 builder.Services.AddDomainService();
 
-builder.Services.AddResponseCompression();
 var app = builder.Build();
 
+app.UseExceptionHandler();
+app.UseStatusCodePages();
 app.UseResponseCompression();
 app.UseAuthorization();
 

@@ -72,8 +72,6 @@ public class UnitTest(ITestOutputHelper testOutputHelper)
             CoverUrl = "coverUrl",
             VideoUrl = "videoUrl",
             Duration = 1,
-            Category = "category",
-            Tags = "tags",
             ViewCount = 1,
             LikeCount = 1,
             CreatedAt = DateTime.Now,

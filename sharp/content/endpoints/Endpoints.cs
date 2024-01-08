@@ -40,18 +40,23 @@ public static class Endpoints
             _ => throw new ArgumentOutOfRangeException(nameof(request.Type))
         }, request.VideoId);
 
-    public static void CreateVideo(IDomainService service, ClaimsPrincipal user, VideoRequest request)
+    public static async Task CreateVideo(IDomainService service, IProbe probe, ClaimsPrincipal user,
+        VideoRequest request)
     {
         request.Validate();
+        var duration = await probe.GetVideoDuration(request.VideoUrl);
         var video = new Video
         {
             Title = request.Title,
             Des = request.Des,
+            Duration = (int)(!string.IsNullOrWhiteSpace(duration) ? double.Parse(duration) : 0),
             CoverUrl = request.CoverUrl,
             VideoUrl = request.VideoUrl,
             UserId = user.UserId()
         };
-        service.Save(video);
+
+
+        await service.Save(video);
     }
 
     public static void MapEndpoints(this IEndpointRouteBuilder endpoints)
@@ -76,7 +81,8 @@ public static class Endpoints
             throw new ArgumentException("Des is null or empty or length greater than 200", nameof(request.Des));
         }
 
-        if (string.IsNullOrWhiteSpace(request.VideoUrl) || !Uri.IsWellFormedUriString(request.VideoUrl, UriKind.Absolute))
+        if (string.IsNullOrWhiteSpace(request.VideoUrl) ||
+            !Uri.IsWellFormedUriString(request.VideoUrl, UriKind.Absolute))
         {
             throw new ArgumentException("Video url is null or empty", nameof(request.VideoUrl));
         }
