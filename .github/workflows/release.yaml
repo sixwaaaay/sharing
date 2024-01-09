@@ -19,6 +19,15 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - context: ./cmd/shauser
+            file: ./cmd/shauser/Dockerfile
+            tag: shauser
+          - context: ./sharp/content
+            file: ./sharp/content/Dockerfile
+            tag: content
     steps:
       - uses: actions/checkout@v3
       - name: Login to DockerHub
@@ -29,7 +38,33 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: ./cmd/shauser
-          file: ./cmd/shauser/Dockerfile
+          context: ${{ matrix.context }}
+          file: ${{ matrix.file }}
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME || 'app' }}/shauser:${{ github.ref_name }}
+          tags: ${{ secrets.DOCKERHUB_USERNAME || 'app' }}/${{ matrix.tag }}:${{ github.ref_name }}
+  graal:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./graal
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '21'
+          distribution: 'graalvm' # See 'Options' for all available distributions
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Native Image Build
+        run: mvn -Pnative spring-boot:build-image -DskipTests
+
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Push to Docker Hub
+        run: |
+          docker tag sharing-comment:0.0.1-SNAPSHOT ${{ secrets.DOCKERHUB_USERNAME }}/sharing-comment:${{ github.ref_name }}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/sharing-comment:${{ github.ref_name }}
