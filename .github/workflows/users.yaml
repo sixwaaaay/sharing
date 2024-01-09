@@ -50,7 +50,7 @@ jobs:
           MYSQL_DSN: "mysql_user:mysql@tcp(localhost:3306)/users?charset=utf8mb4&parseTime=True&loc=Local&allowNativePasswords=true"
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           file: ./cmd/shauser/coverage.txt
           flags: users
