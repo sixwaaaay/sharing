@@ -15,9 +15,14 @@ name: Comment
 on:
   push:
     branches:
-      - '*'
+      - 'main'
+    paths:
+      - 'graal/**'
     tags:
       - ''
+  pull_request:
+    paths:
+      - 'graal/**'
 jobs:
   test:
     runs-on: ubuntu-latest
