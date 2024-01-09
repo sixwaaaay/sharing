@@ -1,0 +1,276 @@
+#
+# Copyright (c) 2023-2024 sixwaaaay.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#     http://www.apache.org/licenses/LICENSE-2.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+openapi: "3.0.3"
+info:
+  title: "sharing_comment API"
+  description: "sharing_comment API"
+  version: "1.0.0"
+servers:
+  - url: "https://sharing_comment"
+paths:
+  /comments/main:
+    get:
+      summary: "GET comments/main"
+      operationId: "getMainCommentList"
+      security:
+        - { }
+        - BearerAuth: [ ]
+      parameters:
+        - name: "belong_to"
+          in: "query"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+        - name: "page"
+          in: "query"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+        - name: "size"
+          in: "query"
+          required: false
+          schema:
+            type: "integer"
+            format: "int32"
+            default: "10"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CommentResult"
+  /comments/reply:
+    get:
+      summary: "GET comments/reply"
+      operationId: "getReplyCommentList"
+      security:
+        - { }
+        - BearerAuth: [ ]
+      parameters:
+        - name: "belong_to"
+          in: "query"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+        - name: "reply_to"
+          in: "query"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+        - name: "page"
+          in: "query"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+        - name: "size"
+          in: "query"
+          required: false
+          schema:
+            type: "integer"
+            format: "int32"
+            default: "10"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ReplyResult"
+  /comments:
+    post:
+      summary: "POST comments"
+      operationId: "createComment"
+      security:
+        - BearerAuth: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommentRequest"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Comment"
+  /comments/{id}:
+    delete:
+      summary: "DELETE comments/{id}"
+      operationId: "deleteComment"
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommentRequest"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+  /comments/action/like/{id}:
+    post:
+      summary: "POST comments/action/like/{id}"
+      operationId: "voteComment"
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+      responses:
+        "200":
+          description: "OK"
+    delete:
+      summary: "DELETE comments/action/like/{id}"
+      operationId: "cancelVoteComment"
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+      responses:
+        "200":
+          description: "OK"
+security:
+  - BearerAuth: [ ]
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    User:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+          format: "int64"
+        name:
+          type: "string"
+        is_follow:
+          type: "boolean"
+        avatar_url:
+          type: "string"
+        bg_url:
+          type: "string"
+        bio:
+          type: "string"
+        likes_given:
+          type: "integer"
+          format: "int32"
+        likes_received:
+          type: "integer"
+          format: "int32"
+        videos_posted:
+          type: "integer"
+          format: "int32"
+        following:
+          type: "integer"
+          format: "int32"
+        followers:
+          type: "integer"
+          format: "int32"
+    Comment:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+          format: "int64"
+        user_id:
+          type: "integer"
+          format: "int64"
+        content:
+          type: "string"
+        reply_to:
+          type: "integer"
+          format: "int64"
+        belong_to:
+          type: "integer"
+          format: "int64"
+        created_at:
+          type: "string"
+          format: "date-time"
+        reply_count:
+          type: "integer"
+          format: "int32"
+        like_count:
+          type: "integer"
+          format: "int32"
+        reply_comments:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Comment"
+        voted:
+          type: "boolean"
+        user:
+          $ref: "#/components/schemas/User"
+    CommentResult:
+      type: "object"
+      properties:
+        all_count:
+          type: "integer"
+          format: "int32"
+        next_page:
+          type: "integer"
+          format: "int64"
+        comments:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Comment"
+    ReplyResult:
+      type: "object"
+      properties:
+        next_page:
+          type: "integer"
+          format: "int64"
+        comments:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Comment"
+    CommentRequest:
+      type: "object"
+      properties:
+        content:
+          type: "string"
+        reply_to:
+          type: "integer"
+          format: "int64"
+        belong_to:
+          type: "integer"
+          format: "int64"
