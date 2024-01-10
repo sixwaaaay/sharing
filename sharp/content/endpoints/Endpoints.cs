@@ -34,15 +34,24 @@ public class VideoRequest
 
 public static class Endpoints
 {
-    public static Task<Pagination<VideoDto>> UserVideos(IDomainService service, long userId, long? page, int? size) =>
-        service.FindByUserId(userId, page ?? long.MaxValue, size ?? 10);
+    public static Task<Pagination<VideoDto>> UserVideos(IDomainService service, long userId, long? page, int? size)
+    {
+        EnsurePageAndSize(page, size);
+        return service.FindByUserId(userId, page ?? long.MaxValue, size ?? 10);
+    }
 
-    public static Task<Pagination<VideoDto>> Videos(IDomainService service, long? page, int? size) =>
-        service.FindRecent(page ?? long.MaxValue, size ?? 10);
+    public static Task<Pagination<VideoDto>> Videos(IDomainService service, long? page, int? size)
+    {
+        EnsurePageAndSize(page, size);
+        return service.FindRecent(page ?? long.MaxValue, size ?? 10);
+    }
 
 
-    public static Task<IReadOnlyList<VideoDto>> Likes(IDomainService service, long userId, long? page, int? size) =>
-        service.VotedVideos(userId, page ?? long.MaxValue, size ?? 10);
+    public static Task<IReadOnlyList<VideoDto>> Likes(IDomainService service, long userId, long? page, int? size)
+    {
+        EnsurePageAndSize(page, size);
+        return service.VotedVideos(userId, page ?? long.MaxValue, size ?? 10);
+    }
 
 
     public static void Vote(IDomainService service, VoteRequest request) => service.Vote(
@@ -98,6 +107,19 @@ public static class Endpoints
             !Uri.IsWellFormedUriString(request.VideoUrl, UriKind.Absolute))
         {
             throw new ArgumentException("Video url is null or empty", nameof(request.VideoUrl));
+        }
+    }
+
+    public static void EnsurePageAndSize(long? page, int? size)
+    {
+        if (page is < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(page));
+        }
+
+        if (size is < 0 or > 20)
+        {
+            throw new ArgumentOutOfRangeException(nameof(size));
         }
     }
 }
