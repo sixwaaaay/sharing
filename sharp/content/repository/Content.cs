@@ -93,7 +93,7 @@ public class VideoRepository(MySqlDataSource dataSource) : IVideoRepository
         await using var connection = await dataSource.OpenConnectionAsync();
         var videos = await connection.QueryAsync<Video>(
             "SELECT id,user_id, title, des, cover_url, video_url, duration, view_count, like_count, created_at, updated_at, processed " +
-            "FROM videos WHERE processed = 1 AND  user_id = @userId AND id < @page ORDER BY id DESC LIMIT @size",
+            "FROM videos FORCE INDEX(user_created) WHERE processed = 1 AND  user_id = @userId AND id < @page ORDER BY id DESC LIMIT @size",
             new { userId, page, size });
         return videos.ToList();
     }
@@ -103,7 +103,7 @@ public class VideoRepository(MySqlDataSource dataSource) : IVideoRepository
         await using var connection = await dataSource.OpenConnectionAsync();
         var videos = await connection.QueryAsync<Video>(
             "SELECT id ,user_id, title, des, cover_url, video_url, duration, view_count, like_count, created_at, updated_at, processed " +
-            "FROM videos WHERE processed = 1 AND id < @page ORDER BY id DESC LIMIT @size",
+            "FROM videos FORCE INDEX (processed) WHERE processed = 1 AND id < @page ORDER BY id DESC LIMIT @size",
             new { page, size });
         return videos.ToList();
     }

@@ -221,4 +221,51 @@ public class EndpointsTests
 
         Assert.Throws<ArgumentException>(() => request.Validate());
     }
+    
+    [Fact]
+    public void EnsurePageAndSize_WithValidParameters_DoesNotThrowException()
+    {
+        // Arrange
+        long? page = 1;
+        int? size = 10;
+
+        // Act
+        var ex = Record.Exception(() => Endpoints.EnsurePageAndSize(page, size));
+
+        // Assert
+        Assert.Null(ex);
+    }
+
+    [Fact]
+    public void EnsurePageAndSize_WithNegativePage_ThrowsArgumentOutOfRangeException()
+    {
+        // Arrange
+        long? page = -1;
+        int? size = 10;
+
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() => Endpoints.EnsurePageAndSize(page, size));
+    }
+
+    [Fact]
+    public void EnsurePageAndSize_WithNegativeSize_ThrowsArgumentOutOfRangeException()
+    {
+        // Arrange
+        long? page = 1;
+        int? size = -1;
+
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() => Endpoints.EnsurePageAndSize(page, size));
+    }
+
+    [Fact]
+    public void EnsurePageAndSize_WithSizeGreaterThan20_ThrowsArgumentOutOfRangeException()
+    {
+        // Arrange
+        long? page = 1;
+        int? size = 21;
+
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() => Endpoints.EnsurePageAndSize(page, size));
+    }
 }
