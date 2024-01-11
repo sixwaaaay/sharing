@@ -65,7 +65,7 @@ jobs:
           FFPROBE_PATH: "/usr/bin/ffprobe"
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v3
         with:
           file: sharp/content.Tests/merged.cobertura.xml
           flags: content
