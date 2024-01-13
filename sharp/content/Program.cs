@@ -9,8 +9,9 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
+
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -20,6 +21,9 @@ using content.repository;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using MySqlConnector;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
@@ -40,6 +44,37 @@ builder.Services.AddAuthentication("Bearer").AddJwtBearer(
         option.TokenValidationParameters.ValidateIssuer = false;
     }
 );
+
+const string serviceName = "sharing.content";
+var otelEndpoint = builder.Configuration.GetConnectionString("Otel_GrpcEndpoint");
+builder.Services.AddOpenTelemetry().WithTracing(tcb =>
+{
+    tcb
+        .AddSource(serviceName)
+        .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(serviceName: serviceName))
+        .AddHttpClientInstrumentation()
+        .AddGrpcClientInstrumentation()
+        .AddAspNetCoreInstrumentation()
+        .AddOtlpExporter(o =>
+        {
+            if (!string.IsNullOrEmpty(otelEndpoint))
+            {
+                o.Endpoint = new Uri(otelEndpoint);
+            }
+        });
+}).WithMetrics(mtb =>
+{
+    mtb
+        .AddMeter("Microsoft.AspNetCore.Hosting", "Microsoft.AspNetCore.Server.Kestrel")
+        .AddView("http.server.request.duration",
+            new ExplicitBucketHistogramConfiguration
+            {
+                Boundaries = [0, 0.005, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 10]
+            })
+        .AddPrometheusExporter();
+});
+
+builder.Services.AddSingleton(TracerProvider.Default.GetTracer(serviceName));
 
 builder.Services.AddAuthorization().AddProbe();
 builder.Services.AddProblemDetails().AddResponseCompression();
@@ -63,6 +98,7 @@ app.UseAuthorization();
 
 app.UseToken();
 
+app.MapPrometheusScrapingEndpoint();
 app.MapEndpoints();
 
 app.Run();

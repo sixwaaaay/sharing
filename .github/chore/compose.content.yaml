@@ -68,6 +68,11 @@ services:
       test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
       timeout: 20s
       retries: 10
+  jaeger:
+    image: jaegertracing/all-in-one:1.52
+    ports:
+      - 4317:4317
+      - 16686:16686
 
 volumes:
   mysql-data:
