@@ -50,7 +50,7 @@ var otelEndpoint = builder.Configuration.GetConnectionString("Otel_GrpcEndpoint"
 builder.Services.AddOpenTelemetry().WithTracing(tcb =>
 {
     tcb
-        .AddSource(serviceName)
+        .AddSource(serviceName).AddSource("MySqlConnector")
         .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(serviceName: serviceName))
         .AddHttpClientInstrumentation()
         .AddGrpcClientInstrumentation()
@@ -65,7 +65,7 @@ builder.Services.AddOpenTelemetry().WithTracing(tcb =>
 }).WithMetrics(mtb =>
 {
     mtb
-        .AddMeter("Microsoft.AspNetCore.Hosting", "Microsoft.AspNetCore.Server.Kestrel")
+        .AddMeter("Microsoft.AspNetCore.Hosting", "Microsoft.AspNetCore.Server.Kestrel", "MySqlConnector")
         .AddView("http.server.request.duration",
             new ExplicitBucketHistogramConfiguration
             {
@@ -81,13 +81,13 @@ builder.Services.AddProblemDetails().AddResponseCompression();
 
 builder.Services.AddMySqlDataSource(builder.Configuration.GetConnectionString("Default") ??
                                     throw new InvalidOperationException("Connection string is null"));
-builder.Services.AddVideoRepository();
+builder.Services.AddVideoRepository().AddNotificationRepository();
 
 builder.Services.AddGrpcUser().AddUserRepository();
 
 builder.Services.AddVoteClient().AddVoteRepository();
 
-builder.Services.AddDomainService();
+builder.Services.AddDomainService().AddMessageDomain();
 
 var app = builder.Build();
 
@@ -110,4 +110,7 @@ app.Run();
 [JsonSerializable(typeof(VideoDto))]
 [JsonSerializable(typeof(Pagination<VideoDto>))]
 [JsonSerializable(typeof(IReadOnlyList<VideoDto>))]
+[JsonSerializable(typeof(Pagination<MessageDto>))]
+[JsonSerializable(typeof(MessageDto))]
+[JsonSerializable(typeof(MessageRequest))]
 internal partial class AppJsonSerializerContext : JsonSerializerContext;
