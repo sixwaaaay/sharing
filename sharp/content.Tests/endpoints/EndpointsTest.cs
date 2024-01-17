@@ -9,8 +9,9 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
+
 using content.domainservice;
 using content.endpoints;
 using content.repository;
@@ -107,6 +108,50 @@ public class EndpointsTests
             v.VideoUrl == request.VideoUrl &&
             1L == _user.UserId())), Times.Once);
     }
+
+    private readonly Mock<IMessageDomain> _mockMessageDomain = new();
+
+    [Fact]
+    public async Task FindMessages_ReturnsCorrectPagination_WhenMessagesExist()
+    {
+        // Arrange
+        var expectedMessages = new Pagination<MessageDto>
+        {
+            Items = new List<MessageDto> { new MessageDto { Id = 1 }, new MessageDto { Id = 2 } },
+            AllCount = 2
+        };
+        _mockMessageDomain.Setup(s =>
+                s.FindMessages(It.IsAny<long>(), It.IsAny<long>(), It.IsAny<int>(), It.IsAny<bool>()))
+            .ReturnsAsync(expectedMessages);
+
+        // Act
+        var result = await Endpoints.FindMessages(_mockMessageDomain.Object, 1, 1, 10, false);
+
+        // Assert
+        Assert.Equal(expectedMessages, result);
+    }
+
+    [Fact]
+    public async Task Save_ReturnsCorrectDto_WhenMessageIsSaved()
+    {
+        // Arrange
+        var request = new MessageRequest
+        {
+            ReceiverId = 1,
+            Content = "Test content",
+            Type = 1
+        };
+        var expectedMessage = new MessageDto
+            { Id = 1, ReceiverId = request.ReceiverId, Content = request.Content, Type = request.Type };
+        _mockMessageDomain.Setup(s => s.Save(It.IsAny<Message>())).ReturnsAsync(expectedMessage);
+
+        // Act
+        var result = await Endpoints.Save(_mockMessageDomain.Object, request, _user);
+
+        // Assert
+        Assert.Equal(expectedMessage, result);
+    }
+
 
     [Fact]
     public void Validate_WithValidVideoRequest_DoesNotThrowException()
@@ -234,7 +279,7 @@ public class EndpointsTests
 
         Assert.Throws<ArgumentException>(() => request.Validate());
     }
-    
+
     [Fact]
     public void EnsurePageAndSize_WithValidParameters_DoesNotThrowException()
     {
@@ -280,5 +325,25 @@ public class EndpointsTests
 
         // Act & Assert
         Assert.Throws<ArgumentOutOfRangeException>(() => Endpoints.EnsurePageAndSize(page, size));
+    }
+
+
+    [Fact]
+    public async Task MarkAsRead_UpdatesStatus_WhenCalled()
+    {
+        await Endpoints.MarkAsRead(_mockMessageDomain.Object, 1, _user);
+        _mockMessageDomain.Verify(service => service.MarkAsRead(1, 1), Times.Once);
+    }
+
+    [Fact]
+    public void Validate_ThrowsException_WhenContentIsInvalid()
+    {
+        var request = new MessageRequest
+        {
+            ReceiverId = 1,
+            Content = new string('a', 201),
+            Type = 1
+        };
+        Assert.Throws<ArgumentException>(() => request.Validate());
     }
 }

@@ -11,12 +11,28 @@
  * limitations under the License.
  */
 
+
+CREATE TABLE `notifications`
+(
+    `id`          BIGINT       NOT NULL AUTO_INCREMENT,
+    `sender_id`   BIGINT       NOT NULL,
+    `receiver_id` BIGINT       NOT NULL,
+    `content`     varchar(255) NOT NULL,
+    `type`        TINYINT unsigned NOT NULL DEFAULT 0,
+    `status`      TINYINT unsigned NOT NULL DEFAULT 0,
+    `created_at`  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY           `query_by_receiver_id` (`status`,`receiver_id`,`id` ASC)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_0900_ai_ci;
+
 CREATE TABLE videos
 (
     id         BIGINT       NOT NULL AUTO_INCREMENT,
     user_id    BIGINT       NOT NULL,
     title      VARCHAR(255) NOT NULL,
-    des        TEXT         NOT NULL,
+    des        VARCHAR(255) NOT NULL,
     cover_url  VARCHAR(255) NOT NULL default '',
     video_url  VARCHAR(255) NOT NULL default '',
     duration   INT UNSIGNED,
@@ -26,15 +42,15 @@ CREATE TABLE videos
     updated_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     processed  TINYINT      NOT NULL DEFAULT 0,
     PRIMARY KEY (id),
-    KEY `user_created` (`processed`, `user_id`, `id` DESC),
-    KEY `processed` (`processed`, `id` DESC)
+    KEY        `user_created` (`processed`, `user_id`, `id` DESC),
+    KEY        `processed` (`processed`, `id` DESC)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci;
 
 CREATE TABLE counter
 (
-    id      BIGINT       NOT NULL,
+    id      BIGINT NOT NULL,
     counter INT UNSIGNED NOT NULL DEFAULT 0,
     PRIMARY KEY (id)
 ) ENGINE = InnoDB

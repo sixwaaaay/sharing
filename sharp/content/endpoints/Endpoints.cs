@@ -9,11 +9,13 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
+
 using System.Security.Claims;
 using content.domainservice;
 using content.repository;
+using Microsoft.AspNetCore.Mvc;
 
 namespace content.endpoints;
 
@@ -30,6 +32,13 @@ public class VideoRequest
     public string Des { get; set; } = string.Empty;
     public string CoverUrl { get; set; } = string.Empty;
     public string VideoUrl { get; set; } = string.Empty;
+}
+
+public class MessageRequest
+{
+    public long ReceiverId { get; set; }
+    public string Content { get; set; } = string.Empty;
+    public short Type { get; set; }
 }
 
 public static class Endpoints
@@ -81,6 +90,41 @@ public static class Endpoints
         await service.Save(video);
     }
 
+
+    public static Task<Pagination<MessageDto>> FindMessages(IMessageDomain service, long receiverId, long? page,
+        int? size, bool unreadOnly)
+    {
+        EnsurePageAndSize(page, size);
+        return service.FindMessages(receiverId, page ?? 0, size ?? 10, unreadOnly);
+    }
+
+    public static Task<MessageDto> Save(IMessageDomain service, MessageRequest request, ClaimsPrincipal user)
+    {
+        request.Validate();
+        var message = new Message
+        {
+            SenderId = user.UserId(),
+            ReceiverId = request.ReceiverId,
+            Content = request.Content,
+            Type = request.Type
+        };
+
+        return service.Save(message);
+    }
+
+    public static Task MarkAsRead(IMessageDomain service, long id, ClaimsPrincipal user) => service.MarkAsRead(id, user.UserId());
+
+
+    
+    public static void Validate(this MessageRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Content) || request.Content.Length > 200)
+        {
+            throw new ArgumentException("Content is null or empty or length greater than 200", nameof(request.Content));
+        }
+    }
+    
+    
     public static void MapEndpoints(this IEndpointRouteBuilder endpoints)
     {
         endpoints.MapGet("/users/{userId:long}/videos", UserVideos);
@@ -89,6 +133,11 @@ public static class Endpoints
         endpoints.MapPost("/videos", CreateVideo).RequireAuthorization();
         endpoints.MapPost("/votes", Vote).RequireAuthorization();
         endpoints.MapPost("/votes/cancel", Vote).RequireAuthorization();
+        
+        
+        endpoints.MapGet("/messages", FindMessages).RequireAuthorization();
+        endpoints.MapPost("/messages", Save).RequireAuthorization();
+        endpoints.MapPost("/messages/{id:long}", MarkAsRead).RequireAuthorization();
     }
 
     public static void Validate(this VideoRequest request)

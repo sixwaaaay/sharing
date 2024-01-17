@@ -11,9 +11,11 @@
  * limitations under the License.
  * 
  */
+
+using content.domainservice;
+
 namespace content.Tests;
 
-using domainservice;
 using JetBrains.Annotations;
 using Xunit;
 using Moq;
