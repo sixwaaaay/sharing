@@ -93,8 +93,8 @@ github.com/sagikazarmark/slog-shim v0.1.0 h1:diDBnUNK9N/354PgrxMywXnAwEr1QZcOr6g
 github.com/sagikazarmark/slog-shim v0.1.0/go.mod h1:SrcSrq8aKtyuqEI1uvTDTK1arOWRIczQRv+GVI1AkeQ=
 github.com/sixwaaaay/cq v0.2.1 h1:QXgufobF7+qKMFNZyLLxV8oTUF2JBUMS2WUuZcsH8s8=
 github.com/sixwaaaay/cq v0.2.1/go.mod h1:cl2LPmz7hwVbMETra/ivogeKi/Z0OjXV3OkRyZ9irY8=
-github.com/sixwaaaay/must v0.1.0 h1:gYi55InyvD/YyGlQ+n+4N1gqoHIckGG6ijmN2F6bm8g=
-github.com/sixwaaaay/must v0.1.0/go.mod h1:bBuLkVjzfoV+irwm9eGmnGz1OCX4EC61I1S9aODuBjo=
+github.com/sixwaaaay/must v0.1.1 h1:hF1DoR1dDtu/n0jI7MQM14Tai7SkJcbgDuyFtisFX0Q=
+github.com/sixwaaaay/must v0.1.1/go.mod h1:bBuLkVjzfoV+irwm9eGmnGz1OCX4EC61I1S9aODuBjo=
 github.com/sixwaaaay/token v0.1.1 h1:rBT4TyxwgKXpB0U9m9bGOt+oGX2yu1rh+33P44QlQ24=
 github.com/sixwaaaay/token v0.1.1/go.mod h1:fIi4mw8eC8nQG3WKySLkUlvzanhCtafc5Lad6B+DzSQ=
 github.com/sixwaaaay/token/rpc v0.0.0-20231226141924-56a2e6246033 h1:TEZnJipBuBXT2s1BR6soTwlZu5x+at7cvQigP3tssnM=
