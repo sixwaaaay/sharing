@@ -2,8 +2,6 @@ module github.com/sixwaaaay/shauser
 
 go 1.21
 
-toolchain go1.21.4
-
 require (
 	codeberg.org/sixwaaaay/sharing-pb v0.1.2
 	github.com/golang-jwt/jwt/v5 v5.2.0
@@ -12,7 +10,7 @@ require (
 	github.com/labstack/gommon v0.4.2
 	github.com/redis/go-redis/v9 v9.3.1
 	github.com/sixwaaaay/cq v0.2.1
-	github.com/sixwaaaay/must v0.1.0
+	github.com/sixwaaaay/must v0.1.1
 	github.com/sixwaaaay/token v0.1.1
 	github.com/sixwaaaay/token/rpc v0.0.0-20231226141924-56a2e6246033
 	github.com/sony/sonyflake v1.2.0

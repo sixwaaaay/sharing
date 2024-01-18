@@ -67,17 +67,15 @@ func (l *FollowQueryLogic) GetFollowings(ctx context.Context, in *user.FollowQue
 		return nil, status.Errorf(codes.Internal, "failed to find following for user %v: %v", in.UserId, err)
 	}
 
-	users, err := l.users(ctx, list, userID)
+	users, err := l.users(ctx, list.IDs, userID)
 	if err != nil {
 		l.logger.Error("get users failed", zap.Error(err))
 		return nil, status.Errorf(codes.Internal, "failed to find following for user %v: %v", in.UserId, err)
 	}
 
-	nextToken := l.nextPage(list, in.Limit)
-
 	return &user.UsersPage{
 		Users:    users,
-		NextPage: nextToken,
+		NextPage: list.NextPageToken,
 		AllCount: following,
 	}, nil
 
@@ -110,17 +108,15 @@ func (l *FollowQueryLogic) GetFollowers(ctx context.Context, in *user.FollowQuer
 		return nil, status.Errorf(codes.Internal, "failed to find followers for user %v: %v", in.UserId, err)
 	}
 
-	users, err := l.users(ctx, list, userID)
+	users, err := l.users(ctx, list.IDs, userID)
 	if err != nil {
 		l.logger.Error("get users failed", zap.Error(err))
 		return nil, status.Errorf(codes.Internal, "failed to find followers for user %v: %v", in.UserId, err)
 	}
-	nextToken := l.nextPage(list, in.Limit)
-
 	l.logger.Info("GetFollowers completed")
 	return &user.UsersPage{
 		Users:    users,
-		NextPage: nextToken,
+		NextPage: list.NextPageToken,
 		AllCount: followers,
 	}, nil
 }

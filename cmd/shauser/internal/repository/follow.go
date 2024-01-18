@@ -21,8 +21,13 @@ import (
 
 type FollowQuery interface {
 	FindFollowExits(ctx context.Context, userid int64, followTo []int64) ([]int64, error)
-	FindFollowing(ctx context.Context, userid int64, token int64, limit int) ([]int64, error)
-	FindFollowers(ctx context.Context, userid int64, token int64, limit int) ([]int64, error)
+	FindFollowing(ctx context.Context, userid int64, token int64, limit int) (Result, error)
+	FindFollowers(ctx context.Context, userid int64, token int64, limit int) (Result, error)
+}
+
+type Result struct {
+	NextPageToken int64
+	IDs           []int64
 }
 
 var _ FollowQuery = (*followQuery)(nil)
@@ -56,19 +61,63 @@ func (c *followQuery) FindFollowExits(ctx context.Context, userid int64, followT
 }
 
 // FindFollowing query the user follow list
-func (c *followQuery) FindFollowing(ctx context.Context, userid int64, token int64, limit int) ([]int64, error) {
+func (c *followQuery) FindFollowing(ctx context.Context, userid int64, token int64, limit int) (Result, error) {
 	var result []int64
+	var nextToken int64
+	var res Result
 	session := c.db.WithContext(ctx)
-	tx := session.Raw("SELECT target FROM follows WHERE user_id = ? AND id < ? ORDER BY id desc LIMIT ?", userid, token, limit).Scan(&result)
-	err := tx.Error
-	return result, err
+	/*
+		"SELECT target, id FROM follows WHERE user_id = ? AND id < ? ORDER BY id desc LIMIT ?"
+	*/
+
+	rows, err := session.Raw("SELECT target, id FROM follows WHERE user_id = ? AND id < ? ORDER BY id desc LIMIT ?", userid, token, limit).Rows()
+	if err != nil {
+		return res, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var id int64
+		var target int64
+		err := rows.Scan(&target, &id)
+		if err != nil {
+			return res, err
+		}
+		result = append(result, target)
+		nextToken = id
+	}
+
+	res.NextPageToken = nextToken
+	res.IDs = result
+
+	return res, nil
 }
 
 // FindFollowers query the user's follower list
-func (c *followQuery) FindFollowers(ctx context.Context, userid int64, token int64, limit int) ([]int64, error) {
-	var result []int64
+func (c *followQuery) FindFollowers(ctx context.Context, userid int64, token int64, limit int) (Result, error) {
+	result := make([]int64, 0, limit)
+	var nextToken int64
+	var res Result
 	session := c.db.WithContext(ctx)
-	tx := session.Raw("SELECT user_id FROM follows WHERE target = ? AND id < ? ORDER BY id desc LIMIT ?", userid, token, limit).Scan(&result)
-	err := tx.Error
-	return result, err
+	/*
+		"SELECT user_id, id FROM follows WHERE target = ? AND id < ? ORDER BY id desc LIMIT ?"
+	*/
+	rows, err := session.Raw("SELECT user_id, id FROM follows WHERE target = ? AND id < ? ORDER BY id desc LIMIT ?", userid, token, limit).Rows()
+	if err != nil {
+		return res, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var id int64
+		var target int64
+		err := rows.Scan(&target, &id)
+		if err != nil {
+			return res, err
+		}
+		result = append(result, target)
+		nextToken = id
+	}
+
+	res.NextPageToken = nextToken
+	res.IDs = result
+	return res, nil
 }
