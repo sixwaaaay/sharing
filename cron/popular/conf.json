@@ -1,0 +1,15 @@
+{
+  "postgres": {
+    "database": "your_database",
+    "user": "your_username",
+    "password": "your_password",
+    "host": "your_host",
+    "port": "your_port"
+  },
+  "mysql": {
+    "user": "your_username",
+    "password": "your_password",
+    "host": "your_host",
+    "database": "your_database"
+  }
+}
