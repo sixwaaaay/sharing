@@ -1,0 +1,37 @@
+{
+  "server_id": 123,
+  "mysql": {
+    "host": "somehost",
+    "port": 3306,
+    "user": "user",
+    "passwd": "password"
+  },
+  "databases": [
+    "content",
+    "users"
+  ],
+  "tables": [
+    "videos",
+    "users"
+  ],
+  "elasticsearch": {
+    "basic_auth": [
+      "elastic",
+      "some_password"
+    ],
+    "hosts": [
+      "https://somehost:9200"
+    ],
+    "ca_certs": "/etc/ssl/certs/ca-certificates.crt"
+  },
+  "opentelemetry.resource": {
+    "attributes": {
+      "service.name": "mysql-to-elasticsearch",
+      "service.namespace": "default",
+      "service.instance.id": "mysql-to-elasticsearch-1"
+    }
+  },
+  "otlp_exporter": {
+    "endpoint": "http://localhost:4318/v1/traces"
+  }
+}
