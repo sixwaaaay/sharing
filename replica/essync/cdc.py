@@ -21,6 +21,11 @@ from elasticsearch.helpers import bulk
 from pymysqlreplication import BinLogStreamReader
 from pymysqlreplication.event import RotateEvent
 from pymysqlreplication.row_event import DeleteRowsEvent, UpdateRowsEvent, WriteRowsEvent
+from opentelemetry import trace
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+from opentelemetry.sdk.resources import Resource
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
 
 def load_conf():
@@ -49,43 +54,47 @@ def load_position():
         return None, None
 
 
-def sync(stream: BinLogStreamReader, client: Elasticsearch):
+def sync(stream: BinLogStreamReader, client: Elasticsearch, tracer: trace.Tracer):
     for binlog_event in stream:
         if isinstance(binlog_event, RotateEvent):
             save_position(binlog_event.next_binlog, binlog_event.position)
             continue
         table = binlog_event.table
-        bulk_data = []
-        for row in binlog_event.rows:
-            if isinstance(binlog_event, DeleteRowsEvent):
-                vals = row["values"]
-                action = {
-                    "_op_type": 'delete',
-                    "_index": table,
-                    "_id": identity(vals)
-                }
-            elif isinstance(binlog_event, UpdateRowsEvent):
-                vals = row["after_values"]
-                action = {
-                    "_op_type": 'index',
-                    "_index": table,
-                    "_id": identity(vals),
-                    "_source": vals
-                }
-            elif isinstance(binlog_event, WriteRowsEvent):
-                vals = row["values"]
-                action = {
-                    "_op_type": 'index',
-                    "_index": table,
-                    "_id": identity(vals),
-                    "_source": vals
-                }
-            else:
-                action = None
-            if action:
-                bulk_data.append(action)
-        if bulk_data:
-            bulk(client, bulk_data)
+        with tracer.start_as_current_span("binlog_event") as span:
+            span.set_attribute("table", table)
+            bulk_data = []
+            with tracer.start_as_current_span("rows"):
+                for row in binlog_event.rows:
+                    if isinstance(binlog_event, DeleteRowsEvent):
+                        vals = row["values"]
+                        action = {
+                            "_op_type": 'delete',
+                            "_index": table,
+                            "_id": identity(vals)
+                        }
+                    elif isinstance(binlog_event, UpdateRowsEvent):
+                        vals = row["after_values"]
+                        action = {
+                            "_op_type": 'index',
+                            "_index": table,
+                            "_id": identity(vals),
+                            "_source": vals
+                        }
+                    elif isinstance(binlog_event, WriteRowsEvent):
+                        vals = row["values"]
+                        action = {
+                            "_op_type": 'index',
+                            "_index": table,
+                            "_id": identity(vals),
+                            "_source": vals
+                        }
+                    else:
+                        action = None
+                    if action:
+                        bulk_data.append(action)
+            with tracer.start_as_current_span("bulk_data"):
+                if bulk_data:
+                    bulk(client, bulk_data)
 
 
 def identity(vals):
@@ -94,6 +103,13 @@ def identity(vals):
 
 def main():
     conf = load_conf()
+    resource = Resource(**conf["opentelemetry.resource"])
+    trace.set_tracer_provider(TracerProvider(resource=resource))
+    tracer = trace.get_tracer(__name__)
+    otlp_exporter = OTLPSpanExporter(**conf["otlp_exporter"])
+    span_processor = BatchSpanProcessor(otlp_exporter)
+    trace.get_tracer_provider().add_span_processor(span_processor)
+
     log_file, log_pos = load_position()
     stream_reader = BinLogStreamReader(
         connection_settings=conf["mysql"],
@@ -108,7 +124,7 @@ def main():
     client = Elasticsearch(**conf["elasticsearch"])
     try:
         with closing(stream_reader) as stream_reader, closing(client) as client:
-            sync(stream_reader, client)
+            sync(stream_reader, client, tracer)
     except KeyboardInterrupt:
         stream_reader.close()
         client.close()
