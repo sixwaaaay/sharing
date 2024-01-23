@@ -11,5 +11,15 @@
     "password": "your_password",
     "host": "your_host",
     "database": "your_database"
+  },
+  "opentelemetry.resource": {
+    "attributes": {
+      "service.name": "popular-compute",
+      "service.namespace": "default",
+      "service.instance.id": "popular-compute-1"
+    }
+  },
+  "otlp_exporter": {
+    "endpoint": "http://localhost:4318/v1/traces"
   }
 }

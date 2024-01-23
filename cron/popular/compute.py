@@ -16,6 +16,11 @@ import logging
 
 import mysql.connector
 import psycopg2
+from opentelemetry import trace
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+from opentelemetry.sdk.resources import Resource
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
 POPULAR = """
 SELECT row_number() OVER () AS order_num,
@@ -50,17 +55,24 @@ def load_conf():
 def main():
     # Connect to PostgreSQL database and MySQL database
     conf = load_conf()
-    with psycopg2.connect(**conf["postgres"]) as pg_conn, mysql.connector.connect(**conf["mysql"]) as mysql_conn:
+    resource = Resource(**conf["opentelemetry.resource"])
+    trace.set_tracer_provider(TracerProvider(resource=resource))
+    tracer = trace.get_tracer(__name__)
+    trace.get_tracer_provider().add_span_processor(BatchSpanProcessor(OTLPSpanExporter(**conf["otlp_exporter"])))
+    with tracer.start_as_current_span("compute"), psycopg2.connect(
+            **conf["postgres"]) as pg_conn, mysql.connector.connect(**conf["mysql"]) as mysql_conn:
         with pg_conn.cursor() as pg_cur, mysql_conn.cursor() as mysql_cur:
-            pg_cur.execute(POPULAR)
+            with tracer.start_as_current_span("postgres_compute"):
+                pg_cur.execute(POPULAR)
             while True:
-                rows = pg_cur.fetchmany(1000)
-                if not rows:
-                    break
+                with tracer.start_as_current_span("fetch_and_insert"):
+                    rows = pg_cur.fetchmany(1000)
+                    if not rows:
+                        break
 
-                mysql_cur.executemany(OPERATION, rows)
+                    mysql_cur.executemany(OPERATION, rows)
 
-                mysql_conn.commit()
+                    mysql_conn.commit()
 
 
 if __name__ == '__main__':
