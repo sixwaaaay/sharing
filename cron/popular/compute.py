@@ -33,7 +33,7 @@ FROM (SELECT video_id AS id,
                      WHEN event_type = 3 THEN 0.01
                  END) AS score
       FROM VIDEO_EVENTS
-      WHERE DATE_TRUNC('day', event_time) = DATE_TRUNC('day', CURRENT_DATE)
+      WHERE DATE_TRUNC('month', event_time) = DATE_TRUNC('month', CURRENT_DATE)
       GROUP BY video_id
       ORDER BY score DESC) AS score_table
             """

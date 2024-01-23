@@ -11,6 +11,11 @@
  * limitations under the License.
  */
 
+CREATE DATABASE IF NOT EXISTS content;
+
+USE content;
+
+
 
 CREATE TABLE `notifications`
 (
@@ -102,3 +107,10 @@ VALUES  (1, 1, 'title', 'des', 'coverUrl', 'videoUrl', 1, 1, 1, '2023-12-31 01:1
 
 INSERT INTO content.counter (id, counter)
 SELECT videos.user_id, count(*) FROM videos GROUP BY videos.user_id;
+
+CREATE TABLE popular_videos
+(
+    order_num BIGINT PRIMARY KEY,
+    id BIGINT,
+    score DOUBLE PRECISION
+);

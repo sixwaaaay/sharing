@@ -22,6 +22,61 @@ on:
     paths:
       - 'cron/**'
 jobs:
+  test:
+    name: tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: init database
+        working-directory: ./.github/chore
+        run: |
+          sudo systemctl start mysql.service
+          sudo systemctl start postgresql.service
+          mysql -u root -proot < content.sql
+          psql -U postgres -f events.sql
+      - name: init config
+        working-directory: ./corn/popular
+        run: |
+          jq '.postgres.database |= "compute" ' conf.json > tmp.json && mv tmp.json conf.json
+          jq '.postgres.user |= "postgres" ' conf.json > tmp.json && mv tmp.json conf.json
+          jq '.postgres.password |= "" ' conf.json > tmp.json && mv tmp.json conf.json
+          jq '.postgres.host |= "localhost" ' conf.json > tmp.json && mv tmp.json conf.json
+          jq '.postgres.port |= "5432" ' conf.json > tmp.json && mv tmp.json conf.json
+          jq '.mysql.user |= "root" ' conf.json > tmp.json && mv tmp.json conf.json
+          jq '.mysql.password |= "root" ' conf.json > tmp.json && mv tmp.json conf.json
+          jq '.mysql.host |= "localhost" ' conf.json > tmp.json && mv tmp.json conf.json
+          jq '.mysql.database |= "content" ' conf.json > tmp.json && mv tmp.json conf.json
+          jq '.mysql.port |= "3306" ' conf.json > tmp.json && mv tmp.json conf.json
+
+      - name: setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.11
+
+      - name: setup jaeger
+        run: |
+          wget https://github.com/jaegertracing/jaeger/releases/download/v1.53.0/jaeger-1.53.0-linux-amd64.tar.gz
+          tar -xzf jaeger-1.53.0-linux-amd64.tar.gz
+          ./jaeger-1.53.0-linux-amd64/jaeger-all-in-one &
+
+      - name: install coverage.py
+        run: pip install coverage.py
+
+      - name: run coverage
+        working-directory: ./corn/popular
+        run: |
+          pip install -r requirements.txt
+          coverage run compute.py
+
+      - name: upload coverage report
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage
+          path: ./corn/popular/.coverage
+          flags: popular-compute
+
+
   image-release:
     name: Release Image
     runs-on: ubuntu-latest
