@@ -12,7 +12,7 @@ require (
 	github.com/sixwaaaay/cq v0.2.1
 	github.com/sixwaaaay/must v0.1.1
 	github.com/sixwaaaay/token v0.1.1
-	github.com/sixwaaaay/token/rpc v0.0.0-20231226141924-56a2e6246033
+	github.com/sixwaaaay/token/rpc v0.1.1
 	github.com/sony/sonyflake v1.2.0
 	github.com/spf13/viper v1.18.1
 	github.com/stretchr/testify v1.8.4
