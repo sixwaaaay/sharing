@@ -29,7 +29,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -101,7 +100,6 @@ class SharingCommentApplicationTests {
 
     @Test
     public void deleteComments() throws Exception {
-        // todo: add payload
         var token = jwtUtil.generateToken("n", "1");
         var json = "{ \"content\": \"This is a test comment\", \"reply_to\": null, \"belong_to\": 1 }";
         mockMvc.perform(MockMvcRequestBuilders.delete("/comments/21")
