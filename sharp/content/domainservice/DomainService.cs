@@ -9,22 +9,20 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
+
 using content.repository;
 using Riok.Mapperly.Abstractions;
 
 namespace content.domainservice;
 
-
 public record Pagination<T> where T : class
 {
-
     public int AllCount { get; init; }
     public long? NextPage { get; init; }
     public IReadOnlyList<T> Items { get; init; } = [];
 }
-
 
 public interface IDomainService
 {
@@ -32,7 +30,8 @@ public interface IDomainService
     Task<IReadOnlyList<VideoDto>> FindAllByIds(long[] ids);
     Task<Pagination<VideoDto>> FindByUserId(long userId, long page, int size);
     Task<Pagination<VideoDto>> FindRecent(long page, int size);
-    Task<IReadOnlyList<VideoDto>> VotedVideos(long userId, long page, int size);
+    Task<Pagination<VideoDto>> VotedVideos(long userId, long page, int size);
+    Task<Pagination<VideoDto>> DailyPopularVideos(long page, int size);
     Task Save(Video video);
 
     Task Vote(VoteType type, long videoId);
@@ -62,7 +61,7 @@ public class DomainService(IVideoRepository videoRepo, IUserRepository userRepo,
         var userTask = userRepo.FindAllByIds(userIds);
         var voteVideoIdsTask = voteRepo.VotedOfVideos(videos.Select(v => v.Id).ToArray());
         var users = await userTask;
-        var voteVideoIds =await voteVideoIdsTask;
+        var voteVideoIds = await voteVideoIdsTask;
         return Compose(users, videos, voteVideoIds).ToList();
     }
 
@@ -113,10 +112,25 @@ public class DomainService(IVideoRepository videoRepo, IUserRepository userRepo,
 
     public Task Save(Video video) => videoRepo.Save(video);
 
-    public async Task<IReadOnlyList<VideoDto>> VotedVideos(long userId, long page, int size)
+    public async Task<Pagination<VideoDto>> VotedVideos(long userId, long page, int size)
     {
-        var videoIds = await voteRepo.VotedVideos(userId, page, size);
-        return await FindAllByIds(videoIds.ToArray());
+        var (token, videoIds) = await voteRepo.VotedVideos(userId, page, size);
+        return new Pagination<VideoDto>
+        {
+            Items = await FindAllByIds(videoIds.ToArray()),
+            NextPage = token
+        };
+    }
+
+    public async Task<Pagination<VideoDto>> DailyPopularVideos(long page, int size)
+    {
+        var (token,videos) = await videoRepo.DailyPopularVideos(page, size);
+        var videoDtos = await CurrentUserVotedVideos(videos);
+        return new Pagination<VideoDto>
+        {
+            Items = videoDtos,
+            NextPage = token
+        };
     }
 
     public async Task Vote(VoteType type, long videoId)
@@ -151,7 +165,6 @@ public record VideoDto
     public short Processed { get; init; }
     public bool IsLiked { get; set; }
 }
-
 
 public static class DomainServiceExtensions
 {

@@ -65,11 +65,31 @@ public class EndpointsTests
 
         Assert.Equal(expectedVideos, result);
     }
+    
+    [Fact]
+    public async Task DailyPopularVideos_ReturnsExpectedVideos()
+    {
+        var expectedVideos = new Pagination<VideoDto>
+        {
+            Items = new List<VideoDto> { new VideoDto { Id = 1 }, new VideoDto { Id = 2 } },
+            AllCount = 2
+        };
+        _mockService.Setup(s => s.DailyPopularVideos(It.IsAny<long>(), It.IsAny<int>())).ReturnsAsync(expectedVideos);
+
+        var result = await Endpoints.DailyPopularVideos(_mockService.Object, 1, 2);
+
+        Assert.Equal(expectedVideos, result);
+    }
+    
 
     [Fact]
     public async Task Likes_ReturnsExpectedVideos()
     {
-        var expectedVideos = new List<VideoDto> { new VideoDto { Id = 1 }, new VideoDto { Id = 2 } };
+        var expectedVideos = new Pagination<VideoDto>
+        {
+            Items = new List<VideoDto> { new VideoDto { Id = 1 }, new VideoDto { Id = 2 } },
+            AllCount = 2
+        };
         _mockService.Setup(s => s.VotedVideos(It.IsAny<long>(), It.IsAny<long>(), It.IsAny<int>()))
             .ReturnsAsync(expectedVideos);
 
@@ -96,7 +116,7 @@ public class EndpointsTests
             Title = "Title",
             Des = "Description",
             CoverUrl = "CoverUrl",
-            VideoUrl = "http://validurl.com"
+            VideoUrl = "https://validurl.com"
         };
 
         await Endpoints.CreateVideo(_mockService.Object, new Probe(""), _user, request);
@@ -160,7 +180,7 @@ public class EndpointsTests
         {
             Title = "Valid Title",
             Des = "Valid Description",
-            VideoUrl = "http://validurl.com"
+            VideoUrl = "https://validurl.com"
         };
 
         request.Validate();
@@ -172,7 +192,7 @@ public class EndpointsTests
         var request = new VideoRequest
         {
             Des = "Valid Description",
-            VideoUrl = "http://validurl.com"
+            VideoUrl = "https://validurl.com"
         };
 
         Assert.Throws<ArgumentException>(() => request.Validate());
@@ -185,7 +205,7 @@ public class EndpointsTests
         {
             Title = "",
             Des = "Valid Description",
-            VideoUrl = "http://validurl.com"
+            VideoUrl = "https://validurl.com"
         };
 
         Assert.Throws<ArgumentException>(() => request.Validate());
@@ -198,7 +218,7 @@ public class EndpointsTests
         {
             Title = new string('a', 51),
             Des = "Valid Description",
-            VideoUrl = "http://validurl.com"
+            VideoUrl = "https://validurl.com"
         };
 
         Assert.Throws<ArgumentException>(() => request.Validate());
@@ -210,7 +230,7 @@ public class EndpointsTests
         var request = new VideoRequest
         {
             Title = "Valid Title",
-            VideoUrl = "http://validurl.com"
+            VideoUrl = "https://validurl.com"
         };
 
         Assert.Throws<ArgumentException>(() => request.Validate());
@@ -223,7 +243,7 @@ public class EndpointsTests
         {
             Title = "Valid Title",
             Des = "",
-            VideoUrl = "http://validurl.com"
+            VideoUrl = "https://validurl.com"
         };
 
         Assert.Throws<ArgumentException>(() => request.Validate());
@@ -236,7 +256,7 @@ public class EndpointsTests
         {
             Title = "Valid Title",
             Des = new string('a', 201),
-            VideoUrl = "http://validurl.com"
+            VideoUrl = "https://validurl.com"
         };
 
         Assert.Throws<ArgumentException>(() => request.Validate());

@@ -54,9 +54,15 @@ public static class Endpoints
         EnsurePageAndSize(page, size);
         return service.FindRecent(page ?? long.MaxValue, size ?? 10);
     }
+    
+    public static Task<Pagination<VideoDto>> DailyPopularVideos(IDomainService service, long? page, int? size)
+    {
+        EnsurePageAndSize(page, size);
+        return service.DailyPopularVideos(page ?? long.MaxValue, size ?? 10);
+    }
 
 
-    public static Task<IReadOnlyList<VideoDto>> Likes(IDomainService service, long userId, long? page, int? size)
+    public static Task<Pagination<VideoDto>> Likes(IDomainService service, long userId, long? page, int? size)
     {
         EnsurePageAndSize(page, size);
         return service.VotedVideos(userId, page ?? long.MaxValue, size ?? 10);
@@ -130,6 +136,7 @@ public static class Endpoints
         endpoints.MapGet("/users/{userId:long}/videos", UserVideos);
         endpoints.MapGet("/users/{userId:long}/likes", Likes);
         endpoints.MapGet("/videos", Videos);
+        endpoints.MapPost("/videos/popular", DailyPopularVideos);
         endpoints.MapPost("/videos", CreateVideo).RequireAuthorization();
         endpoints.MapPost("/votes", Vote).RequireAuthorization();
         endpoints.MapPost("/votes/cancel", Vote).RequireAuthorization();

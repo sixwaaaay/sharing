@@ -122,7 +122,7 @@ public class VoteRepositoryTest
         await voteRepository.UpdateVote(5555L, VoteType.Vote);
 
         // Act
-        var result = await voteRepository.VotedVideos(2, 0, 10);
+        var (_,result) = await voteRepository.VotedVideos(2, 0, 10);
 
         // Assert
 
