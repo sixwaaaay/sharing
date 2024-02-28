@@ -14,7 +14,9 @@
 package io.sixwaaaay.sharingcomment.config;
 
 import io.sixwaaaay.sharingcomment.client.UserClient;
+import io.sixwaaaay.sharingcomment.client.UserClientWrapper;
 import io.sixwaaaay.sharingcomment.client.VoteClient;
+import io.sixwaaaay.sharingcomment.client.VoteClientWrapper;
 import io.sixwaaaay.sharingcomment.request.Principal;
 import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,9 +36,8 @@ public class Config {
             @Value("${service.vote.base-url}") String baseUrl,
             RestClient.Builder restClientBuilder
     ) {
-        return HttpServiceProxyFactory.builderFor(
-                RestClientAdapter.create(restClientBuilder.baseUrl(baseUrl).build())
-        ).build().createClient(VoteClient.class);
+        var client = createService(VoteClient.class, baseUrl, restClientBuilder);
+        return new VoteClientWrapper(client);
     }
 
     @Bean
@@ -44,9 +45,14 @@ public class Config {
             @Value("${service.user.base-url}") String baseUrl,
             RestClient.Builder restClientBuilder
     ) {
-        return HttpServiceProxyFactory.builderFor(
-                RestClientAdapter.create(restClientBuilder.baseUrl(baseUrl).build())
-        ).build().createClient(UserClient.class);
+        var client = createService(UserClient.class, baseUrl, restClientBuilder);
+        return new UserClientWrapper(client);
     }
 
+    private <T> T createService(Class<T> clazz, String baseUrl, RestClient.Builder restClientBuilder) {
+        var restClient = restClientBuilder.baseUrl(baseUrl).build();
+        var adapter = RestClientAdapter.create(restClient);
+        var proxyFactory = HttpServiceProxyFactory.builderFor(adapter);
+        return proxyFactory.build().createClient(clazz);
+    }
 }
