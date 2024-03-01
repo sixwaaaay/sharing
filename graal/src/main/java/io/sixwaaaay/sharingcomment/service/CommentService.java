@@ -22,6 +22,8 @@ import io.sixwaaaay.sharingcomment.repository.CountRepository;
 import io.sixwaaaay.sharingcomment.request.Principal;
 import io.sixwaaaay.sharingcomment.transmission.VoteExistsReq;
 import io.sixwaaaay.sharingcomment.transmission.VoteReq;
+import io.sixwaaaay.sharingcomment.util.DbContext;
+import io.sixwaaaay.sharingcomment.util.DbContextEnum;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Limit;
 import org.springframework.stereotype.Service;
@@ -72,6 +74,7 @@ public class CommentService {
      * @return a CommentResult object that contains the total count of comments, the comments for the current page, and the id of the next page
      */
     public CommentResult getMainCommentList(Long belongTo, Long id, Integer size, Long userId) {
+        DbContext.set(DbContextEnum.READ); // set read context
         var result = new CommentResult();
         var count = countRepo.findById(belongTo).orElse(new Count(belongTo, 0)).getCommentCount();
 
@@ -110,6 +113,7 @@ public class CommentService {
      * @return a ReplyResult object that contains the comments for the current page and the id of the next page
      */
     public ReplyResult getReplyCommentList(Long belongTo, Long replyTo, Long id, Integer size, Long userId) {
+        DbContext.set(DbContextEnum.READ); // set read context
         var comments = commentRepo.findByBelongToAndReplyToAndIdGreaterThanOrderByIdAsc(belongTo, replyTo, id, Limit.of(size));
         composeComment(comments, userId);
         var result = new ReplyResult();
@@ -206,6 +210,9 @@ public class CommentService {
      * @param userId   the id of the user who is requesting
      */
     private void composeComment(List<Comment> comments, Long userId) {
+        if (comments.isEmpty()) {
+            return;
+        }
         if (enableUser)
             composeCommentAuthor(comments);
         if (enableVote)
@@ -221,9 +228,6 @@ public class CommentService {
     private void composeCommentAuthor(List<Comment> comments) {
         // get user id list
         var userList = flatComments(comments).map(Comment::getUserId).distinct().toList();
-        if (userList.isEmpty()) {
-            return;
-        } // return if no user id, avoid unnecessary request and missing parameter error
         // fetch user info
         var token = principal.get().map(Principal::getToken).orElse("");
         var users = userClient.getManyUser(userList, token);
@@ -244,9 +248,6 @@ public class CommentService {
             return;
         }
         var commentIdList = flatComments(comments).map(Comment::getId).toList();
-        if (commentIdList.isEmpty()) {
-            return;
-        } // return if no comment id, avoid unnecessary request and missing parameter error
         //  check if voted
         var voteExistsReply = voteClient.exists(new VoteExistsReq(userId, commentIdList));
         // convert to set
@@ -263,10 +264,12 @@ public class CommentService {
      */
     private static Stream<Comment> flatComments(List<Comment> comments) {
         return comments.stream().flatMap(c -> {
-            if (c.getReplyComments() == null)
+            if (c.getReplyComments() == null) {
                 return Stream.of(c);
-            else
+            }
+            else {
                 return Stream.concat(Stream.of(c), c.getReplyComments().stream());
+            }
         });
     }
 }

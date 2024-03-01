@@ -11,7 +11,12 @@ spring:
   datasource:
     username: ${DB_USER:v1}
     password: ${DB_PASSWORD:ABCDEF}
-    url: jdbc:mysql://${DB_HOST:db}:${DB_PORT:3306}/${DB_NAME:comments}?${DB_OPTIONS:useSSL=false&serverTimezone=UTC}
+    url: jdbc:mysql://${DB_HOST:db}:${DB_PORT:3306}/${DB_NAME:comments}?${DB_OPTIONS:serverTimezone=UTC}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  replica-datasource:
+    username: ${DB_USER:v1}
+    password: ${DB_PASSWORD:ABCDEF}
+    url: jdbc:mysql://${DB_HOST:db}:${DB_PORT:3306}/${DB_NAME:comments}?${DB_OPTIONS:serverTimezone=UTC}
     driver-class-name: com.mysql.cj.jdbc.Driver
   data:
     redis:
