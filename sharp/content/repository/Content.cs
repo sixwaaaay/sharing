@@ -9,8 +9,9 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
+
 using Dapper;
 using MySqlConnector;
 
@@ -50,6 +51,7 @@ public interface IVideoRepository
     Task<IReadOnlyList<Video>> FindAllByIds(long[] ids);
     Task<IReadOnlyList<Video>> FindByUserId(long userId, long page, int size);
     Task<IReadOnlyList<Video>> FindRecent(long page, int size);
+    Task<(long, IReadOnlyList<Video>)> DailyPopularVideos(long page, int size);
     Task<Video> Save(Video video);
     Task UpdateVoteCounter(long id, VoteType type);
 }
@@ -65,6 +67,11 @@ public class VideoRepository(MySqlDataSource dataSource) : IVideoRepository
             new { id });
     }
 
+    /// <summary>
+    /// Find all the videos by the ids.
+    /// </summary>
+    /// <param name="ids"> The ids of the videos. </param>
+    /// <returns> The list of videos. </returns>
     [DapperAot(false)]
     public async Task<IReadOnlyList<Video>> FindAllByIds(long[] ids)
     {
@@ -101,6 +108,13 @@ public class VideoRepository(MySqlDataSource dataSource) : IVideoRepository
         return videos;
     }
 
+    /// <summary>
+    /// Find the videos by the user id.
+    /// </summary>
+    /// <param name="userId"> The user id. </param>
+    /// <param name="page"> The page number. </param>
+    /// <param name="size"> The size of the page. </param>
+    /// <returns> The list of videos. </returns>
     public async Task<IReadOnlyList<Video>> FindByUserId(long userId, long page, int size)
     {
         await using var connection = await dataSource.OpenConnectionAsync();
@@ -111,6 +125,16 @@ public class VideoRepository(MySqlDataSource dataSource) : IVideoRepository
         return videos.ToList();
     }
 
+    /// <summary>
+    ///    Find the recent videos.
+    /// </summary>
+    /// <param name="page">
+    /// The page number.
+    /// </param>
+    /// <param name="size">
+    /// The size of the page.
+    /// </param>
+    /// <returns> The list of videos. </returns>
     public async Task<IReadOnlyList<Video>> FindRecent(long page, int size)
     {
         await using var connection = await dataSource.OpenConnectionAsync();
@@ -121,6 +145,47 @@ public class VideoRepository(MySqlDataSource dataSource) : IVideoRepository
         return videos.ToList();
     }
 
+
+    internal class RankedVideo
+    {
+        public long Id { get; set; }
+        public long OrderNum { get; set; }
+    };
+
+    /// <summary>
+    ///   Get the daily popular videos.
+    /// </summary>
+    /// <param name="page"> The page number.</param>
+    /// <param name="size">  The size of the page. </param>
+    /// <returns>
+    ///  A tuple of the next page token and the list of videos.
+    /// </returns>
+    public async Task<(long, IReadOnlyList<Video>)> DailyPopularVideos(long page, int size)
+    {
+        IEnumerable<RankedVideo> ranks;
+        await using (var connection = await dataSource.OpenConnectionAsync())
+        {
+            ranks = await connection.QueryAsync<RankedVideo>(
+                "SELECT id, order_num FROM popular_videos WHERE order_num > @page ORDER BY order_num DESC LIMIT @size",
+                new { page, size });
+        }
+
+        var rankedVideos = ranks.ToList();
+        var nextToken = rankedVideos.Count == size ? rankedVideos[^1].OrderNum : 0;
+        var ids = rankedVideos.Select(r => r.Id).ToArray();
+        var videos = await FindAllByIds(ids);
+        return (nextToken, videos);
+    }
+
+    /// <summary>
+    ///  Save the video.
+    /// </summary>
+    /// <param name="video">
+    /// The video to save.
+    /// </param>
+    /// <returns>
+    /// The saved video.
+    /// </returns>
     public async Task<Video> Save(Video video)
     {
         await using var connection = await dataSource.OpenConnectionAsync();
@@ -169,6 +234,9 @@ public class VideoRepository(MySqlDataSource dataSource) : IVideoRepository
     }
 }
 
+/// <summary>
+///  The extensions for the video repository.
+/// </summary>
 public static class VideoRepositoryExtensions
 {
     public static IServiceCollection AddVideoRepository(this IServiceCollection services) =>

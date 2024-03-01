@@ -69,6 +69,11 @@ public class UnitTest(ITestOutputHelper testOutputHelper)
         var videos3 = await videoRepository.FindRecent(long.MaxValue, 10);
         Assert.NotNull(videos3);
         Assert.NotEmpty(videos3);
+        
+        var (_,videos4) = await videoRepository.DailyPopularVideos(0, 10);
+        Assert.NotNull(videos4);
+        Assert.NotEmpty(videos4);
+        
     }
 
     [Fact(DisplayName = "Command")]

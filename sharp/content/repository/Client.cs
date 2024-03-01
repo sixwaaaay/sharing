@@ -9,8 +9,9 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
+
 using System.Security.Claims;
 using System.Text.Json.Serialization;
 using Grpc.Core;
@@ -47,7 +48,17 @@ public interface IUserRepository
 {
     string? Token { get; set; }
 
+    /// <summary>
+    /// Find user information by id.
+    /// </summary>
+    /// <param name="id"> User id. </param>
+    /// <returns> User information. </returns>
     Task<User> FindById(long id);
+    /// <summary>
+    /// Find user information by id list.
+    /// </summary>
+    /// <param name="ids"> User id list. </param>
+    /// <returns> User information list. </returns>
     Task<IReadOnlyList<User>> FindAllByIds(IEnumerable<long> ids);
 }
 
@@ -97,11 +108,29 @@ public interface IVoteRepository
 {
     long CurrentUser { get; set; }
 
+    /// <summary>
+    /// Update vote status.
+    /// </summary>
+    /// <param name="videoId"> Video id. </param>
+    /// <param name="type"> Vote type. </param>
+    /// <returns></returns>
     Task UpdateVote(long videoId, VoteType type);
 
+    /// <summary>
+    /// Get voted status of videos.
+    /// </summary>
+    /// <param name="videoIds"> Video ids. </param>
+    /// <returns> Voted status of videos. </returns>
     Task<IReadOnlyList<long>> VotedOfVideos(long[] videoIds);
 
-    Task<IReadOnlyList<long>> VotedVideos(long userId, long page, int size);
+    /// <summary>
+    /// Get voted videos of user.
+    /// </summary>
+    /// <param name="userId"> User id. </param>
+    /// <param name="page"> Page token. </param>
+    /// <param name="size"> Page size. </param>
+    /// <returns> Page token and voted videos. </returns>
+    Task<(long, IReadOnlyList<long>)> VotedVideos(long userId, long page, int size);
 }
 
 public enum VoteType
@@ -155,7 +184,7 @@ public class VoteRepository(HttpClient client) : IVoteRepository
         return result.Exists;
     }
 
-    public async Task<IReadOnlyList<long>> VotedVideos(long userId, long page, int size)
+    public async Task<(long, IReadOnlyList<long>)> VotedVideos(long userId, long page, int size)
     {
         var req = new ScanReq()
         {
@@ -167,7 +196,7 @@ public class VoteRepository(HttpClient client) : IVoteRepository
         var resp = await client.PostAsJsonAsync("/item/scan", req, VoteJsonContext.Default.ScanReq);
         resp.EnsureSuccessStatusCode();
         var result = await resp.Content.ReadFromJsonAsync(VoteJsonContext.Default.ScanResp) ?? new ScanResp();
-        return result.TargetIds;
+        return (result.NextToken, result.TargetIds);
     }
 
     internal record VoteRow
@@ -204,6 +233,7 @@ public class VoteRepository(HttpClient client) : IVoteRepository
     internal record ScanResp
     {
         public long[] TargetIds { get; init; } = [];
+        public long NextToken { get; init; }
     }
 }
 
@@ -214,7 +244,6 @@ public class VoteRepository(HttpClient client) : IVoteRepository
 [JsonSerializable(typeof(VoteRepository.ScanReq))]
 [JsonSerializable(typeof(VoteRepository.ScanResp))]
 internal partial class VoteJsonContext : JsonSerializerContext;
-
 
 public static class Extension
 {
@@ -249,11 +278,11 @@ public static class Extension
 
             var voteRepository = context.RequestServices.GetService<IVoteRepository>() ??
                                  throw new NullReferenceException();
-            voteRepository.CurrentUser  = context.User.UserId();
+            voteRepository.CurrentUser = context.User.UserId();
 
             await next.Invoke();
         });
-    
+
     public static long UserId(this ClaimsPrincipal user)
     {
         var id = user.Claims.FirstOrDefault(c => c.Type == "id")?.Value;

@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 using content.domainservice;
@@ -122,7 +122,7 @@ public class DomainTest
         var videos = new List<Video> { new() { Id = 1, UserId = 1 }, new() { Id = 2, UserId = 2 } };
         var users = new List<User> { new() { Id = 1 }, new() { Id = 2 } };
         var voteVideoIds = new List<long> { 1 };
-        
+
         mockVideoRepo.Setup(repo => repo.FindRecent(1, 2)).ReturnsAsync(videos);
         mockUserRepo.Setup(repo => repo.FindAllByIds(It.IsAny<IEnumerable<long>>())).ReturnsAsync(users);
         mockVoteRepo.Setup(repo => repo.VotedOfVideos(It.IsAny<long[]>())).ReturnsAsync(voteVideoIds);
@@ -136,6 +136,31 @@ public class DomainTest
     }
 
     [Fact]
+    public async Task DailyPopularVideos_ReturnsExpectedVideos()
+    {
+        // Arrange
+        var mockVideoRepo = new Mock<IVideoRepository>();
+        var mockUserRepo = new Mock<IUserRepository>();
+        var mockVoteRepo = new Mock<IVoteRepository>();
+        var videos = new List<Video> { new() { Id = 1, UserId = 1 }, new() { Id = 2, UserId = 2 } };
+        var users = new List<User> { new() { Id = 1 }, new() { Id = 2 } };
+        var voteVideoIds = new List<long> { 1 };
+        mockVideoRepo.Setup(repo => repo.DailyPopularVideos(1, 2)).ReturnsAsync((2, videos));
+        mockVoteRepo.Setup(repo => repo.VotedOfVideos(It.IsAny<long[]>())).ReturnsAsync(voteVideoIds);
+        mockVideoRepo.Setup(repo => repo.FindAllByIds(It.IsAny<long[]>())).ReturnsAsync(videos);
+        mockUserRepo.Setup(repo => repo.FindAllByIds(It.IsAny<IEnumerable<long>>())).ReturnsAsync(users);
+        var service = new DomainService(mockVideoRepo.Object, mockUserRepo.Object, mockVoteRepo.Object);
+
+        // Act
+        var result = await service.DailyPopularVideos(1, 2);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(2, result.Items.Count);
+    }
+    
+    
+    [Fact]
     public async Task VotedVideos_ReturnsExpectedVideos()
     {
         // Arrange
@@ -146,7 +171,7 @@ public class DomainTest
         var videos = new List<Video> { new() { Id = 1, UserId = 1 }, new() { Id = 2, UserId = 2 } };
         var users = new List<User> { new() { Id = 1 }, new() { Id = 2 } };
         var voteVideoIds = new List<long> { 1 };
-        mockVoteRepo.Setup(repo => repo.VotedVideos(1, 1, 2)).ReturnsAsync(videoIds);
+        mockVoteRepo.Setup(repo => repo.VotedVideos(1, 1, 2)).ReturnsAsync((2, videoIds));
         mockVoteRepo.Setup(repo => repo.VotedOfVideos(It.IsAny<long[]>())).ReturnsAsync(voteVideoIds);
         mockVideoRepo.Setup(repo => repo.FindAllByIds(It.IsAny<long[]>())).ReturnsAsync(videos);
         mockUserRepo.Setup(repo => repo.FindAllByIds(It.IsAny<IEnumerable<long>>())).ReturnsAsync(users);
@@ -157,7 +182,7 @@ public class DomainTest
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(2, result.Count);
+        Assert.Equal(2, result.Items.Count);
     }
 
     [Fact]
