@@ -30,12 +30,9 @@ public class TokenParser {
     public static ThreadLocal<Optional<Principal>> principal = new ThreadLocal<>();
 
     public TokenParser(@Value("${jwt.secret}") String secret) {
-
-
-
         var secretKey = Keys.hmacShaKeyFor(secret.getBytes());
-        jwtParser = Jwts.parser()
-                .verifyWith(secretKey)
+        jwtParser = Jwts.parserBuilder()
+                .setSigningKey(secretKey)
                 .build();
     }
 
@@ -53,9 +50,9 @@ public class TokenParser {
         }
 
         var tokenString = token.substring(PREFIX.length());
-        var claimsJws = jwtParser.parseSignedClaims(tokenString);
-        var name = claimsJws.getPayload().get("name", String.class);
-        var id = claimsJws.getPayload().get("id", String.class);
+        var claimsJws = jwtParser.parseClaimsJws(tokenString);
+        var name = claimsJws.getBody().get("name", String.class);
+        var id = claimsJws.getBody().get("id", String.class);
         var value = new Principal(name, Long.parseLong(id), token);
         principal.set(Optional.of(value));
         return Optional.of(value);

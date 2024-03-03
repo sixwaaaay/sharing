@@ -3,6 +3,8 @@ server:
 jwt:
   secret: "this is a secret string you should use"
 spring:
+  main:
+    keep-alive: true
   lifecycle:
     timeout-per-shutdown-phase: 20s
   threads:
@@ -30,6 +32,10 @@ logging:
       springframework:
         jdbc: INFO
 management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,prometheus"
   tracing:
     sampling:
       probability: ${TRACING_PROBABILITY:1.0}

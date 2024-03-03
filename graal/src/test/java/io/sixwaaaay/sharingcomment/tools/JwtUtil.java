@@ -29,8 +29,9 @@ public class JwtUtil {
     public String generateToken(String name, String id) {
         var secretKey = Keys.hmacShaKeyFor(secret.getBytes());
         return Jwts.builder().claim("name", name)
-                .claim("id", id).issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 7))
+                .claim("id", id)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 7))
                 .signWith(secretKey)
                 .compact();
     }
