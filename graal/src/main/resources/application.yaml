@@ -3,6 +3,8 @@ server:
 jwt:
   secret: "this is a secret string you should use"
 spring:
+  main:
+    keep-alive: true
   lifecycle:
     timeout-per-shutdown-phase: 20s
   threads:
@@ -11,7 +13,12 @@ spring:
   datasource:
     username: ${DB_USER:v1}
     password: ${DB_PASSWORD:ABCDEF}
-    url: jdbc:mysql://${DB_HOST:db}:${DB_PORT:3306}/${DB_NAME:comments}?${DB_OPTIONS:useSSL=false&serverTimezone=UTC}
+    url: jdbc:mysql://${DB_HOST:db}:${DB_PORT:3306}/${DB_NAME:comments}?${DB_OPTIONS:serverTimezone=UTC}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  replica-datasource:
+    username: ${DB_USER:v1}
+    password: ${DB_PASSWORD:ABCDEF}
+    url: jdbc:mysql://${DB_HOST:db}:${DB_PORT:3306}/${DB_NAME:comments}?${DB_OPTIONS:serverTimezone=UTC}
     driver-class-name: com.mysql.cj.jdbc.Driver
   data:
     redis:
@@ -25,6 +32,10 @@ logging:
       springframework:
         jdbc: INFO
 management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,prometheus"
   tracing:
     sampling:
       probability: ${TRACING_PROBABILITY:1.0}

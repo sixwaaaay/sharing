@@ -53,7 +53,7 @@ jobs:
           DB_NAME: db
           DB_USER: v1
           DB_PASSWORD: ABCDEF
-          DB_OPTIONS: useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+          DB_OPTIONS: serverTimezone=Asia/Shanghai
           TRACING_PROBABILITY: 0.1
           OTLP_ENDPOINT: http://localhost:4318/v1/traces
           VOTE_SERVICE_BASE_URL: http://localhost:8081
