@@ -13,14 +13,32 @@
 
 package io.sixwaaaay.sharingcomment.util;
 
+/**
+ * DbContext is a thread local variable which is used to determine
+ * whether the current operation is a read or write operation.
+ */
 public class DbContext {
+    /**
+     * Thread local variable to store the current context.
+     * default value is WRITE.
+     */
     private static final ThreadLocal<DbContextEnum> CONTEXT = ThreadLocal.withInitial(() -> DbContextEnum.WRITE);
 
 
+    /**
+     * Set the current context.
+     *
+     * @param context the context to set.
+     */
     public static void set(DbContextEnum context) {
         CONTEXT.set(context);
     }
 
+    /**
+     * Get the current context.
+     *
+     * @return the current context.
+     */
     public static DbContextEnum get() {
         return CONTEXT.get();
     }

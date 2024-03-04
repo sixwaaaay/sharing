@@ -13,6 +13,16 @@
 
 package io.sixwaaaay.sharingcomment.util;
 
+/**
+ * Enum for database context
+ */
 public enum DbContextEnum {
-    READ, WRITE
+    /**
+     * indicate replica-datasource
+     */
+    READ,
+    /**
+     * indicate default-datasource
+     */
+    WRITE,
 }
