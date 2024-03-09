@@ -9,6 +9,8 @@ servers:
 paths:
   /sign/in:
     post:
+      tags:
+        - Users
       summary: Authenticate user and login
       operationId: login
       security:
@@ -29,6 +31,8 @@ paths:
                 $ref: "#/components/schemas/LoginReply"
   /sign/up:
     post:
+      tags:
+        - Users
       summary: Register a new user
       operationId: register
       security:
@@ -49,6 +53,8 @@ paths:
                 $ref: "#/components/schemas/RegisterReply"
   /users/{user_id}:
     get:
+      tags:
+        - Users
       summary: Get user by ID
       operationId: getUser
       security:
@@ -80,6 +86,8 @@ paths:
                     $ref: "#/components/schemas/User"
   /users:
     get:
+      tags:
+        - Users
       summary: Get users
       operationId: getUsers
       security:
@@ -114,6 +122,8 @@ paths:
                     items:
                       $ref: "#/components/schemas/User"
     patch:
+      tags:
+        - Users
       summary: Update user profile
       operationId: updateProfile
       parameters:
@@ -137,6 +147,8 @@ paths:
                 $ref: "#/components/schemas/UpdateProfileResponse"
   /users/{user_id}/followers:
     post:
+      tags:
+        - Users
       summary: Get followers of a user
       operationId: getFollowers
       security:
@@ -180,6 +192,8 @@ paths:
 
   /users/{user_id}/following:
     post:
+      tags:
+        - Users
       summary: Get users followed by a user
       operationId: getFollowing
       security:
@@ -222,6 +236,8 @@ paths:
                 $ref: "#/components/schemas/UsersPage"
   /assets/new:
     post:
+      tags:
+        - Asserts
       summary: generate new asset pre-signed url to upload
       operationId: newAsset
       requestBody:
@@ -240,6 +256,8 @@ paths:
                 $ref: "#/components/schemas/NewAssetReply"
   /follow:
     post:
+      tags:
+        - Users
       summary: Follow or unfollow a user
       operationId: followAction
       parameters:
@@ -263,255 +281,390 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FollowActionReply"
-  /comments:
-    patch:
-      summary: Create a comment
-      operationId: createComment
-      security:
-        - {}
-        - bearerAuth: []
-      parameters:
-        - name: Authorization
-          in: header
-          description: Bearer token for authentication
-          required: true
-          schema:
-            type: string
-      requestBody:
-        description: Comment information
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CommentActionReq"
-      responses:
-        "200":
-          description: Comment object
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CommentActionReply"
-    post:
-      summary: Get comments for a video
-      operationId: getComments
-      parameters:
-        - name: Authorization
-          in: header
-          description: Bearer token for authentication
-          required: false
-          schema:
-            type: string
-      requestBody:
-        description: Comment information
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CommentListReq"
-      responses:
-        "200":
-          description: Comment object
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CommentListReply"
-  /videos/{video_id}:
+  "/users/{userId}/videos":
     get:
-      summary: Get video by ID
-      operationId: getVideo
-      parameters:
-        - name: video_id
-          in: path
-          description: ID of the video to retrieve
-          required: true
-          schema:
-            type: string
-            format: int64
-        - name: Authorization
-          in: header
-          description: Bearer token for authentication
-          required: false
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Video object
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GetVideoReply"
-  /videos/user:
-    post:
-      summary: Get videos by user ID
+      tags:
+        - Content
       operationId: getUserVideos
       parameters:
-        - name: Authorization
-          in: header
-          description: Bearer token for authentication
-          required: false
-          schema:
-            type: string
-      requestBody:
-        description: User ID and action to perform
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/GetUserVideosRequest"
-      responses:
-        "200":
-          description: Video object
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GetUserVideosReply"
-  /videos/liked:
-    post:
-      summary: Get liked videos by user ID
-      operationId: getLikedVideos
-      parameters:
-        - name: Authorization
-          in: header
-          description: Bearer token for authentication
-          required: false
-          schema:
-            type: string
-      requestBody:
-        description: User ID and action to perform
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/GetLikedVideosRequest"
-      responses:
-        "200":
-          description: Video object
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GetLikedVideosReply"
-    patch:
-      summary: Like a video
-      operationId: likeVideo
-      parameters:
-        - name: Authorization
-          in: header
-          description: Bearer token for authentication
+        - name: userId
+          in: path
           required: true
+          style: simple
           schema:
-            type: string
-      requestBody:
-        description: Video ID and action to perform
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/LikeVideoRequest"
+            type: integer
+            format: int64
+        - name: page
+          in: query
+          style: form
+          schema:
+            type: integer
+            format: int64
+        - name: size
+          in: query
+          style: form
+          schema:
+            type: integer
+            format: int32
       responses:
         "200":
-          description: Video object
+          description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/LikeVideoReply"
-  /videos/recent:
-    post:
-      summary: Get recent videos by user ID
-      operationId: getRecentVideos
+                $ref: "#/components/schemas/VideoDtoPagination"
+  "/users/{userId}/likes":
+    get:
+      tags:
+        - Content
+      operationId: getUserLikes
       parameters:
-        - name: Authorization
-          in: header
-          description: Bearer token for authentication
-          required: false
+        - name: userId
+          in: path
+          required: true
+          style: simple
           schema:
-            type: string
-      requestBody:
-        description: User ID and action to perform
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/GetRecentVideosRequest"
+            type: integer
+            format: int64
+        - name: page
+          in: query
+          style: form
+          schema:
+            type: integer
+            format: int64
+        - name: size
+          in: query
+          style: form
+          schema:
+            type: integer
+            format: int32
       responses:
         "200":
-          description: Video object
+          description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/GetRecentVideosReply"
+                $ref: "#/components/schemas/VideoDtoPagination"
   /videos:
-    post:
-      summary: Upload a video
-      operationId: uploadVideo
+    get:
+      tags:
+        - Content
+      operationId: getVideos
       parameters:
-        - name: Authorization
-          in: header
-          description: Bearer token for authentication
-          required: true
+        - name: page
+          in: query
+          style: form
           schema:
-            type: string
+            type: integer
+            format: int64
+        - name: size
+          in: query
+          style: form
+          schema:
+            type: integer
+            format: int32
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VideoDtoPagination"
+    post:
+      tags:
+        - Content
+      operationId: createVideo
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/VideoReq"
-      responses:
-        "200":
-          description: Video object
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UploadVideoResponse"
-
-  /messages:
-    patch:
-      summary: Send a message
-      operationId: sendMessage
-      parameters:
-        - name: Authorization
-          in: header
-          description: Bearer token for authentication
-          required: true
-          schema:
-            type: string
-      requestBody:
-        description: Message information
+              $ref: "#/components/schemas/VideoRequest"
         required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SendMessageRequest"
       responses:
         "200":
-          description: Message object
+          description: Success
+  /videos/popular:
+    post:
+      tags:
+        - Content
+      operationId: getDailyPopularVideos
+      parameters:
+        - name: page
+          in: query
+          style: form
+          schema:
+            type: integer
+            format: int64
+        - name: size
+          in: query
+          style: form
+          schema:
+            type: integer
+            format: int32
+      responses:
+        "200":
+          description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SendMessageReply"
+                $ref: "#/components/schemas/VideoDtoPagination"
+  /votes:
     post:
-      summary: Get messages
+      tags:
+        - Content
+      operationId: vote
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VoteRequest"
+        required: true
+      responses:
+        "200":
+          description: Success
+  /votes/cancel:
+    post:
+      tags:
+        - Content
+      operationId: cancelVote
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VoteRequest"
+        required: true
+      responses:
+        "200":
+          description: Success
+  /messages:
+    get:
+      tags:
+        - Content
       operationId: getMessages
       parameters:
-        - name: Authorization
-          in: header
-          description: Bearer token for authentication
+        - name: receiverId
+          in: query
           required: true
+          style: form
           schema:
-            type: string
-      requestBody:
-        description: Message information
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/GetMessagesRequest"
+            type: integer
+            format: int64
+        - name: page
+          in: query
+          style: form
+          schema:
+            type: integer
+            format: int64
+        - name: size
+          in: query
+          style: form
+          schema:
+            type: integer
+            format: int32
+        - name: unreadOnly
+          in: query
+          required: true
+          style: form
+          schema:
+            type: boolean
       responses:
         "200":
-          description: Message object
+          description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/GetMessagesReply"
+                $ref: "#/components/schemas/MessageDtoPagination"
+    post:
+      tags:
+        - Content
+      operationId: sendMessage
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MessageRequest"
+        required: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageDto"
+  "/messages/{id}":
+    post:
+      tags:
+        - Content
+      operationId: markAsRead
+      parameters:
+        - name: id
+          in: path
+          required: true
+          style: simple
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: Success
+  /comments/main:
+    get:
+      tags:
+        - Comments
+      summary: "get main comments"
+      operationId: "getMainCommentList"
+      security:
+        - {}
+        - BearerAuth: []
+      parameters:
+        - name: "belong_to"
+          in: "query"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+        - name: "page"
+          in: "query"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+        - name: "size"
+          in: "query"
+          required: false
+          schema:
+            type: "integer"
+            format: "int32"
+            default: "10"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/CommentResult"
+  /comments/reply:
+    get:
+      tags:
+        - Comments
+      summary: "get reply comments"
+      operationId: "getReplyCommentList"
+      security:
+        - {}
+        - BearerAuth: []
+      parameters:
+        - name: "belong_to"
+          in: "query"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+        - name: "reply_to"
+          in: "query"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+        - name: "page"
+          in: "query"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+        - name: "size"
+          in: "query"
+          required: false
+          schema:
+            type: "integer"
+            format: "int32"
+            default: "10"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/ReplyResult"
+  /comments:
+    post:
+      tags:
+        - Comments
+      summary: "post comments"
+      operationId: "createComment"
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommentRequest"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/Comment"
+  /comments/{id}:
+    delete:
+      tags:
+        - Comments
+      summary: "delete comment"
+      operationId: "deleteComment"
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommentRequest"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+  /comments/action/like/{id}:
+    post:
+      tags:
+        - Comments
+      summary: "like comments"
+      operationId: "voteComment"
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+      responses:
+        "200":
+          description: "OK"
+    delete:
+      tags:
+        - Comments
+      summary: "cancel like comments"
+      operationId: "cancelVoteComment"
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+      responses:
+        "200":
+          description: "OK"
 security:
   - bearerAuth: []
 components:
@@ -544,127 +697,6 @@ components:
       required:
         - email
         - password
-    CommentActionReq:
-      type: object
-      properties:
-        video_id:
-          type: string
-          format: int64
-          minimum: 0
-        action:
-          type: integer
-          format: int32
-          minimum: 0
-        comment_text:
-          type: string
-        comment_id:
-          type: string
-          format: int64
-          minimum: 0
-      required:
-        - video_id
-        - action
-    CommentActionReply:
-      type: object
-      properties:
-        comment:
-          $ref: "#/components/schemas/Comment"
-    Comment:
-      type: object
-      properties:
-        id:
-          type: string
-          format: int64
-        content:
-          type: string
-        create_at:
-          type: string
-          format: int64
-        user:
-          $ref: "#/components/schemas/User"
-    CommentListReq:
-      type: object
-      properties:
-        video_id:
-          type: string
-          format: int64
-          minimum: 0
-        page:
-          type: string
-          format: int64
-          minimum: 0
-        limit:
-          type: integer
-          format: int32
-          minimum: 0
-      required:
-        - video_id
-    CommentListReply:
-      type: object
-      properties:
-        comment_list:
-          type: array
-          items:
-            $ref: "#/components/schemas/Comment"
-    SendMessageRequest:
-      type: object
-      properties:
-        to_user_id:
-          type: string
-          format: int64
-          minimum: 0
-        content:
-          type: string
-        action_type:
-          type: integer
-          format: int32
-      required:
-        - to_user_id
-        - content
-        - action_type
-    SendMessageReply:
-      type: object
-    GetMessagesRequest:
-      type: object
-      properties:
-        to_user_id:
-          type: string
-          format: int64
-          minimum: 0
-        page:
-          type: string
-          format: int64
-          minimum: 0
-    GetMessagesReply:
-      type: object
-      properties:
-        message_list:
-          type: array
-          items:
-            $ref: "#/components/schemas/Message"
-    Message:
-      type: object
-      properties:
-        id:
-          type: string
-          format: int64
-        to_user_id:
-          type: string
-          format: int64
-        from_user_id:
-          type: string
-          format: int64
-        content:
-          type: string
-        create_time:
-          type: string
-          format: int64
-      required:
-        - id
-        - to_user_id
-        - from_user_id
-        - content
-        - create_time
     Video:
       type: object
       properties:
@@ -780,40 +812,6 @@ components:
           $ref: "#/components/schemas/User"
         token:
           type: string
-    User:
-      type: object
-      properties:
-        id:
-          type: string
-          format: int64
-        name:
-          type: string
-        is_follow:
-          type: boolean
-        avatar_url:
-          type: string
-        bg_url:
-          type: string
-        bio:
-          type: string
-        likes_given:
-          type: integer
-          format: int32
-        likes_received:
-          type: integer
-          format: int32
-        videos_posted:
-          type: integer
-          format: int32
-        following:
-          type: integer
-          format: int32
-        followers:
-          type: integer
-          format: int32
-      required:
-        - id
-        - name
     FollowActionRequest:
       type: object
       properties:
@@ -910,3 +908,243 @@ components:
           type: string
         bg_url:
           type: string
+    MessageDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        sender_id:
+          type: integer
+          format: int64
+        receiver_id:
+          type: integer
+          format: int64
+        content:
+          type: string
+          nullable: true
+        type:
+          type: integer
+          format: int32
+        read:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+      additionalProperties: false
+    MessageDtoPagination:
+      type: object
+      properties:
+        all_count:
+          type: integer
+          format: int32
+        next_page:
+          type: integer
+          format: int64
+          nullable: true
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/MessageDto"
+          nullable: true
+      additionalProperties: false
+    MessageRequest:
+      type: object
+      properties:
+        receiver_id:
+          type: integer
+          format: int64
+        content:
+          type: string
+          nullable: true
+        type:
+          type: integer
+          format: int32
+      additionalProperties: false
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          nullable: true
+        is_follow:
+          type: boolean
+        avatar_url:
+          type: string
+          nullable: true
+        bg_url:
+          type: string
+          nullable: true
+        bio:
+          type: string
+          nullable: true
+        likes_given:
+          type: integer
+          format: int32
+        likes_received:
+          type: integer
+          format: int32
+        videos_posted:
+          type: integer
+          format: int32
+        following:
+          type: integer
+          format: int32
+        followers:
+          type: integer
+          format: int32
+      additionalProperties: false
+    VideoDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        author:
+          $ref: "#/components/schemas/User"
+        title:
+          type: string
+          nullable: true
+        des:
+          type: string
+          nullable: true
+        cover_url:
+          type: string
+          nullable: true
+        video_url:
+          type: string
+          nullable: true
+        duration:
+          type: integer
+          format: int32
+        view_count:
+          type: integer
+          format: int32
+        like_count:
+          type: integer
+          format: int32
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        processed:
+          type: integer
+          format: int32
+        is_liked:
+          type: boolean
+      additionalProperties: false
+    VideoDtoPagination:
+      type: object
+      properties:
+        all_count:
+          type: integer
+          format: int32
+        next_page:
+          type: integer
+          format: int64
+          nullable: true
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/VideoDto"
+          nullable: true
+      additionalProperties: false
+    VideoRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          nullable: true
+        des:
+          type: string
+          nullable: true
+        cover_url:
+          type: string
+          nullable: true
+        video_url:
+          type: string
+          nullable: true
+      additionalProperties: false
+    VoteRequest:
+      type: object
+      properties:
+        video_id:
+          type: integer
+          format: int64
+        type:
+          type: integer
+          format: int32
+      additionalProperties: false
+    Comment:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+          format: "int64"
+        user_id:
+          type: "integer"
+          format: "int64"
+        content:
+          type: "string"
+        reply_to:
+          type: "integer"
+          format: "int64"
+        belong_to:
+          type: "integer"
+          format: "int64"
+        created_at:
+          type: "string"
+          format: "date-time"
+        reply_count:
+          type: "integer"
+          format: "int32"
+        like_count:
+          type: "integer"
+          format: "int32"
+        reply_comments:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Comment"
+        voted:
+          type: "boolean"
+        user:
+          $ref: "#/components/schemas/User"
+    CommentResult:
+      type: "object"
+      properties:
+        all_count:
+          type: "integer"
+          format: "int32"
+        next_page:
+          type: "integer"
+          format: "int64"
+        comments:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Comment"
+    ReplyResult:
+      type: "object"
+      properties:
+        next_page:
+          type: "integer"
+          format: "int64"
+        comments:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Comment"
+    CommentRequest:
+      type: "object"
+      properties:
+        content:
+          type: "string"
+        reply_to:
+          type: "integer"
+          format: "int64"
+        belong_to:
+          type: "integer"
+          format: "int64"
