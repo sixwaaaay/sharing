@@ -75,6 +75,10 @@ public class VideoRepository(MySqlDataSource dataSource) : IVideoRepository
     [DapperAot(false)]
     public async Task<IReadOnlyList<Video>> FindAllByIds(long[] ids)
     {
+        if (ids.Length == 0)
+        {
+            return [];
+        }
         await using var connection = await dataSource.OpenConnectionAsync();
         var inClause = new InClause<long>(ids);
 
