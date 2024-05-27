@@ -30,6 +30,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -213,10 +215,14 @@ public class CommentService {
         if (comments.isEmpty()) {
             return;
         }
-        if (enableUser)
-            composeCommentAuthor(comments);
-        if (enableVote)
-            composeCommentVoteStatus(comments, userId);
+        var userMap = composeCommentAuthor(comments);
+        var voted = composeCommentVoteStatus(comments, userId);
+        flatComments(comments).forEach(comment -> {
+            comment.setUser(userMap.get(comment.getUserId()));
+            if (voted.contains(comment.getId())) {
+                comment.setVoted(true);
+            }
+        });
     }
 
 
@@ -224,17 +230,19 @@ public class CommentService {
      * compose the comment, fill the user info
      *
      * @param comments the comments to be composed
+     * @return the map of user id to user info
      */
-    private void composeCommentAuthor(List<Comment> comments) {
+    private Map<Long, User> composeCommentAuthor(List<Comment> comments) {
+        if (!enableUser) {
+            return Map.of();
+        }
         // get user id list
         var userList = flatComments(comments).map(Comment::getUserId).distinct().toList();
         // fetch user info
         var token = principal.get().map(Principal::getToken).orElse("");
         var users = userClient.getManyUser(userList, token);
         // covert to map
-        var userMap = users.getUsers().stream().collect(Collectors.toMap(User::getId, identity()));
-        // fill user info
-        flatComments(comments).forEach(comment -> comment.setUser(userMap.get(comment.getUserId())));
+        return users.getUsers().stream().collect(Collectors.toMap(User::getId, identity()));
     }
 
     /**
@@ -242,18 +250,17 @@ public class CommentService {
      *
      * @param comments the comments to be composed
      * @param userId   the id of the user who is requesting
+     * @return the set of comment id which the user has voted
      */
-    private void composeCommentVoteStatus(List<Comment> comments, Long userId) {
-        if (userId == 0) {
-            return;
+    private Set<Long> composeCommentVoteStatus(List<Comment> comments, Long userId) {
+        if (!enableVote || userId == 0) {
+            return Set.of();
         }
         var commentIdList = flatComments(comments).map(Comment::getId).toList();
         //  check if voted
         var voteExistsReply = voteClient.exists(new VoteExistsReq(userId, commentIdList));
         // convert to set
-        var existedVote = voteExistsReply.getExists();
-        // fill vote status
-        flatComments(comments).forEach(comment -> comment.setVoted(existedVote.contains(comment.getId())));
+        return voteExistsReply.getExists();
     }
 
     /**
@@ -266,8 +273,7 @@ public class CommentService {
         return comments.stream().flatMap(c -> {
             if (c.getReplyComments() == null) {
                 return Stream.of(c);
-            }
-            else {
+            } else {
                 return Stream.concat(Stream.of(c), c.getReplyComments().stream());
             }
         });
