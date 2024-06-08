@@ -15,6 +15,7 @@ package io.sixwaaaay.sharingcomment.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
@@ -42,6 +43,12 @@ public class CommentRequest {
     private Long replyTo;
 
     /**
+     * The ID of the comment that this comment refers to.
+     */
+    @JsonProperty("refer_to")
+    private Long referTo;
+
+    /**
      * The ID of the entity to which the comment belongs.
      * It must be greater than 0.
      */
@@ -49,4 +56,12 @@ public class CommentRequest {
     @Range(min = 1, message = "belong_to must be greater than 0")
     @JsonProperty("belong_to")
     private Long belongTo;
+
+    /**
+     * reply_to and parent_id must be both null or not null at the same time
+     */
+    @AssertTrue(message = "reply_to and refer_to must be both null or not null at the same time")
+    public boolean isValid() {
+        return (replyTo == null && referTo == null) || (replyTo != null && referTo != null);
+    }
 }

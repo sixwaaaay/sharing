@@ -11,22 +11,18 @@
  * limitations under the License.
  */
 
-package io.sixwaaaay.sharingcomment.transmission;
+package io.sixwaaaay.sharingcomment.util;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import io.sixwaaaay.sharingcomment.util.LongRpcSerializer;
-import lombok.Data;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
 
-@Data
-public class ScanVotedReq {
-    private Integer limit;
-    @JsonProperty("subject_id")
-    @JsonSerialize(using = LongRpcSerializer.class)
-    private Long subjectId;
-    @JsonProperty("target_type")
-    private String targetType;
-    @JsonSerialize(using = LongRpcSerializer.class)
-    private Long token;
-    private String type;
+import java.io.IOException;
+
+public class LongRpcSerializer extends JsonSerializer<Long> {
+    @Override
+    public void serialize(Long value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+        gen.writeNumber(value);
+    }
 }
+

@@ -84,7 +84,7 @@ class SharingCommentApplicationTests {
     @Test
     public void createCommentTest() throws Exception {
         var token = jwtUtil.generateToken("n", "1111111");
-        var json = "{ \"content\": \"This is a test comment\", \"reply_to\": 1, \"belong_to\": 1 }";
+        var json = "{ \"content\": \"This is a test comment\", \"reply_to\": 1, \"belong_to\": 1, \"refer_to\": 1 }";
         mockMvc.perform(MockMvcRequestBuilders.post("/comments")
                         .content(json)
                         .contentType(MediaType.APPLICATION_JSON)

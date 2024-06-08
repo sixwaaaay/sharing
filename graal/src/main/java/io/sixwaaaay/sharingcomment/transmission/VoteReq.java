@@ -14,6 +14,8 @@
 package io.sixwaaaay.sharingcomment.transmission;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import io.sixwaaaay.sharingcomment.util.LongRpcSerializer;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.hibernate.validator.constraints.Range;
@@ -25,12 +27,14 @@ public class VoteReq {
     @NotNull
     @Range(min = 1, message = "subject_id must be greater than 0")
     @JsonProperty("subject_id")
+    @JsonSerialize(using = LongRpcSerializer.class)
     private Long subjectId;
     @JsonProperty("target_type")
     private String targetType;
     @NotNull
     @Range(min = 1, message = "target_id must be greater than 0")
     @JsonProperty("target_id")
+    @JsonSerialize(using = LongRpcSerializer.class)
     private Long targetId;
 
     public VoteReq(long subjectId, long targetId) {

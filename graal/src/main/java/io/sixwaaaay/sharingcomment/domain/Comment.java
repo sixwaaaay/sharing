@@ -69,6 +69,13 @@ public class Comment implements Serializable {
     private Long replyTo;
 
     /**
+     * The unique identifier of the parent comment.
+     */
+    @Column("refer_to")
+    @JsonProperty("refer_to")
+    private Long referTo;
+
+    /**
      * The unique identifier of the entity to which this comment belongs.
      */
     @Column("belong_to")

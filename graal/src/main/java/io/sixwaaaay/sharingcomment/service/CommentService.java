@@ -29,6 +29,7 @@ import org.springframework.data.domain.Limit;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -117,6 +118,8 @@ public class CommentService {
     public ReplyResult getReplyCommentList(Long belongTo, Long replyTo, Long id, Integer size, Long userId) {
         DbContext.set(DbContextEnum.READ); // set read context
         var comments = commentRepo.findByBelongToAndReplyToAndIdGreaterThanOrderByIdAsc(belongTo, replyTo, id, Limit.of(size));
+        // sort by id asc
+        comments.sort(Comparator.comparingLong(Comment::getId));
         composeComment(comments, userId);
         var result = new ReplyResult();
         result.setComments(comments);
