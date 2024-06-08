@@ -27,6 +27,7 @@ CREATE TABLE `comments`
     `created_at`  datetime     NOT NULL DEFAULT (CURRENT_TIMESTAMP(3)),
     `reply_count` int          NOT NULL DEFAULT '0',
     `like_count`  int          NOT NULL DEFAULT '0',
+    `refer_to`    bigint,
     PRIMARY KEY (`id`),
     INDEX `finder` (`belong_to`, `reply_to`, `id`)
 ) ENGINE = InnoDB

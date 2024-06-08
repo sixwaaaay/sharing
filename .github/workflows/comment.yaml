@@ -67,6 +67,7 @@ jobs:
           flags: comments
           files: ./graal/target/site/jacoco/jacoco.xml
           verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   release:
     runs-on: ubuntu-latest

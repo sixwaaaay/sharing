@@ -23,6 +23,7 @@ import io.sixwaaaay.sharingcomment.request.error.NoUserExitsError;
 import io.sixwaaaay.sharingcomment.service.CommentService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -34,6 +35,7 @@ import static io.sixwaaaay.sharingcomment.util.TokenParser.principal;
 @RestController
 @RequestMapping("/comments")
 @AllArgsConstructor
+@Validated
 public class CommentController {
 
     private final CommentService commentService;
@@ -64,11 +66,11 @@ public class CommentController {
     public ReplyResult getReplyCommentList(
             @RequestParam("belong_to") Long belongTo,
             @RequestParam("reply_to") Long replyTo,
-            @RequestParam("page") Optional<Long> id,
+            @RequestParam(value = "page", defaultValue = "0") long id,
             @RequestParam(value = "size", defaultValue = "10") Integer size
     ) {
         var userId = principal.get().map(Principal::getId).orElse(0L);
-        return commentService.getReplyCommentList(belongTo, replyTo, id.orElse(0L), size, userId);
+        return commentService.getReplyCommentList(belongTo, replyTo, id, size, userId);
     }
 
     /**
@@ -83,6 +85,7 @@ public class CommentController {
         comment.setUserId(id); // throw exception if principal is empty
         comment.setBelongTo(request.getBelongTo());
         comment.setContent(request.getContent());
+        comment.setReferTo(request.getReferTo());
         comment.setReplyTo(request.getReplyTo());
         var epochSecond = System.currentTimeMillis() / 1000;
         comment.setCreatedAt(LocalDateTime.ofEpochSecond(epochSecond, 0, ZoneOffset.ofHours(8)));

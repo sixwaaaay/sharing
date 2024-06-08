@@ -14,6 +14,9 @@
 package io.sixwaaaay.sharingcomment.transmission;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import io.sixwaaaay.sharingcomment.util.ListLongRpcSerializer;
+import io.sixwaaaay.sharingcomment.util.LongRpcSerializer;
 import lombok.Data;
 
 import java.util.List;
@@ -22,10 +25,12 @@ import java.util.List;
 public class VoteExistsReq {
     private String type;
     @JsonProperty("subject_id")
+    @JsonSerialize(using = LongRpcSerializer.class)
     private Long subjectId;
     @JsonProperty("target_type")
     private String targetType;
     @JsonProperty("target_ids")
+    @JsonSerialize(using = ListLongRpcSerializer.class)
     private List<Long> targetIds;
 
     public VoteExistsReq(long subjectId, List<Long> targetIds) {
