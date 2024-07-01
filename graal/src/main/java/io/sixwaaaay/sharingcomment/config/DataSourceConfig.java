@@ -105,7 +105,6 @@ public class DataSourceConfig {
     @Primary
     NamedParameterJdbcOperations namedParameterJdbcOperations(DataSource dataSource) {
         return new NamedParameterJdbcTemplate(dataSource);
-
     }
 
     // the transaction manager

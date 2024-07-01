@@ -35,7 +35,7 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
      * @param id       the id of the earliest comment in the previous page
      * @return page of comments
      */
-    @Cacheable("comments-main")
+    @Cacheable(value = "comments-main", key = "#belongTo + '-' + #id + '-' + #limit.max()")
     List<Comment> findByBelongToAndIdLessThanAndReplyToNullOrderByIdDesc(Long belongTo, Long id, Limit limit);
 
 
@@ -51,7 +51,7 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
      * @param limit   the limit
      * @return the list of comments
      */
-    @Cacheable("comments-reply")
+    @Cacheable(value = "comments-reply", key = "#belongTo + '-' + #replyTo + '-' + #id + '-' + #limit.max()")
     List<Comment> findByBelongToAndReplyToAndIdGreaterThanOrderByIdAsc(Long belongTo, Long replyTo, Long id, Limit limit);
 
 
@@ -61,9 +61,7 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
      * @param id     the id of the comment
      * @param userId the id of the user
      */
-    @Modifying
-    @Query("delete from `comments` where `id` = :id and `user_id` = :userId")
-    boolean deleteByIdAndUserId(Long id, Long userId);
+    void deleteByIdAndUserId(Long id, Long userId);
 
     /**
      * update the reply_count of the specified comment
@@ -71,34 +69,6 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
      * @param id the id of the comment
      */
     @Modifying
-    @Query("update `comments` set `reply_count` = `reply_count` + 1 where id = :id")
+    @Query("UPDATE comments SET reply_count = 1 where id = :id")
     void increaseReplyCount(Long id);
-
-    /**
-     * update the reply_count of the specified comment
-     *
-     * @param id the id of the comment
-     */
-    @Modifying
-    @Query("update `comments` set `reply_count` = `reply_count` - 1 where id = :id")
-    void decreaseReplyCount(Long id);
-
-
-    /**
-     * update the like_count of the specified comment
-     *
-     * @param id the id of the comment
-     */
-    @Modifying
-    @Query("update `comments` set `like_count` = `like_count` + 1 where id = :id")
-    void increaseLikeCount(Long id);
-
-    /**
-     * update the like_count of the specified comment
-     *
-     * @param id the id of the comment
-     */
-    @Modifying
-    @Query("update `comments` set `like_count` = `like_count` - 1 where id = :id")
-    void decreaseLikeCount(Long id);
 }

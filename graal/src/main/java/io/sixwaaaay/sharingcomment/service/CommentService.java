@@ -18,7 +18,6 @@ import io.sixwaaaay.sharingcomment.client.UserClient;
 import io.sixwaaaay.sharingcomment.client.VoteClient;
 import io.sixwaaaay.sharingcomment.domain.*;
 import io.sixwaaaay.sharingcomment.repository.CommentRepository;
-import io.sixwaaaay.sharingcomment.repository.CountRepository;
 import io.sixwaaaay.sharingcomment.request.Principal;
 import io.sixwaaaay.sharingcomment.transmission.VoteExistsReq;
 import io.sixwaaaay.sharingcomment.transmission.VoteReq;
@@ -43,8 +42,6 @@ import static java.util.function.Function.identity;
 public class CommentService {
     private final CommentRepository commentRepo;
 
-    private final CountRepository countRepo;
-
     private final VoteClient voteClient;
 
     private final UserClient userClient;
@@ -52,9 +49,8 @@ public class CommentService {
     private final boolean enableVote;
     private final boolean enableUser;
 
-    public CommentService(CommentRepository commentRepo, CountRepository countRepo, VoteClient voteClient, UserClient userClient, @Value("${service.vote.enabled}") boolean enableVote, @Value("${service.user.enabled}") boolean enableUser) {
+    public CommentService(CommentRepository commentRepo, VoteClient voteClient, UserClient userClient, @Value("${service.vote.enabled}") boolean enableVote, @Value("${service.user.enabled}") boolean enableUser) {
         this.commentRepo = commentRepo;
-        this.countRepo = countRepo;
         this.voteClient = voteClient;
         this.userClient = userClient;
         this.enableVote = enableVote;
@@ -77,24 +73,18 @@ public class CommentService {
      * @return a CommentResult object that contains the total count of comments, the comments for the current page, and the id of the next page
      */
     public CommentResult getMainCommentList(Long belongTo, Long id, Integer size, Long userId) {
-        DbContext.set(DbContextEnum.READ); // set read context
+        DbContext.set(DbContextEnum.READ);  /* set read context */
         var result = new CommentResult();
-        var count = countRepo.findById(belongTo).orElse(new Count(belongTo, 0)).getCommentCount();
-
-        result.setAllCount(count);
-        if (count == 0) {
-            result.setComments(List.of());
-            return result;
-        }
 
         var mainComments = commentRepo.findByBelongToAndIdLessThanAndReplyToNullOrderByIdDesc(belongTo, id, Limit.of(size));
-//       for each main comment which has reply comments, get the latest 2 reply comments
+        /* for each main comment which has reply comments, get the latest 2 reply comments */
         mainComments.stream().filter(comment -> comment.getReplyCount() != 0).forEach(comment -> {
             var replyComments = commentRepo.findByBelongToAndReplyToAndIdGreaterThanOrderByIdAsc(belongTo, comment.getId(), 0L, Limit.of(2));
             comment.setReplyComments(replyComments);
         });
 
         composeComment(mainComments, userId);
+
         result.setComments(mainComments);
         if (mainComments.size() == size) {
             result.setNextPage(mainComments.getLast().getId());
@@ -116,9 +106,9 @@ public class CommentService {
      * @return a ReplyResult object that contains the comments for the current page and the id of the next page
      */
     public ReplyResult getReplyCommentList(Long belongTo, Long replyTo, Long id, Integer size, Long userId) {
-        DbContext.set(DbContextEnum.READ); // set read context
+        DbContext.set(DbContextEnum.READ); /* set read context */
         var comments = commentRepo.findByBelongToAndReplyToAndIdGreaterThanOrderByIdAsc(belongTo, replyTo, id, Limit.of(size));
-        // sort by id asc
+        /* sort by id asc */
         comments.sort(Comparator.comparingLong(Comment::getId));
         composeComment(comments, userId);
         var result = new ReplyResult();
@@ -131,10 +121,7 @@ public class CommentService {
 
     /**
      * This method is used to create a new comment in the system.
-     * It first saves the comment to the repository.
      * Then, it increases the count of comments belonging to the same entity.
-     * If the count does not exist, it creates a new count with a value of 1.
-     * If the new comment is a reply to another comment, it increases the reply count of the original comment.
      * Finally, it composes the comment by filling in the user info and vote status.
      *
      * @param comment The comment to be created. It contains the content of the comment, the id of the user who posted the comment, and the id of the entity to which the comment belongs.
@@ -143,11 +130,10 @@ public class CommentService {
     @Transactional
     public Comment createComment(Comment comment) {
         comment = commentRepo.save(comment);
-        var updated = countRepo.increaseCount(comment.getBelongTo());
-        if (!updated)
-            countRepo.createCount(comment.getBelongTo()); // create count if not exist
+
         if (comment.getReplyTo() != null && comment.getReplyTo() != 0)
             commentRepo.increaseReplyCount(comment.getReplyTo());
+
         composeSingleComment(comment);
         return comment;
     }
@@ -155,21 +141,12 @@ public class CommentService {
 
     /**
      * Deletes a comment from the repository.
-     * If the comment is successfully deleted, it decreases the count of comments belonging to the same entity.
-     * If the deleted comment is a reply to another comment, it decreases the reply count of the original comment.
      * This annotation makes the method run within a transaction context.
      *
      * @param comment The comment to be deleted. It contains the id of the comment and the id of the user who posted the comment.
      */
-    @Transactional
     public void deleteComment(Comment comment) {
-        var deleted = commentRepo.deleteByIdAndUserId(comment.getId(), comment.getUserId());
-        if (deleted) {
-            countRepo.decreaseCount(comment.getBelongTo());
-            if (comment.getReplyTo() != null && comment.getReplyTo() != 0) {
-                commentRepo.decreaseReplyCount(comment.getReplyTo());
-            }
-        }
+        commentRepo.deleteByIdAndUserId(comment.getId(), comment.getUserId());
     }
 
     /**
@@ -180,7 +157,6 @@ public class CommentService {
      */
     public void voteComment(long userId, long commentId) {
         voteClient.itemAdd(new VoteReq(userId, commentId));
-        commentRepo.increaseLikeCount(commentId);
     }
 
     /**
@@ -191,7 +167,6 @@ public class CommentService {
      */
     public void cancelVoteComment(Long userId, Long commentId) {
         voteClient.itemDelete(new VoteReq(userId, commentId));
-        commentRepo.decreaseLikeCount(commentId);
     }
 
 
