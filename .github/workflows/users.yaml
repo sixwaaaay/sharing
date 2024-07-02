@@ -55,6 +55,7 @@ jobs:
           file: ./cmd/shauser/coverage.txt
           flags: users
           fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   image-release:
     name: Release Image
