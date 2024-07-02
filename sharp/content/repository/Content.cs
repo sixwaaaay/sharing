@@ -53,7 +53,6 @@ public interface IVideoRepository
     Task<IReadOnlyList<Video>> FindRecent(long page, int size);
     Task<(long, IReadOnlyList<Video>)> DailyPopularVideos(long page, int size);
     Task<Video> Save(Video video);
-    Task UpdateVoteCounter(long id, VoteType type);
 }
 
 public class VideoRepository(MySqlDataSource dataSource) : IVideoRepository
@@ -189,7 +188,6 @@ public class VideoRepository(MySqlDataSource dataSource) : IVideoRepository
     public async Task<Video> Save(Video video)
     {
         await using var connection = await dataSource.OpenConnectionAsync();
-        await using var transaction = await connection.BeginTransactionAsync();
         var result = await connection.QuerySingleAsync<long>(
             "INSERT INTO videos (user_id, title, des, cover_url, video_url, duration, view_count, like_count, created_at, updated_at, processed) VALUES (@UserId, @Title, @Des, @CoverUrl, @VideoUrl, @Duration, @ViewCount, @LikeCount, @CreatedAt, @UpdatedAt, @Processed); SELECT LAST_INSERT_ID();",
             new
@@ -205,32 +203,8 @@ public class VideoRepository(MySqlDataSource dataSource) : IVideoRepository
                 video.CreatedAt,
                 video.UpdatedAt,
                 video.Processed
-            }, transaction);
-        var affectedRows = await connection.ExecuteAsync(
-            "UPDATE counter SET counter = counter + 1 WHERE id = @id",
-            new { id = video.UserId }, transaction);
-        if (affectedRows == 0)
-        {
-            await connection.ExecuteAsync(
-                "INSERT INTO counter (id, counter) VALUES (@Id, 1)",
-                new { id = video.UserId }, transaction);
-        }
-
-        await transaction.CommitAsync();
+            });
         return await FindById(result);
-    }
-
-    public async Task UpdateVoteCounter(long id, VoteType type)
-    {
-        await using var connection = await dataSource.OpenConnectionAsync();
-        await connection.ExecuteAsync(
-            type switch
-            {
-                VoteType.Vote => "UPDATE videos SET like_count = like_count + 1 WHERE id = @id",
-                VoteType.CancelVote => "UPDATE videos SET like_count = like_count - 1 WHERE id = @id",
-                _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
-            },
-            new { id });
     }
 }
 

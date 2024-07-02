@@ -15,7 +15,7 @@
 using System.Security.Claims;
 using content.domainservice;
 using content.repository;
-using Microsoft.AspNetCore.Mvc;
+using FluentValidation;
 
 namespace content.endpoints;
 
@@ -54,7 +54,7 @@ public static class Endpoints
         EnsurePageAndSize(page, size);
         return service.FindRecent(page ?? long.MaxValue, size ?? 10);
     }
-    
+
     public static Task<Pagination<VideoDto>> DailyPopularVideos(IDomainService service, long? page, int? size)
     {
         EnsurePageAndSize(page, size);
@@ -78,9 +78,10 @@ public static class Endpoints
         }, request.VideoId);
 
     public static async Task CreateVideo(IDomainService service, IProbe probe, ClaimsPrincipal user,
-        VideoRequest request)
+        VideoRequest request, VideoRequestValidator validator)
     {
-        request.Validate();
+        await validator.ValidateAndThrowAsync(request);
+
         var duration = await probe.GetVideoDuration(request.VideoUrl);
         var video = new Video
         {
@@ -91,7 +92,6 @@ public static class Endpoints
             VideoUrl = request.VideoUrl,
             UserId = user.UserId()
         };
-
 
         await service.Save(video);
     }
@@ -104,9 +104,10 @@ public static class Endpoints
         return service.FindMessages(receiverId, page ?? 0, size ?? 10, unreadOnly);
     }
 
-    public static Task<MessageDto> Save(IMessageDomain service, MessageRequest request, ClaimsPrincipal user)
+    public static async Task<MessageDto> Save(IMessageDomain service, MessageRequest request, ClaimsPrincipal user,
+        MessageRequestValidator validator)
     {
-        request.Validate();
+        await validator.ValidateAndThrowAsync(request);
         var message = new Message
         {
             SenderId = user.UserId(),
@@ -115,56 +116,29 @@ public static class Endpoints
             Type = request.Type
         };
 
-        return service.Save(message);
+        return await service.Save(message);
     }
 
-    public static Task MarkAsRead(IMessageDomain service, long id, ClaimsPrincipal user) => service.MarkAsRead(id, user.UserId());
+    public static Task MarkAsRead(IMessageDomain service, long id, ClaimsPrincipal user) =>
+        service.MarkAsRead(id, user.UserId());
 
 
-    
-    public static void Validate(this MessageRequest request)
-    {
-        if (string.IsNullOrWhiteSpace(request.Content) || request.Content.Length > 200)
-        {
-            throw new ArgumentException("Content is null or empty or length greater than 200", nameof(request.Content));
-        }
-    }
-    
-    
     public static void MapEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapGet("/users/{userId:long}/videos", UserVideos);
-        endpoints.MapGet("/users/{userId:long}/likes", Likes);
-        endpoints.MapGet("/videos", Videos);
-        endpoints.MapPost("/videos/popular", DailyPopularVideos);
-        endpoints.MapPost("/videos", CreateVideo).RequireAuthorization();
-        endpoints.MapPost("/votes", Vote).RequireAuthorization();
-        endpoints.MapPost("/votes/cancel", Vote).RequireAuthorization();
-        
-        
-        endpoints.MapGet("/messages", FindMessages).RequireAuthorization();
-        endpoints.MapPost("/messages", Save).RequireAuthorization();
-        endpoints.MapPost("/messages/{id:long}", MarkAsRead).RequireAuthorization();
+        endpoints.MapGet("/users/{userId:long}/videos", UserVideos).WithName("getUserVideos");
+        endpoints.MapGet("/users/{userId:long}/likes", Likes).WithName("getUserLikes");
+        endpoints.MapGet("/videos", Videos).WithName("getVideos");
+        endpoints.MapPost("/videos/popular", DailyPopularVideos).WithName("getDailyPopularVideos");
+        endpoints.MapPost("/videos", CreateVideo).RequireAuthorization().WithName("createVideo");
+        endpoints.MapPost("/votes", Vote).RequireAuthorization().WithName("vote");
+        endpoints.MapPost("/votes/cancel", Vote).RequireAuthorization().WithName("cancelVote");
+
+
+        endpoints.MapGet("/messages", FindMessages).RequireAuthorization().WithName("getMessages");
+        endpoints.MapPost("/messages", Save).RequireAuthorization().WithName("sendMessage");
+        endpoints.MapPost("/messages/{id:long}", MarkAsRead).RequireAuthorization().WithName("markAsRead");
     }
 
-    public static void Validate(this VideoRequest request)
-    {
-        if (string.IsNullOrWhiteSpace(request.Title) || request.Title.Length > 50)
-        {
-            throw new ArgumentException("Title is null or empty or length greater than 50", nameof(request.Title));
-        }
-
-        if (string.IsNullOrWhiteSpace(request.Des) || request.Des.Length > 200)
-        {
-            throw new ArgumentException("Des is null or empty or length greater than 200", nameof(request.Des));
-        }
-
-        if (string.IsNullOrWhiteSpace(request.VideoUrl) ||
-            !Uri.IsWellFormedUriString(request.VideoUrl, UriKind.Absolute))
-        {
-            throw new ArgumentException("Video url is null or empty", nameof(request.VideoUrl));
-        }
-    }
 
     public static void EnsurePageAndSize(long? page, int? size)
     {
@@ -177,5 +151,28 @@ public static class Endpoints
         {
             throw new ArgumentOutOfRangeException(nameof(size));
         }
+    }
+}
+
+public class VideoRequestValidator : AbstractValidator<VideoRequest>
+{
+    public VideoRequestValidator()
+    {
+        RuleFor(x => x.Title).NotEmpty().MaximumLength(50)
+            .WithMessage("title is null or empty or length greater than 50");
+        RuleFor(x => x.Des).NotEmpty().MaximumLength(200)
+            .WithMessage("description is null or empty or length greater than 200");
+        RuleFor(x => x.VideoUrl).NotEmpty().Must(x => Uri.IsWellFormedUriString(x, UriKind.Absolute))
+            .WithMessage("video url is null or empty or not a valid url");
+    }
+}
+
+public class MessageRequestValidator : AbstractValidator<MessageRequest>
+{
+    public MessageRequestValidator()
+    {
+        RuleFor(x => x.Content).NotEmpty().MaximumLength(200)
+            .WithMessage("content is null or empty or length greater than 200");
+        RuleFor(x => x.ReceiverId).GreaterThan(0).WithMessage("receiver id is less than or equal to 0");
     }
 }

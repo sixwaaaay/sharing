@@ -75,6 +75,7 @@ builder.Services.AddOpenTelemetry().WithTracing(tcb =>
 });
 
 builder.Services.AddSingleton(TracerProvider.Default.GetTracer(serviceName));
+builder.Services.AddSingleton<MessageRequestValidator>().AddSingleton<VideoRequestValidator>();
 
 builder.Services.AddAuthorization().AddProbe();
 builder.Services.AddProblemDetails().AddResponseCompression();

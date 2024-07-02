@@ -193,7 +193,6 @@ public class DomainTest
         var mockUserRepo = new Mock<IUserRepository>();
         var mockVoteRepo = new Mock<IVoteRepository>();
         mockVoteRepo.Setup(repo => repo.UpdateVote(1, VoteType.Vote)).Returns(Task.CompletedTask);
-        mockVideoRepo.Setup(repo => repo.UpdateVoteCounter(1, VoteType.Vote)).Returns(Task.CompletedTask);
         var service = new DomainService(mockVideoRepo.Object, mockUserRepo.Object, mockVoteRepo.Object);
 
         // Act
@@ -201,6 +200,5 @@ public class DomainTest
 
         // Assert
         mockVoteRepo.Verify(repo => repo.UpdateVote(1, VoteType.Vote), Times.Once());
-        mockVideoRepo.Verify(repo => repo.UpdateVoteCounter(1, VoteType.Vote), Times.Once());
     }
 }

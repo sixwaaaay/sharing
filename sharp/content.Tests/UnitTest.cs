@@ -9,8 +9,9 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
+
 using content.repository;
 using JetBrains.Annotations;
 using MySqlConnector;
@@ -69,11 +70,10 @@ public class UnitTest(ITestOutputHelper testOutputHelper)
         var videos3 = await videoRepository.FindRecent(long.MaxValue, 10);
         Assert.NotNull(videos3);
         Assert.NotEmpty(videos3);
-        
-        var (_,videos4) = await videoRepository.DailyPopularVideos(0, 10);
+
+        var (_, videos4) = await videoRepository.DailyPopularVideos(0, 10);
         Assert.NotNull(videos4);
         Assert.NotEmpty(videos4);
-        
     }
 
     [Fact(DisplayName = "Command")]
@@ -97,9 +97,6 @@ public class UnitTest(ITestOutputHelper testOutputHelper)
             Processed = 1
         };
         video = await videoRepository.Save(video);
-
-        await videoRepository.UpdateVoteCounter(1, VoteType.Vote);
-        await videoRepository.UpdateVoteCounter(1, VoteType.CancelVote);
     }
 
 

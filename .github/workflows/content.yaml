@@ -70,6 +70,7 @@ jobs:
           file: sharp/content.Tests/merged.cobertura.xml
           flags: content
           fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}
   container:
     name: Container Build
     runs-on: ubuntu-latest

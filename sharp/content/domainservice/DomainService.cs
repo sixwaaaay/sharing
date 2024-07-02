@@ -72,16 +72,7 @@ public class DomainService(IVideoRepository videoRepo, IUserRepository userRepo,
         var userDict = users.ToDictionary(u => u.Id);
         var voteSet = new HashSet<long>(voteVideoIds);
         return videos.Select(video =>
-        {
-            var dto = video.ToDto();
-            if (userDict.TryGetValue(video.UserId, out var value))
-            {
-                dto.Author = value;
-            }
-
-            dto.IsLiked = voteSet.Contains(video.Id);
-            return dto;
-        });
+            video.ToDto().With(userDict.GetValueOrDefault(video.UserId, new User()), voteSet.Contains(video.Id)));
     }
 
     public async Task<Pagination<VideoDto>> FindByUserId(long userId, long page, int size)
@@ -124,7 +115,7 @@ public class DomainService(IVideoRepository videoRepo, IUserRepository userRepo,
 
     public async Task<Pagination<VideoDto>> DailyPopularVideos(long page, int size)
     {
-        var (token,videos) = await videoRepo.DailyPopularVideos(page, size);
+        var (token, videos) = await videoRepo.DailyPopularVideos(page, size);
         var videoDtos = await CurrentUserVotedVideos(videos);
         return new Pagination<VideoDto>
         {
@@ -136,7 +127,6 @@ public class DomainService(IVideoRepository videoRepo, IUserRepository userRepo,
     public async Task Vote(VoteType type, long videoId)
     {
         await voteRepo.UpdateVote(videoId, type);
-        await videoRepo.UpdateVoteCounter(videoId, type);
     }
 }
 
@@ -147,6 +137,13 @@ public static partial class VideoMapper
     [MapperIgnoreTarget(nameof(VideoDto.Author))]
     [MapperIgnoreTarget(nameof(VideoDto.IsLiked))]
     public static partial VideoDto ToDto(this Video video);
+
+    public static VideoDto With(this VideoDto dto, User author, bool isLiked)
+    {
+        dto.Author = author;
+        dto.IsLiked = isLiked;
+        return dto;
+    }
 }
 
 public record VideoDto
