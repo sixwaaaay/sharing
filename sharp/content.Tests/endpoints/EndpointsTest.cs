@@ -15,6 +15,7 @@
 using content.domainservice;
 using content.endpoints;
 using content.repository;
+using FluentValidation;
 using JetBrains.Annotations;
 
 namespace content.Tests.endpoints;
@@ -119,7 +120,7 @@ public class EndpointsTests
             VideoUrl = "https://validurl.com"
         };
 
-        await Endpoints.CreateVideo(_mockService.Object, new Probe(""), _user, request);
+        await Endpoints.CreateVideo(_mockService.Object, new Probe(""), _user, request, new VideoRequestValidator());
 
         _mockService.Verify(s => s.Save(It.Is<Video>(v =>
             v.Title == request.Title &&
@@ -166,7 +167,7 @@ public class EndpointsTests
         _mockMessageDomain.Setup(s => s.Save(It.IsAny<Message>())).ReturnsAsync(expectedMessage);
 
         // Act
-        var result = await Endpoints.Save(_mockMessageDomain.Object, request, _user);
+        var result = await Endpoints.Save(_mockMessageDomain.Object, request, _user, new MessageRequestValidator());
 
         // Assert
         Assert.Equal(expectedMessage, result);
@@ -183,7 +184,8 @@ public class EndpointsTests
             VideoUrl = "https://validurl.com"
         };
 
-        request.Validate();
+        var result = new VideoRequestValidator().Validate(request);
+        Assert.True(result.IsValid);
     }
 
     [Fact]
@@ -195,7 +197,7 @@ public class EndpointsTests
             VideoUrl = "https://validurl.com"
         };
 
-        Assert.Throws<ArgumentException>(() => request.Validate());
+        Assert.Throws<ValidationException>(() => new VideoRequestValidator().ValidateAndThrow(request));
     }
 
     [Fact]
@@ -208,7 +210,7 @@ public class EndpointsTests
             VideoUrl = "https://validurl.com"
         };
 
-        Assert.Throws<ArgumentException>(() => request.Validate());
+        Assert.Throws<ValidationException>(() => new VideoRequestValidator().ValidateAndThrow(request));
     }
 
     [Fact]
@@ -221,7 +223,7 @@ public class EndpointsTests
             VideoUrl = "https://validurl.com"
         };
 
-        Assert.Throws<ArgumentException>(() => request.Validate());
+        Assert.Throws<ValidationException>(() => new VideoRequestValidator().ValidateAndThrow(request));
     }
 
     [Fact]
@@ -233,7 +235,7 @@ public class EndpointsTests
             VideoUrl = "https://validurl.com"
         };
 
-        Assert.Throws<ArgumentException>(() => request.Validate());
+        Assert.Throws<ValidationException>(() => new VideoRequestValidator().ValidateAndThrow(request));
     }
 
     [Fact]
@@ -246,7 +248,7 @@ public class EndpointsTests
             VideoUrl = "https://validurl.com"
         };
 
-        Assert.Throws<ArgumentException>(() => request.Validate());
+        Assert.Throws<ValidationException>(() => new VideoRequestValidator().ValidateAndThrow(request));
     }
 
     [Fact]
@@ -259,7 +261,7 @@ public class EndpointsTests
             VideoUrl = "https://validurl.com"
         };
 
-        Assert.Throws<ArgumentException>(() => request.Validate());
+        Assert.Throws<ValidationException>(() => new VideoRequestValidator().ValidateAndThrow(request));
     }
 
     [Fact]
@@ -271,7 +273,7 @@ public class EndpointsTests
             Des = "Valid Description",
         };
 
-        Assert.Throws<ArgumentException>(() => request.Validate());
+        Assert.Throws<ValidationException>(() => new VideoRequestValidator().ValidateAndThrow(request));
     }
 
     [Fact]
@@ -284,7 +286,7 @@ public class EndpointsTests
             VideoUrl = ""
         };
 
-        Assert.Throws<ArgumentException>(() => request.Validate());
+        Assert.Throws<ValidationException>(() => new VideoRequestValidator().ValidateAndThrow(request));
     }
 
     [Fact]
@@ -297,7 +299,7 @@ public class EndpointsTests
             VideoUrl = "invalidurl"
         };
 
-        Assert.Throws<ArgumentException>(() => request.Validate());
+        Assert.Throws<ValidationException>(() => new VideoRequestValidator().ValidateAndThrow(request));
     }
 
     [Fact]
@@ -364,6 +366,6 @@ public class EndpointsTests
             Content = new string('a', 201),
             Type = 1
         };
-        Assert.Throws<ArgumentException>(() => request.Validate());
+        Assert.Throws<ValidationException>(() => new MessageRequestValidator().ValidateAndThrow(request));
     }
 }
