@@ -48,16 +48,7 @@ CREATE TABLE videos
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci;
 
-CREATE TABLE counter
-(
-    id      BIGINT NOT NULL,
-    counter INT UNSIGNED NOT NULL DEFAULT 0,
-    PRIMARY KEY (id)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_unicode_ci;
-
-INSERT INTO content.videos (id, user_id, title, des, cover_url, video_url, duration, view_count, like_count, created_at, updated_at, processed)
+INSERT INTO videos (id, user_id, title, des, cover_url, video_url, duration, view_count, like_count, created_at, updated_at, processed)
 VALUES  (1, 1, 'title', 'des', 'coverUrl', 'videoUrl', 1, 1, 1, '2023-12-31 01:12:27', '2023-12-31 01:12:27', 1),
         (2, 1, 'title', 'des', 'coverUrl', 'videoUrl', 1, 1, 1, '2023-12-31 01:13:02', '2023-12-31 01:13:02', 1),
         (3, 1, 'title', 'des', 'coverUrl', 'videoUrl', 1, 1, 1, '2023-12-31 01:13:19', '2023-12-31 01:13:19', 1),
@@ -99,9 +90,6 @@ VALUES  (1, 1, 'title', 'des', 'coverUrl', 'videoUrl', 1, 1, 1, '2023-12-31 01:1
         (39, 1, 'title', 'des', 'coverUrl', 'videoUrl', 1, 1, 1, '2024-01-02 14:11:43', '2024-01-02 14:11:43', 1),
         (40, 1, 'title', 'des', 'coverUrl', 'videoUrl', 1, 1, 1, '2024-01-02 14:12:04', '2024-01-02 14:12:04', 1),
         (41, 1, 'title', 'des', 'coverUrl', 'videoUrl', 1, 1, 1, '2024-01-02 15:36:48', '2024-01-02 15:36:48', 1);
-
-INSERT INTO content.counter (id, counter)
-SELECT videos.user_id, count(*) FROM videos GROUP BY videos.user_id;
 
 CREATE TABLE popular_videos
 (
