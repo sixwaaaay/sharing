@@ -13,24 +13,37 @@
 
 package io.sixwaaaay.sharingcomment.config;
 
+import io.sixwaaaay.sharingcomment.request.Principal;
 import io.sixwaaaay.sharingcomment.util.TokenParser;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
 
 
-@Component
 @AllArgsConstructor
-public class ServiceInterceptor implements HandlerInterceptor {
+public class ServiceInterceptor extends OncePerRequestFilter {
 
     private final TokenParser tokenParser;
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        var token = request.getHeader("Authorization");
-        tokenParser.parse(token);
-        return true;
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        Optional<Principal> authorization = tokenParser.parse(request.getHeader("Authorization"));
+        if (authorization.isPresent()) {
+            var authentication = new UsernamePasswordAuthenticationToken(authorization.get().getId(), null, List.of(new SimpleGrantedAuthority("BASIC_USER")));
+            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+        }
+        filterChain.doFilter(request, response);
     }
 }

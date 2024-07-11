@@ -122,6 +122,10 @@
             <artifactId>resilience4j-all</artifactId>
             <version>${resilience4jVersion}</version>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
