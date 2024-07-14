@@ -13,9 +13,12 @@
 
 package io.sixwaaaay.sharingcomment.request;
 
+import io.sixwaaaay.sharingcomment.request.error.NoUserExitsError;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  * The Principal class represents the principal user in the system.
@@ -38,4 +41,29 @@ public class Principal {
      * The token of the principal user.
      */
     private String token;
+
+    /**
+     *  The current token of the principal user.
+     * @return the current token of the principal user.
+     */
+    public static String currentToken(){
+        if (SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof Principal principal) {
+            return principal.getToken();
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * The current user ID of the principal user.
+     * @return the current user ID of the principal user.
+     */
+    public static long currentUserId(){
+        if (SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof Principal principal) {
+            return principal.getId();
+        } else if (SecurityContextHolder.getContext().getAuthentication() instanceof AnonymousAuthenticationToken) {
+            return 0;
+        }
+        throw NoUserExitsError.supply();
+    }
 }

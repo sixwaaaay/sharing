@@ -38,9 +38,9 @@ public class ServiceInterceptor extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        Optional<Principal> authorization = tokenParser.parse(request.getHeader("Authorization"));
+        var authorization = tokenParser.parse(request.getHeader("Authorization"));
         if (authorization.isPresent()) {
-            var authentication = new UsernamePasswordAuthenticationToken(authorization.get().getId(), null, List.of(new SimpleGrantedAuthority("BASIC_USER")));
+            var authentication = new UsernamePasswordAuthenticationToken(authorization.get(), null, List.of(new SimpleGrantedAuthority("BASIC_USER")));
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
