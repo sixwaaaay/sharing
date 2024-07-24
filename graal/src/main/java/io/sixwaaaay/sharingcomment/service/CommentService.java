@@ -35,7 +35,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static io.sixwaaaay.sharingcomment.util.TokenParser.principal;
 import static java.util.function.Function.identity;
 
 @Service
@@ -177,7 +176,7 @@ public class CommentService {
      */
     private void composeSingleComment(Comment comment) {
         if (enableUser) {
-            var token = principal.get().map(Principal::getToken).orElse("");
+            var token = Principal.currentToken();
             var user = userClient.getUser(comment.getUserId(), token);
             comment.setUser(user.getUser());
         }
@@ -217,7 +216,7 @@ public class CommentService {
         // get user id list
         var userList = flatComments(comments).map(Comment::getUserId).distinct().toList();
         // fetch user info
-        var token = principal.get().map(Principal::getToken).orElse("");
+        var token = Principal.currentToken();
         var users = userClient.getManyUser(userList, token);
         // covert to map
         return users.getUsers().stream().collect(Collectors.toMap(User::getId, identity()));

@@ -19,7 +19,6 @@ import io.sixwaaaay.sharingcomment.domain.CommentResult;
 import io.sixwaaaay.sharingcomment.domain.ReplyResult;
 import io.sixwaaaay.sharingcomment.request.CommentRequest;
 import io.sixwaaaay.sharingcomment.request.Principal;
-import io.sixwaaaay.sharingcomment.request.error.NoUserExitsError;
 import io.sixwaaaay.sharingcomment.service.CommentService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -29,8 +28,6 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Optional;
-
-import static io.sixwaaaay.sharingcomment.util.TokenParser.principal;
 
 @RestController
 @RequestMapping("/comments")
@@ -52,7 +49,7 @@ public class CommentController {
             @RequestParam(value = "page") Optional<Long> id,
             @RequestParam(value = "size", defaultValue = "10") Integer size
     ) {
-        var userId = principal.get().map(Principal::getId).orElse(0L);
+        var userId = Principal.currentUserId();
         return commentService.getMainCommentList(belongTo, id.orElse(Long.MAX_VALUE), size, userId);
     }
 
@@ -69,7 +66,7 @@ public class CommentController {
             @RequestParam(value = "page", defaultValue = "0") long id,
             @RequestParam(value = "size", defaultValue = "10") Integer size
     ) {
-        var userId = principal.get().map(Principal::getId).orElse(0L);
+        var userId = Principal.currentUserId();
         return commentService.getReplyCommentList(belongTo, replyTo, id, size, userId);
     }
 
@@ -81,8 +78,8 @@ public class CommentController {
     @PostMapping
     public Comment createComment(@Valid @RequestBody CommentRequest request) {
         var comment = new Comment();
-        var id = principal.get().map(Principal::getId).orElseThrow(NoUserExitsError::supply);
-        comment.setUserId(id); // throw exception if principal is empty
+        var id = Principal.currentUserId();
+        comment.setUserId(id);
         comment.setBelongTo(request.getBelongTo());
         comment.setContent(request.getContent());
         comment.setReferTo(request.getReferTo());
@@ -99,9 +96,9 @@ public class CommentController {
             @PathVariable("id") Long id,
             @RequestBody CommentRequest request
     ) {
-        var userId = principal.get().map(Principal::getId).orElseThrow(NoUserExitsError::supply);
+        var userId = Principal.currentUserId();
         var comment = new Comment();
-        comment.setUserId(userId); // throw exception if principal is empty
+        comment.setUserId(userId);
         comment.setId(id);
         comment.setReplyTo(request.getReplyTo());
         commentService.deleteComment(comment);
@@ -115,7 +112,7 @@ public class CommentController {
     @PostMapping("/action/like/{id}")
     public void voteComment(
             @PathVariable long id) {
-        var userId = principal.get().map(Principal::getId).orElseThrow(NoUserExitsError::supply);
+        var userId = Principal.currentUserId();
         commentService.voteComment(userId, id);
     }
 
@@ -127,7 +124,7 @@ public class CommentController {
     @DeleteMapping("/action/like/{id}")
     public void cancelVoteComment(
             @PathVariable long id) {
-        var userId = principal.get().map(Principal::getId).orElseThrow(NoUserExitsError::supply);
+        var userId = Principal.currentUserId();
         commentService.cancelVoteComment(userId, id);
     }
 }
