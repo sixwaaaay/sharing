@@ -8,7 +8,7 @@ require (
 	github.com/labstack/gommon v0.4.0
 	github.com/minio/minio-go/v7 v7.0.66
 	github.com/sixwaaaay/must v0.1.0
-	github.com/spf13/viper v1.15.0
+	github.com/spf13/viper v1.19.0
 )
 
 require (
