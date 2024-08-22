@@ -42,7 +42,7 @@ jobs:
           mvn -q -Pnative compile -DskipTests
           mvn -q -Pnative spring-boot:process-aot -DskipTests
       - name: docker-compose up
-        run: docker-compose up -d
+        run: docker compose up -d
       - name: Unit Test
         run: |
           mvn -q clean

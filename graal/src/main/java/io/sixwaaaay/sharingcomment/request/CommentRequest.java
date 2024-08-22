@@ -27,6 +27,15 @@ import org.hibernate.validator.constraints.Range;
 @Data
 @Valid
 public class CommentRequest {
+
+
+    /**
+     * The type of the comment.
+     */
+    @NotNull
+    @JsonProperty("type")
+    private String type;
+
     /**
      * The content of the comment.
      * It must be between 1 and 1000 characters long.
@@ -63,5 +72,10 @@ public class CommentRequest {
     @AssertTrue(message = "reply_to and refer_to must be both null or not null at the same time")
     public boolean isValid() {
         return (replyTo == null && referTo == null) || (replyTo != null && referTo != null);
+    }
+
+    @AssertTrue(message = "type must be one of 'chore', 'default', 'video', 'post', 'music'")
+    public boolean isValidType() {
+        return type.equals("chore") || type.equals("default") || type.equals("video") || type.equals("post") || type.equals("music");
     }
 }

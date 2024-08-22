@@ -48,6 +48,7 @@ class SharingCommentApplicationTests {
     public void getMainCommentListTest() throws Exception {
         var token = jwtUtil.generateToken("john", "111");
         mockMvc.perform(MockMvcRequestBuilders.get("/comments/main")
+                        .param("type","chore")
                         .param("belong_to", "1")
                         .param("size", "10")
                         .header("Authorization", "Bearer " + token))
@@ -55,6 +56,7 @@ class SharingCommentApplicationTests {
                 .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
         // without token
         mockMvc.perform(MockMvcRequestBuilders.get("/comments/main")
+                        .param("type","chore")
                         .param("belong_to", "1")
                         .param("size", "10"))
                 .andExpect(MockMvcResultMatchers.status().isOk())
@@ -65,6 +67,7 @@ class SharingCommentApplicationTests {
     public void getReplyCommentListTest() throws Exception {
         var token = jwtUtil.generateToken("n", "1111111");
         mockMvc.perform(MockMvcRequestBuilders.get("/comments/reply")
+                        .param("type", "chore")
                         .param("belong_to", "1")
                         .param("reply_to", "1")
                         .param("size", "10")
@@ -73,6 +76,7 @@ class SharingCommentApplicationTests {
                 .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
 
         mockMvc.perform(MockMvcRequestBuilders.get("/comments/reply")
+                        .param("type","chore")
                         .param("belong_to", "1")
                         .param("reply_to", "1")
                         .param("size", "10"))
@@ -84,7 +88,7 @@ class SharingCommentApplicationTests {
     @Test
     public void createCommentTest() throws Exception {
         var token = jwtUtil.generateToken("n", "1111111");
-        var json = "{ \"content\": \"This is a test comment\", \"reply_to\": 1, \"belong_to\": 1, \"refer_to\": 1 }";
+        var json = "{ \"content\": \"This is a test comment\", \"reply_to\": 1, \"belong_to\": 1, \"refer_to\": 1, \"type\": \"chore\" }";
         mockMvc.perform(MockMvcRequestBuilders.post("/comments")
                         .content(json)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -101,7 +105,7 @@ class SharingCommentApplicationTests {
     @Test
     public void deleteComments() throws Exception {
         var token = jwtUtil.generateToken("n", "1");
-        var json = "{ \"content\": \"This is a test comment\", \"reply_to\": null, \"belong_to\": 1 }";
+        var json = "{ \"content\": \"This is a test comment\", \"reply_to\": null, \"belong_to\": 1, \"type\": \"chore\" }";
         mockMvc.perform(MockMvcRequestBuilders.delete("/comments/21")
                         .content(json)
                         .contentType(MediaType.APPLICATION_JSON)
