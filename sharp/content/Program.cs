@@ -35,6 +35,7 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 
 var secret = builder.Configuration.GetSection("Secret").Value ?? throw new InvalidOperationException("Secret is null");
 
+builder.Services.AddOpenApi();
 builder.Services.AddAuthentication("Bearer").AddJwtBearer(
     option =>
     {
