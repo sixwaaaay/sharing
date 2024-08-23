@@ -41,7 +41,7 @@ public class EndpointsTests
     {
         var expectedVideos = new Pagination<VideoDto>
         {
-            Items = new List<VideoDto> { new VideoDto { Id = 1 }, new VideoDto { Id = 2 } },
+            Items = new List<VideoDto> { new VideoDto { Id = "1" }, new VideoDto { Id = "2" } },
             AllCount = 2
         };
         _mockService.Setup(s => s.FindByUserId(It.IsAny<long>(), It.IsAny<long>(), It.IsAny<int>()))
@@ -57,7 +57,7 @@ public class EndpointsTests
     {
         var expectedVideos = new Pagination<VideoDto>
         {
-            Items = new List<VideoDto> { new VideoDto { Id = 1 }, new VideoDto { Id = 2 } },
+            Items = new List<VideoDto> { new VideoDto { Id = "1" }, new VideoDto { Id = "2" } },
             AllCount = 2
         };
         _mockService.Setup(s => s.FindRecent(It.IsAny<long>(), It.IsAny<int>())).ReturnsAsync(expectedVideos);
@@ -72,7 +72,7 @@ public class EndpointsTests
     {
         var expectedVideos = new Pagination<VideoDto>
         {
-            Items = new List<VideoDto> { new VideoDto { Id = 1 }, new VideoDto { Id = 2 } },
+            Items = new List<VideoDto> { new VideoDto { Id = "1" }, new VideoDto { Id = "2" } },
             AllCount = 2
         };
         _mockService.Setup(s => s.DailyPopularVideos(It.IsAny<long>(), It.IsAny<int>())).ReturnsAsync(expectedVideos);
@@ -88,7 +88,7 @@ public class EndpointsTests
     {
         var expectedVideos = new Pagination<VideoDto>
         {
-            Items = new List<VideoDto> { new VideoDto { Id = 1 }, new VideoDto { Id = 2 } },
+            Items = new List<VideoDto> { new VideoDto { Id = "1" }, new VideoDto { Id = "2" } },
             AllCount = 2
         };
         _mockService.Setup(s => s.VotedVideos(It.IsAny<long>(), It.IsAny<long>(), It.IsAny<int>()))

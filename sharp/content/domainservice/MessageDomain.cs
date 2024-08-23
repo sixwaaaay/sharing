@@ -44,7 +44,7 @@ public class MessageDomain(INotificationRepository notification) : IMessageDomai
         {
             AllCount = messageDtos.Count,
             Items = messageDtos,
-            NextPage = messageDtos.Count == size ? messageDtos[^1].Id : null
+            NextPage = messageDtos.Count == size ? messageDtos[^1].Id.ToString() : null
         };
     }
 

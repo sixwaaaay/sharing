@@ -34,7 +34,7 @@ public class MessageDomainTests
         // Assert
         Assert.Equal(2, result.AllCount);
         Assert.Equal(2, result.Items.Count);
-        Assert.Equal(2, result.NextPage);
+        Assert.Equal("2", result.NextPage);
     }
 
     [Fact]

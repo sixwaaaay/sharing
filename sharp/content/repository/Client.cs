@@ -23,7 +23,7 @@ namespace content.repository;
 
 public class User
 {
-    public long Id { get; init; }
+    public string Id { get; init; } = string.Empty;
     public string Name { get; init; } = string.Empty;
     public bool IsFollow { get; init; }
     public string AvatarUrl { get; set; } = string.Empty;
