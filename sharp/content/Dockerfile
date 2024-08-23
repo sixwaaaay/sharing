@@ -11,13 +11,13 @@
 # limitations under the License.
 # 
 #
-FROM alpine:3.19 AS base
+FROM alpine:3.20 AS base
 WORKDIR /app
 RUN adduser -u 1000 --gecos "" --disabled-password appuser && chown -R appuser /app
 USER appuser
 EXPOSE 5000
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine3.18 AS build
+FROM mcr.microsoft.com/dotnet/sdk:9.0.100-preview.7-alpine3.20 AS build
 RUN apk update && apk upgrade && apk add --no-cache clang build-base zlib-dev grpc-plugins
 WORKDIR /src
 ARG RUNTIME_ID=linux-musl-x64

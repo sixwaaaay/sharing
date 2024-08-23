@@ -55,6 +55,8 @@ public static class Endpoints
         return service.FindRecent(page ?? long.MaxValue, size ?? 10);
     }
 
+    public static Task<VideoDto> FindVideoById(IDomainService service, long id) => service.FindById(id);
+
     public static Task<Pagination<VideoDto>> DailyPopularVideos(IDomainService service, long? page, int? size)
     {
         EnsurePageAndSize(page, size);
@@ -128,6 +130,7 @@ public static class Endpoints
         endpoints.MapGet("/users/{userId:long}/videos", UserVideos).WithName("getUserVideos");
         endpoints.MapGet("/users/{userId:long}/likes", Likes).WithName("getUserLikes");
         endpoints.MapGet("/videos", Videos).WithName("getVideos");
+        endpoints.MapGet("/videos/{id:long}", FindVideoById).WithName("getVideo");
         endpoints.MapPost("/videos/popular", DailyPopularVideos).WithName("getDailyPopularVideos");
         endpoints.MapPost("/videos", CreateVideo).RequireAuthorization().WithName("createVideo");
         endpoints.MapPost("/votes", Vote).RequireAuthorization().WithName("vote");
