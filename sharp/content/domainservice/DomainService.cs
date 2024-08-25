@@ -20,7 +20,7 @@ namespace content.domainservice;
 public record Pagination<T> where T : class
 {
     public int AllCount { get; init; }
-    public long? NextPage { get; init; }
+    public string? NextPage { get; init; }
     public IReadOnlyList<T> Items { get; init; } = [];
 }
 
@@ -72,7 +72,7 @@ public class DomainService(IVideoRepository videoRepo, IUserRepository userRepo,
         var userDict = users.ToDictionary(u => u.Id);
         var voteSet = new HashSet<long>(voteVideoIds);
         return videos.Select(video =>
-            video.ToDto().With(userDict.GetValueOrDefault(video.UserId, new User()), voteSet.Contains(video.Id)));
+            video.ToDto().With(userDict.GetValueOrDefault(video.UserId.ToString(), new User()), voteSet.Contains(video.Id)));
     }
 
     public async Task<Pagination<VideoDto>> FindByUserId(long userId, long page, int size)
@@ -86,7 +86,7 @@ public class DomainService(IVideoRepository videoRepo, IUserRepository userRepo,
         return new Pagination<VideoDto>()
         {
             Items = videoDtos,
-            NextPage = videoDtos.Count == size ? videoDtos[^1].Id : null
+            NextPage = videoDtos.Count == size ? videoDtos[^1].Id.ToString() : null
         };
     }
 
@@ -97,7 +97,7 @@ public class DomainService(IVideoRepository videoRepo, IUserRepository userRepo,
         return new Pagination<VideoDto>()
         {
             Items = videoDtos,
-            NextPage = videoDtos.Count == size ? videoDtos[^1].Id : default
+            NextPage = videoDtos.Count == size ? videoDtos[^1].Id.ToString() : default
         };
     }
 
@@ -109,7 +109,7 @@ public class DomainService(IVideoRepository videoRepo, IUserRepository userRepo,
         return new Pagination<VideoDto>
         {
             Items = await FindAllByIds(videoIds.ToArray()),
-            NextPage = token
+            NextPage = token.ToString()
         };
     }
 
@@ -120,7 +120,7 @@ public class DomainService(IVideoRepository videoRepo, IUserRepository userRepo,
         return new Pagination<VideoDto>
         {
             Items = videoDtos,
-            NextPage = token
+            NextPage = token.ToString()
         };
     }
 
@@ -148,7 +148,7 @@ public static partial class VideoMapper
 
 public record VideoDto
 {
-    public long Id { get; init; }
+    public string Id { get; init; } = string.Empty;
     public User? Author { get; set; }
     public string Title { get; init; } = string.Empty;
     public string Des { get; init; } = string.Empty;

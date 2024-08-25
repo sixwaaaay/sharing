@@ -115,4 +115,5 @@ app.Run();
 [JsonSerializable(typeof(Pagination<MessageDto>))]
 [JsonSerializable(typeof(MessageDto))]
 [JsonSerializable(typeof(MessageRequest))]
+[JsonSerializable(typeof(long?))]
 internal partial class AppJsonSerializerContext : JsonSerializerContext;

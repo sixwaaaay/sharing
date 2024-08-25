@@ -35,7 +35,7 @@ public class DomainTest
         var mockUserRepo = new Mock<IUserRepository>();
         var mockVoteRepo = new Mock<IVoteRepository>();
         var video = new Video { Id = 1, UserId = 1 };
-        var user = new User { Id = 1 };
+        var user = new User { Id = "1" };
         mockVideoRepo.Setup(repo => repo.FindById(1)).ReturnsAsync(video);
         mockUserRepo.Setup(repo => repo.FindById(1)).ReturnsAsync(user);
         var service = new DomainService(mockVideoRepo.Object, mockUserRepo.Object, mockVoteRepo.Object);
@@ -45,9 +45,9 @@ public class DomainTest
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(1, result.Id);
+        Assert.Equal("1", result.Id);
         Assert.NotNull(result.Author);
-        Assert.Equal(1, result.Author.Id);
+        Assert.Equal("1", result.Author.Id);
     }
 
     [Fact]
@@ -58,7 +58,7 @@ public class DomainTest
         var mockUserRepo = new Mock<IUserRepository>();
         var mockVoteRepo = new Mock<IVoteRepository>();
         var videos = new List<Video> { new() { Id = 1, UserId = 1 }, new() { Id = 2, UserId = 2 } };
-        var users = new List<User> { new() { Id = 1 }, new() { Id = 2 } };
+        var users = new List<User> { new() { Id = "1" }, new() { Id = "2" } };
         mockVideoRepo.Setup(repo => repo.FindAllByIds(It.IsAny<long[]>())).ReturnsAsync(videos);
         mockUserRepo.Setup(repo => repo.FindAllByIds(It.IsAny<IEnumerable<long>>())).ReturnsAsync(users);
         mockVoteRepo.Setup(repo => repo.VotedOfVideos(It.IsAny<long[]>())).ReturnsAsync(new List<long>());
@@ -80,7 +80,7 @@ public class DomainTest
         var mockUserRepo = new Mock<IUserRepository>();
         var mockVoteRepo = new Mock<IVoteRepository>();
         var video = new Video { Id = 1, UserId = 1 };
-        var user = new User { Id = 1 };
+        var user = new User { Id = "1" };
         mockVideoRepo.Setup(repo => repo.Save(It.IsAny<Video>())).ReturnsAsync(video);
         var service = new DomainService(mockVideoRepo.Object, mockUserRepo.Object, mockVoteRepo.Object);
 
@@ -97,7 +97,7 @@ public class DomainTest
         var mockUserRepo = new Mock<IUserRepository>();
         var mockVoteRepo = new Mock<IVoteRepository>();
         var videos = new List<Video> { new() { Id = 1, UserId = 1 }, new() { Id = 2, UserId = 1 } };
-        var user = new User { Id = 1 };
+        var user = new User { Id = "1" };
         var voteVideoIds = new List<long> { 1, 2 };
         mockVideoRepo.Setup(repo => repo.FindByUserId(1, 1, 2)).ReturnsAsync(videos);
         mockUserRepo.Setup(repo => repo.FindById(1)).ReturnsAsync(user);
@@ -120,7 +120,7 @@ public class DomainTest
         var mockUserRepo = new Mock<IUserRepository>();
         var mockVoteRepo = new Mock<IVoteRepository>();
         var videos = new List<Video> { new() { Id = 1, UserId = 1 }, new() { Id = 2, UserId = 2 } };
-        var users = new List<User> { new() { Id = 1 }, new() { Id = 2 } };
+        var users = new List<User> { new() { Id = "1" }, new() { Id = "2" } };
         var voteVideoIds = new List<long> { 1 };
 
         mockVideoRepo.Setup(repo => repo.FindRecent(1, 2)).ReturnsAsync(videos);
@@ -143,7 +143,7 @@ public class DomainTest
         var mockUserRepo = new Mock<IUserRepository>();
         var mockVoteRepo = new Mock<IVoteRepository>();
         var videos = new List<Video> { new() { Id = 1, UserId = 1 }, new() { Id = 2, UserId = 2 } };
-        var users = new List<User> { new() { Id = 1 }, new() { Id = 2 } };
+        var users = new List<User> { new() { Id = "1" }, new() { Id = "2" } };
         var voteVideoIds = new List<long> { 1 };
         mockVideoRepo.Setup(repo => repo.DailyPopularVideos(1, 2)).ReturnsAsync((2, videos));
         mockVoteRepo.Setup(repo => repo.VotedOfVideos(It.IsAny<long[]>())).ReturnsAsync(voteVideoIds);
@@ -169,7 +169,7 @@ public class DomainTest
         var mockVoteRepo = new Mock<IVoteRepository>();
         var videoIds = new long[] { 1, 2 };
         var videos = new List<Video> { new() { Id = 1, UserId = 1 }, new() { Id = 2, UserId = 2 } };
-        var users = new List<User> { new() { Id = 1 }, new() { Id = 2 } };
+        var users = new List<User> { new() { Id = "1" }, new() { Id = "2" } };
         var voteVideoIds = new List<long> { 1 };
         mockVoteRepo.Setup(repo => repo.VotedVideos(1, 1, 2)).ReturnsAsync((2, videoIds));
         mockVoteRepo.Setup(repo => repo.VotedOfVideos(It.IsAny<long[]>())).ReturnsAsync(voteVideoIds);

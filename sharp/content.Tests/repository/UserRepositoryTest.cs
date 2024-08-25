@@ -31,7 +31,7 @@ public class UserRepositoryTest
         var result = await client.FindById(1);
         
         Assert.NotNull(result);
-        Assert.Equal(1, result.Id);
+        Assert.Equal("1", result.Id);
     }
     
     [Fact(DisplayName = "FindUserByIds")]
