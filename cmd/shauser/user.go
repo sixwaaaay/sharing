@@ -41,8 +41,9 @@ func main() {
 	flag.Parse()
 	ctx := context.Background()
 	conf := must.Must(config.NewConfig(*configFile))
+	/* initialize OpenTelemetry provider */
 	tp := must.Must(TracerProvider(&conf))
-	defer must.RunE(tp.Shutdown(ctx))
+	defer tp.Shutdown(ctx)
 
 	mp := must.Must(MeterProvider(&conf))
 	defer mp.Shutdown(ctx)
@@ -55,16 +56,16 @@ func main() {
 	server := NewServer(&conf, db, logger)
 
 	grpcServer := grpc.NewServer(
-		grpc.StatsHandler(otelgrpc.NewServerHandler()),
-		grpc.UnaryInterceptor(rpc.Handler([]byte(conf.Secret))))
+		grpc.StatsHandler(otelgrpc.NewServerHandler()), /* otel interceptor */
+		grpc.UnaryInterceptor(rpc.Handler([]byte(conf.Secret)))) /* auth interceptor */
 	user.RegisterUserServiceServer(grpcServer, server)
 
 	ln := must.Must(net.Listen("tcp", conf.ListenOn))
 
 	m := web.M(conf, server)
-	// graceful shutdown
+	/* graceful shutdown */
 	ch := make(chan os.Signal, 1)
-	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
+	signal.Notify(ch, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		if err := m.Start(conf.HTTP); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			logger.Error("failed to start http server", zap.Error(err))
