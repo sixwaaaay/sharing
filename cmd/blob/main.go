@@ -113,7 +113,7 @@ func NewHandler(config MinioConfig) (*Handler, error) {
 //
 //	A string containing the presigned URL, or an error if the URL could not be generated.
 func (h *Handler) GeneratePresignedURL(ctx context.Context, req Request) (string, error) {
-	random, err := uuid.NewRandom()
+	random, err := uuid.NewV7()
 	if err != nil {
 		return "", err
 	}
@@ -192,3 +192,9 @@ func newServer() *echo.Echo {
 	}
 	return e
 }
+
+/*
+
+$env:GIT_COMMITTER_DATE="Fri Apr 12 21:38:14 2024 +0800"
+git commit --amend --date "Fri Apr 12 21:38:14 2024 +0800"
+*/
