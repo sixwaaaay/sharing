@@ -199,11 +199,14 @@ func generateRandomString(length int) string {
 
 func getFromBody(token string, client http.Client, url string) (io.ReadCloser, error) {
 	req, err := http.NewRequest("GET", url, nil)
-	req.Header.Set("Authorization", "Bearer "+token)
-	req.Header.Set("Accept", "application/vnd.github.v3+json")
-	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
-	return resp.Body, nil
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Accept", "application/vnd.github.v3+json")
+	if resp, err := client.Do(req); err != nil {
+		return nil, err
+	} else {
+		return resp.Body, nil
+	}
 }

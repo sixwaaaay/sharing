@@ -37,6 +37,7 @@ func NewDB(config *config.Config) (*gorm.DB, error) {
 	options := &gorm.Config{
 		SkipDefaultTransaction: true,
 		QueryFields:            true,
+		PrepareStmt: true,
 	}
 	open := mysql.Open(config.MySQL.DSN)
 	db, err := gorm.Open(open, options)

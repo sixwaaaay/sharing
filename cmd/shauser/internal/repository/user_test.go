@@ -118,6 +118,6 @@ func TestUserFind(t *testing.T) {
 	assertions.NoError(tx.Error)
 
 	c.MySQL.Replicas = []string{DSN}
-	gormDB, err = NewDB(&c)
+	_, err = NewDB(&c)
 	assertions.NoError(err)
 }
