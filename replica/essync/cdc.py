@@ -20,7 +20,11 @@ from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 from pymysqlreplication import BinLogStreamReader
 from pymysqlreplication.event import RotateEvent
-from pymysqlreplication.row_event import DeleteRowsEvent, UpdateRowsEvent, WriteRowsEvent
+from pymysqlreplication.row_event import (
+    DeleteRowsEvent,
+    UpdateRowsEvent,
+    WriteRowsEvent,
+)
 from opentelemetry import trace
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 from opentelemetry.sdk.resources import Resource
@@ -36,20 +40,17 @@ def load_conf():
 
 
 def save_position(next_binlog, position):
-    data = {
-        'next_binlog': next_binlog,
-        'position': position
-    }
-    with open('position.json', 'w') as f:
+    data = {"next_binlog": next_binlog, "position": position}
+    with open("position.json", "w") as f:
         json.dump(data, f)
-    logging.info(f'Saved position: {data}')
+    logging.info(f"Saved position: {data}")
 
 
 def load_position():
     try:
-        with open('position.json', 'r') as f:
+        with open("position.json", "r") as f:
             data = json.load(f)
-            return data['next_binlog'], data['position']
+            return data["next_binlog"], data["position"]
     except FileNotFoundError:
         return None, None
 
@@ -68,25 +69,25 @@ def sync(stream: BinLogStreamReader, client: Elasticsearch, tracer: trace.Tracer
                     if isinstance(binlog_event, DeleteRowsEvent):
                         vals = row["values"]
                         action = {
-                            "_op_type": 'delete',
+                            "_op_type": "delete",
                             "_index": table,
-                            "_id": identity(vals)
+                            "_id": identity(vals),
                         }
                     elif isinstance(binlog_event, UpdateRowsEvent):
                         vals = row["after_values"]
                         action = {
-                            "_op_type": 'index',
+                            "_op_type": "index",
                             "_index": table,
                             "_id": identity(vals),
-                            "_source": vals
+                            "_source": vals,
                         }
                     elif isinstance(binlog_event, WriteRowsEvent):
                         vals = row["values"]
                         action = {
-                            "_op_type": 'index',
+                            "_op_type": "index",
                             "_index": table,
                             "_id": identity(vals),
-                            "_source": vals
+                            "_source": vals,
                         }
                     else:
                         action = None
