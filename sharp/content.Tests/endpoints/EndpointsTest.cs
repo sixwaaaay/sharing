@@ -17,15 +17,10 @@ using content.endpoints;
 using content.repository;
 using FluentValidation;
 using JetBrains.Annotations;
-
-namespace content.Tests.endpoints;
-
-using Xunit;
 using Moq;
 using System.Security.Claims;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
+namespace content.Tests.endpoints;
 [TestSubject(typeof(Endpoints))]
 public class EndpointsTests
 {
@@ -41,7 +36,7 @@ public class EndpointsTests
     {
         var expectedVideos = new Pagination<VideoDto>
         {
-            Items = new List<VideoDto> { new VideoDto { Id = "1" }, new VideoDto { Id = "2" } },
+            Items = [new VideoDto { Id = "1" }, new VideoDto { Id = "2" }],
             AllCount = 2
         };
         _mockService.Setup(s => s.FindByUserId(It.IsAny<long>(), It.IsAny<long>(), It.IsAny<int>()))
@@ -57,7 +52,7 @@ public class EndpointsTests
     {
         var expectedVideos = new Pagination<VideoDto>
         {
-            Items = new List<VideoDto> { new VideoDto { Id = "1" }, new VideoDto { Id = "2" } },
+            Items = [new VideoDto { Id = "1" }, new VideoDto { Id = "2" }],
             AllCount = 2
         };
         _mockService.Setup(s => s.FindRecent(It.IsAny<long>(), It.IsAny<int>())).ReturnsAsync(expectedVideos);
@@ -72,7 +67,7 @@ public class EndpointsTests
     {
         var expectedVideos = new Pagination<VideoDto>
         {
-            Items = new List<VideoDto> { new VideoDto { Id = "1" }, new VideoDto { Id = "2" } },
+            Items = [new VideoDto { Id = "1" }, new VideoDto { Id = "2" }],
             AllCount = 2
         };
         _mockService.Setup(s => s.DailyPopularVideos(It.IsAny<long>(), It.IsAny<int>())).ReturnsAsync(expectedVideos);
@@ -88,7 +83,7 @@ public class EndpointsTests
     {
         var expectedVideos = new Pagination<VideoDto>
         {
-            Items = new List<VideoDto> { new VideoDto { Id = "1" }, new VideoDto { Id = "2" } },
+            Items = [new VideoDto { Id = "1" }, new VideoDto { Id = "2" }],
             AllCount = 2
         };
         _mockService.Setup(s => s.VotedVideos(It.IsAny<long>(), It.IsAny<long>(), It.IsAny<int>()))
@@ -99,15 +94,6 @@ public class EndpointsTests
         Assert.Equal(expectedVideos, result);
     }
 
-    [Fact]
-    public void Vote_CallsServiceWithExpectedVoteTypeAndVideoId()
-    {
-        var request = new VoteRequest { Type = 1, VideoId = 1 };
-
-        Endpoints.Vote(_mockService.Object, request);
-
-        _mockService.Verify(s => s.Vote(VoteType.Vote, request.VideoId), Times.Once);
-    }
 
     [Fact]
     public async void CreateVideo_CallsServiceWithExpectedVideo()
@@ -138,7 +124,7 @@ public class EndpointsTests
         // Arrange
         var expectedMessages = new Pagination<MessageDto>
         {
-            Items = new List<MessageDto> { new MessageDto { Id = 1 }, new MessageDto { Id = 2 } },
+            Items = [new MessageDto { Id = 1 }, new MessageDto { Id = 2 }],
             AllCount = 2
         };
         _mockMessageDomain.Setup(s =>

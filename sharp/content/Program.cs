@@ -67,11 +67,8 @@ builder.Services.AddOpenTelemetry().WithTracing(tcb =>
 {
     mtb
         .AddMeter("Microsoft.AspNetCore.Hosting", "Microsoft.AspNetCore.Server.Kestrel", "MySqlConnector")
-        .AddView("http.server.request.duration",
-            new ExplicitBucketHistogramConfiguration
-            {
-                Boundaries = [0, 0.005, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 10]
-            })
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
         .AddPrometheusExporter();
 });
 
@@ -87,7 +84,7 @@ builder.Services.AddVideoRepository().AddNotificationRepository();
 
 builder.Services.AddGrpcUser().AddUserRepository();
 
-builder.Services.AddVoteClient().AddVoteRepository();
+builder.Services.AddVoteRepository(builder.Configuration.GetConnectionString("Vote") ?? throw new InvalidOperationException("Vote connection string is null"));
 
 builder.Services.AddDomainService().AddMessageDomain();
 
