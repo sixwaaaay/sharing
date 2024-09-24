@@ -118,25 +118,6 @@ class SharingCommentApplicationTests {
                 .andExpect(MockMvcResultMatchers.status().is4xxClientError());
     }
 
-    @Test
-    public void voteComment() throws Exception {
-        var token = jwtUtil.generateToken("n", "1");
-        mockMvc.perform(MockMvcRequestBuilders.post("/comments/action/like/1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("Authorization", "Bearer " + token))
-                .andExpect(MockMvcResultMatchers.status().isOk());
-
-        mockMvc.perform(MockMvcRequestBuilders.delete("/comments/action/like/1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("Authorization", "Bearer " + token))
-                .andExpect(MockMvcResultMatchers.status().isOk());
-
-        mockMvc.perform(MockMvcRequestBuilders.delete("/comments/action/like/1")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().is4xxClientError());
-
-    }
-
 
     @Test
     void testGetUser() {

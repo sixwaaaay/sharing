@@ -98,6 +98,12 @@ public class CommentController {
         return comment;
     }
 
+    /**
+     * delete specified comment
+     *
+     * @param id the id of the comment to be deleted
+     * @param request the request body
+     */
     @DeleteMapping("/{id}")
     public void deleteComment(
             @PathVariable("id") Long id,
@@ -111,27 +117,4 @@ public class CommentController {
         commentService.deleteComment(comment);
     }
 
-    /**
-     * vote a comment
-     *
-     * @param id the id of comment
-     */
-    @PostMapping("/action/like/{id}")
-    public void voteComment(
-            @PathVariable long id) {
-        var userId = Principal.currentUserId();
-        commentService.voteComment(userId, id);
-    }
-
-    /**
-     * cancel vote a comment
-     *
-     * @param id the id of comment
-     */
-    @DeleteMapping("/action/like/{id}")
-    public void cancelVoteComment(
-            @PathVariable long id) {
-        var userId = Principal.currentUserId();
-        commentService.cancelVoteComment(userId, id);
-    }
 }

@@ -19,8 +19,6 @@ import io.sixwaaaay.sharingcomment.client.VoteClient;
 import io.sixwaaaay.sharingcomment.domain.*;
 import io.sixwaaaay.sharingcomment.repository.CommentRepository;
 import io.sixwaaaay.sharingcomment.request.Principal;
-import io.sixwaaaay.sharingcomment.transmission.VoteExistsReq;
-import io.sixwaaaay.sharingcomment.transmission.VoteReq;
 import io.sixwaaaay.sharingcomment.util.DbContext;
 import io.sixwaaaay.sharingcomment.util.DbContextEnum;
 import org.springframework.beans.factory.annotation.Value;
@@ -148,26 +146,6 @@ public class CommentService {
         commentRepo.deleteByIdAndUserId(comment.getId(), comment.getUserId());
     }
 
-    /**
-     * vote a comment
-     *
-     * @param userId    the id of the user who is requesting
-     * @param commentId the id of the comment to be voted
-     */
-    public void voteComment(long userId, long commentId) {
-        voteClient.itemAdd(new VoteReq(userId, commentId));
-    }
-
-    /**
-     * cancel vote a comment
-     *
-     * @param userId    the id of the user who is requesting
-     * @param commentId the id of the comment to be unvoted
-     */
-    public void cancelVoteComment(Long userId, Long commentId) {
-        voteClient.itemDelete(new VoteReq(userId, commentId));
-    }
-
 
     /**
      * compose the comment, fill the user info and vote status
@@ -178,7 +156,7 @@ public class CommentService {
         if (enableUser) {
             var token = Principal.currentToken();
             var user = userClient.getUser(comment.getUserId(), token);
-            comment.setUser(user.getUser());
+            comment.setUser(user);
         }
     }
 
@@ -219,7 +197,7 @@ public class CommentService {
         var token = Principal.currentToken();
         var users = userClient.getManyUser(userList, token);
         // covert to map
-        return users.getUsers().stream().collect(Collectors.toMap(User::getId, identity()));
+        return users.stream().collect(Collectors.toMap(User::getId, identity()));
     }
 
     /**
@@ -235,9 +213,9 @@ public class CommentService {
         }
         var commentIdList = flatComments(comments).map(Comment::getId).toList();
         //  check if voted
-        var voteExistsReply = voteClient.exists(new VoteExistsReq(userId, commentIdList));
+        var votedIds = voteClient.queryInLikes(commentIdList, Principal.currentToken());
         // convert to set
-        return voteExistsReply.getExists();
+        return Set.copyOf(votedIds);
     }
 
     /**

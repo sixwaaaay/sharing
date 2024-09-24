@@ -60,9 +60,3 @@ services:
     image: 'sixwaaaay/shauser:latest-test'
     ports:
       - '5000:5000'
-  graph:
-    image: 'sixwaaaay/graph:0.6.0'
-    ports:
-      - '8081:8081'
-    environment:
-      - 'APP_PORT=8081'
