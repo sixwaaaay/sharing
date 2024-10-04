@@ -18,12 +18,12 @@ import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.decorators.Decorators;
 import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.RetryConfig;
-import io.sixwaaaay.sharingcomment.transmission.GetMultipleUserReply;
-import io.sixwaaaay.sharingcomment.transmission.GetUserReply;
+import io.sixwaaaay.sharingcomment.domain.User;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.Duration;
 import java.util.Collection;
+import java.util.List;
 
 public class UserClientWrapper implements UserClient {
     private final UserClient userClient;
@@ -36,7 +36,8 @@ public class UserClientWrapper implements UserClient {
 
         this.userClient = userClient;
         var name = "userClient";
-        var retryConfig = RetryConfig.custom()
+        var retryConfig = RetryConfig
+                .custom()
                 .maxAttempts(3)
                 .waitDuration(Duration.ofMillis(1000))
                 .ignoreExceptions(
@@ -46,7 +47,8 @@ public class UserClientWrapper implements UserClient {
                         HttpClientErrorException.Unauthorized.class
                 ).build();
         retry = Retry.of(name, retryConfig);
-        var circuitBreakerConfig = CircuitBreakerConfig.custom()
+        var circuitBreakerConfig = CircuitBreakerConfig
+                .custom()
                 .failureRateThreshold(50)
                 .ignoreExceptions(
                         HttpClientErrorException.NotFound.class,
@@ -62,8 +64,9 @@ public class UserClientWrapper implements UserClient {
     }
 
     @Override
-    public GetUserReply getUser(long id, String token) {
-        var getUserReplySupplier = Decorators.ofSupplier(() -> userClient.getUser(id, token))
+    public User getUser(long id, String token) {
+        var getUserReplySupplier = Decorators
+                .ofSupplier(() -> userClient.getUser(id, token))
                 .withCircuitBreaker(circuitBreaker)
                 .withRetry(retry)
                 .decorate();
@@ -72,8 +75,9 @@ public class UserClientWrapper implements UserClient {
 
 
     @Override
-    public GetMultipleUserReply getManyUser(Collection<Long> ids, String token) {
-        var getManyUserReplySupplier = Decorators.ofSupplier(() -> userClient.getManyUser(ids, token))
+    public List<User> getManyUser(Collection<Long> ids, String token) {
+        var getManyUserReplySupplier = Decorators
+                .ofSupplier(() -> userClient.getManyUser(ids, token))
                 .withCircuitBreaker(circuitBreaker)
                 .withRetry(retry)
                 .decorate();

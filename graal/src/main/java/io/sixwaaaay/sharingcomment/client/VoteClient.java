@@ -14,22 +14,21 @@
 package io.sixwaaaay.sharingcomment.client;
 
 
-import io.sixwaaaay.sharingcomment.transmission.*;
-import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.service.annotation.PostExchange;
+
+import java.util.List;
 
 
 public interface VoteClient {
-    @PostExchange("/item/add")
-    VoteReply itemAdd(@Valid @RequestBody VoteReq req);
 
-    @PostExchange("/item/delete")
-    VoteReply itemDelete(@Valid @RequestBody VoteReq req);
-
-    @PostExchange("/item/exists")
-    VoteExistsReply exists(@Valid @RequestBody VoteExistsReq req);
-
-    @PostExchange("/item/scan")
-    ScanVotedReply scan(@RequestBody ScanVotedReq req);
+    /**
+     * query whether the objectIds(aka commentIds) is liked.
+     * @param objectIds the id list of the object(aka comment)
+     * @param token the token of the user
+     * @return the list of the objectIds which is liked
+     */
+    @PostExchange("/graph/comments/likes")
+    List<Long> queryInLikes(@RequestBody List<Long> objectIds, @RequestHeader(value = "Authorization", required = false) String token);
 }

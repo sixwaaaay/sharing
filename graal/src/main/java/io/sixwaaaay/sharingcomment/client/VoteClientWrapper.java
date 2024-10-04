@@ -18,10 +18,9 @@ import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.decorators.Decorators;
 import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.RetryConfig;
-import io.sixwaaaay.sharingcomment.transmission.*;
 
 import java.time.Duration;
-import java.util.Set;
+import java.util.List;
 
 public class VoteClientWrapper implements VoteClient {
 
@@ -47,39 +46,19 @@ public class VoteClientWrapper implements VoteClient {
             .waitDuration(Duration.ofMillis(1000))
             .build()
     );
-
-    @Override
-    public VoteReply itemAdd(VoteReq req) {
-        return voteClient.itemAdd(req);
-    }
-
-    @Override
-    public VoteReply itemDelete(VoteReq req) {
-        return voteClient.itemDelete(req);
-    }
-
     /**
-     * wrap the exists method with resilience4j circuit breaker and retry
-     * fallback with an empty set if the circuit breaker is open
+     * wrap the queryInLikes method with resilience4j circuit breaker and retry
+     * @param commentIds list of object ids
+     * @param token user token
+     * @return list of object ids that user liked
      */
     @Override
-    public VoteExistsReply exists(VoteExistsReq req) {
-        var existsReplySupplier = Decorators.ofSupplier(() -> voteClient.exists(req))
+    public List<Long> queryInLikes(List<Long> commentIds, String token) {
+        var queryInLikesSupplier = Decorators.ofSupplier(() -> voteClient.queryInLikes(commentIds, token))
                 .withCircuitBreaker(circuitBreaker)
                 .withRetry(retry)
-                .withFallback(this::fallback)
+                .withFallback((e) -> List.of())
                 .decorate();
-        return existsReplySupplier.get();
-    }
-
-    @Override
-    public ScanVotedReply scan(ScanVotedReq req) {
-        return voteClient.scan(req);
-    }
-
-    private VoteExistsReply fallback(Throwable e) {
-        var reply = new VoteExistsReply();
-        reply.setExists(Set.of());
-        return reply;
+        return queryInLikesSupplier.get();
     }
 }

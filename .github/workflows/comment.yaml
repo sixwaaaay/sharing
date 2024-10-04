@@ -56,7 +56,7 @@ jobs:
           DB_OPTIONS: serverTimezone=Asia/Shanghai
           TRACING_PROBABILITY: 0.1
           OTLP_ENDPOINT: http://localhost:4318/v1/traces
-          VOTE_SERVICE_BASE_URL: http://localhost:8081
+          VOTE_SERVICE_BASE_URL: http://localhost:5000
           USER_SERVICE_BASE_URL: http://localhost:5000
           REDIS_HOST: localhost
 
