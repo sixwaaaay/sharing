@@ -38,9 +38,9 @@ public record Video
 
     public int LikeCount { get; init; }
 
-    public DateTime CreatedAt { get; init; }
+    public DateTime CreatedAt { get; init; } = DateTime.Now; // todo
 
-    public DateTime UpdatedAt { get; init; }
+    public DateTime UpdatedAt { get; init; } = DateTime.Now; // todo
 
     public short Processed { get; init; } = 1;
 }
@@ -48,7 +48,7 @@ public record Video
 public interface IVideoRepository
 {
     Task<Video> FindById(long id);
-    Task<IReadOnlyList<Video>> FindAllByIds(long[] ids);
+    Task<IReadOnlyList<Video>> FindAllByIds(IReadOnlyList<long> ids);
     Task<IReadOnlyList<Video>> FindByUserId(long userId, long page, int size);
     Task<IReadOnlyList<Video>> FindRecent(long page, int size);
     Task<(long, IReadOnlyList<Video>)> DailyPopularVideos(long page, int size);
@@ -57,12 +57,13 @@ public interface IVideoRepository
 
 public class VideoRepository(MySqlDataSource dataSource) : IVideoRepository
 {
+    const string columns = "id, user_id, title, des, cover_url, video_url, duration, view_count, like_count, created_at, updated_at, processed";
+
     public async Task<Video> FindById(long id)
     {
         await using var connection = await dataSource.OpenConnectionAsync();
         return await connection.QuerySingleAsync<Video>(
-            "SELECT id, user_id, title, des, cover_url, video_url, duration, view_count, like_count, created_at, updated_at, processed " +
-            "FROM videos WHERE id = @id",
+            $"SELECT {columns} FROM videos WHERE id = @id",
             new { id });
     }
 
@@ -72,18 +73,16 @@ public class VideoRepository(MySqlDataSource dataSource) : IVideoRepository
     /// <param name="ids"> The ids of the videos. </param>
     /// <returns> The list of videos. </returns>
     [DapperAot(false)]
-    public async Task<IReadOnlyList<Video>> FindAllByIds(long[] ids)
+    public async Task<IReadOnlyList<Video>> FindAllByIds(IReadOnlyList<long> ids)
     {
-        if (ids.Length == 0)
+        if (ids.Count == 0)
         {
             return [];
         }
         await using var connection = await dataSource.OpenConnectionAsync();
         var inClause = new InClause<long>(ids);
 
-        var query =
-            $"SELECT id, user_id, title, des, cover_url, video_url, duration, view_count, like_count, created_at, updated_at, processed " +
-            $"FROM videos WHERE id in {inClause.Condition}";
+        var query = $"SELECT {columns} FROM videos WHERE id in {inClause.Condition}";
         var command = connection.CreateCommand();
         command.CommandText = query;
         inClause.BindParam(command);
@@ -122,8 +121,8 @@ public class VideoRepository(MySqlDataSource dataSource) : IVideoRepository
     {
         await using var connection = await dataSource.OpenConnectionAsync();
         var videos = await connection.QueryAsync<Video>(
-            "SELECT id,user_id, title, des, cover_url, video_url, duration, view_count, like_count, created_at, updated_at, processed " +
-            "FROM videos FORCE INDEX(user_created) WHERE processed = 1 AND  user_id = @userId AND id < @page ORDER BY id DESC LIMIT @size",
+            $"SELECT {columns} FROM videos FORCE INDEX(user_created) " +
+            "WHERE processed = 1 AND  user_id = @userId AND id < @page ORDER BY id DESC LIMIT @size",
             new { userId, page, size });
         return videos.ToList();
     }
@@ -142,8 +141,8 @@ public class VideoRepository(MySqlDataSource dataSource) : IVideoRepository
     {
         await using var connection = await dataSource.OpenConnectionAsync();
         var videos = await connection.QueryAsync<Video>(
-            "SELECT id ,user_id, title, des, cover_url, video_url, duration, view_count, like_count, created_at, updated_at, processed " +
-            "FROM videos FORCE INDEX (processed) WHERE processed = 1 AND id < @page ORDER BY id DESC LIMIT @size",
+            $"SELECT {columns} FROM videos FORCE INDEX (processed) " +
+            "WHERE processed = 1 AND id < @page ORDER BY id DESC LIMIT @size",
             new { page, size });
         return videos.ToList();
     }

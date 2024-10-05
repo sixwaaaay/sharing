@@ -70,15 +70,6 @@ public static class Endpoints
         return service.VotedVideos(userId, page ?? long.MaxValue, size ?? 10);
     }
 
-
-    public static void Vote(IDomainService service, VoteRequest request) => service.Vote(
-        request.Type switch
-        {
-            0 => VoteType.CancelVote,
-            1 => VoteType.Vote,
-            _ => throw new ArgumentOutOfRangeException(nameof(request.Type))
-        }, request.VideoId);
-
     public static async Task CreateVideo(IDomainService service, IProbe probe, ClaimsPrincipal user,
         VideoRequest request, VideoRequestValidator validator)
     {
@@ -128,13 +119,12 @@ public static class Endpoints
     public static void MapEndpoints(this IEndpointRouteBuilder endpoints)
     {
         endpoints.MapGet("/users/{userId:long}/videos", UserVideos).WithName("getUserVideos");
+        // endpoints.MapGet("/users/{userId:long}/likes", Likes).RequireAuthorization().WithName("getUserLikes");
         endpoints.MapGet("/users/{userId:long}/likes", Likes).WithName("getUserLikes");
         endpoints.MapGet("/videos", Videos).WithName("getVideos");
         endpoints.MapGet("/videos/{id:long}", FindVideoById).WithName("getVideo");
         endpoints.MapPost("/videos/popular", DailyPopularVideos).WithName("getDailyPopularVideos");
         endpoints.MapPost("/videos", CreateVideo).RequireAuthorization().WithName("createVideo");
-        endpoints.MapPost("/votes", Vote).RequireAuthorization().WithName("vote");
-        endpoints.MapPost("/votes/cancel", Vote).RequireAuthorization().WithName("cancelVote");
 
 
         endpoints.MapGet("/messages", FindMessages).RequireAuthorization().WithName("getMessages");

@@ -12,6 +12,7 @@
  *
  */
 
+using System.Runtime.CompilerServices;
 using content.repository;
 using Riok.Mapperly.Abstractions;
 
@@ -27,14 +28,12 @@ public record Pagination<T> where T : class
 public interface IDomainService
 {
     Task<VideoDto> FindById(long id);
-    Task<IReadOnlyList<VideoDto>> FindAllByIds(long[] ids);
+    Task<IReadOnlyList<VideoDto>> FindAllByIds(IReadOnlyList<long> ids);
     Task<Pagination<VideoDto>> FindByUserId(long userId, long page, int size);
     Task<Pagination<VideoDto>> FindRecent(long page, int size);
     Task<Pagination<VideoDto>> VotedVideos(long userId, long page, int size);
     Task<Pagination<VideoDto>> DailyPopularVideos(long page, int size);
     Task Save(Video video);
-
-    Task Vote(VoteType type, long videoId);
 }
 
 public class DomainService(IVideoRepository videoRepo, IUserRepository userRepo, IVoteRepository voteRepo)
@@ -44,12 +43,16 @@ public class DomainService(IVideoRepository videoRepo, IUserRepository userRepo,
     {
         var video = await videoRepo.FindById(id);
         var videoToVideoDto = video.ToDto();
-        var user = await userRepo.FindById(video.UserId);
+        var (UserTask, VoteTask) = ( userRepo.FindById(video.UserId), voteRepo.VotedOfVideos([video.Id]));
+        var user = await UserTask;
+        var votedVideos = await VoteTask;
+
         videoToVideoDto.Author = user;
+        videoToVideoDto.IsLiked = votedVideos.Count > 0;
         return videoToVideoDto;
     }
 
-    public async Task<IReadOnlyList<VideoDto>> FindAllByIds(long[] ids)
+    public async Task<IReadOnlyList<VideoDto>> FindAllByIds(IReadOnlyList<long> ids)
     {
         var videos = await videoRepo.FindAllByIds(ids);
         return await CurrentUserVotedVideos(videos);
@@ -57,15 +60,17 @@ public class DomainService(IVideoRepository videoRepo, IUserRepository userRepo,
 
     private async Task<IReadOnlyList<VideoDto>> CurrentUserVotedVideos(IReadOnlyList<Video> videos)
     {
+        if (videos.Count == 0) { return []; }
         var userIds = videos.Select(v => v.UserId);
         var userTask = userRepo.FindAllByIds(userIds);
-        var voteVideoIdsTask = voteRepo.VotedOfVideos(videos.Select(v => v.Id).ToArray());
+        var voteVideoIdsTask = voteRepo.VotedOfVideos(videos.Select(v => v.Id).ToList());
         var users = await userTask;
         var voteVideoIds = await voteVideoIdsTask;
         return Compose(users, videos, voteVideoIds).ToList();
     }
 
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static IEnumerable<VideoDto> Compose(IEnumerable<User> users, IEnumerable<Video> videos,
         IEnumerable<long> voteVideoIds)
     {
@@ -79,7 +84,7 @@ public class DomainService(IVideoRepository videoRepo, IUserRepository userRepo,
     {
         var videos = await videoRepo.FindByUserId(userId, page, size);
         var findById = userRepo.FindById(userId);
-        var votedOfVideos = voteRepo.VotedOfVideos(videos.Select(v => v.Id).ToArray());
+        var votedOfVideos = voteRepo.VotedOfVideos(videos.Select(v => v.Id).ToList());
         var user = await findById;
         var voteVideoIds = await votedOfVideos;
         var videoDtos = Compose([user], videos, voteVideoIds).ToList();
@@ -105,11 +110,11 @@ public class DomainService(IVideoRepository videoRepo, IUserRepository userRepo,
 
     public async Task<Pagination<VideoDto>> VotedVideos(long userId, long page, int size)
     {
-        var (token, videoIds) = await voteRepo.VotedVideos(userId, page, size);
+        var (token, videoIds) = await voteRepo.VotedVideos(page, size);
         return new Pagination<VideoDto>
         {
-            Items = await FindAllByIds(videoIds.ToArray()),
-            NextPage = token.ToString()
+            Items = await FindAllByIds(videoIds),
+            NextPage = token?.ToString()
         };
     }
 
@@ -122,11 +127,6 @@ public class DomainService(IVideoRepository videoRepo, IUserRepository userRepo,
             Items = videoDtos,
             NextPage = token.ToString()
         };
-    }
-
-    public async Task Vote(VoteType type, long videoId)
-    {
-        await voteRepo.UpdateVote(videoId, type);
     }
 }
 

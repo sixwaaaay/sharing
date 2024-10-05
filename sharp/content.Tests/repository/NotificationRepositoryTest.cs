@@ -12,14 +12,11 @@
  *
  */
 
-namespace content.Tests.repository;
 
 using MySqlConnector;
-using Xunit;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using content.repository;
 
+namespace content.Tests.repository;
 public class NotificationRepositoryTests
 {
     private readonly NotificationRepository _repository;

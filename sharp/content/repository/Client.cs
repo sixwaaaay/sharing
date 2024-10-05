@@ -12,6 +12,7 @@
  *
  */
 
+using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text.Json.Serialization;
 using Grpc.Core;
@@ -106,149 +107,92 @@ public class UserRepository : IUserRepository
 
 public interface IVoteRepository
 {
-    long CurrentUser { get; set; }
-
-    /// <summary>
-    /// Update vote status.
-    /// </summary>
-    /// <param name="videoId"> Video id. </param>
-    /// <param name="type"> Vote type. </param>
-    /// <returns></returns>
-    Task UpdateVote(long videoId, VoteType type);
+    string? Token { get; set; }
 
     /// <summary>
     /// Get voted status of videos.
     /// </summary>
     /// <param name="videoIds"> Video ids. </param>
     /// <returns> Voted status of videos. </returns>
-    Task<IReadOnlyList<long>> VotedOfVideos(long[] videoIds);
+    Task<IReadOnlyList<long>> VotedOfVideos(List<long> videoIds);
+
 
     /// <summary>
-    /// Get voted videos of user.
+    /// Scan voted videos, which means paging through all voted videos.
     /// </summary>
     /// <param name="userId"> User id. </param>
     /// <param name="page"> Page token. </param>
     /// <param name="size"> Page size. </param>
-    /// <returns> Page token and voted videos. </returns>
-    Task<(long, IReadOnlyList<long>)> VotedVideos(long userId, long page, int size);
-}
-
-public enum VoteType
-{
-    CancelVote,
-    Vote
+    /// <returns> Page token and voted videos. </returns>    
+    Task<(long?, IReadOnlyList<long>)> VotedVideos(long page, int size);
 }
 
 public class VoteRepository(HttpClient client) : IVoteRepository
 {
-    public long CurrentUser { get; set; }
+    public string? Token { get; set; }
 
-    public async Task UpdateVote(long videoId, VoteType type)
+    public async Task<IReadOnlyList<long>> VotedOfVideos(List<long> videoIds)
     {
-        if (CurrentUser == 0)
-        {
-            throw new InvalidOperationException("Current user is null.");
-        }
-
-        var row = new VoteRow()
-        {
-            Type = "vote",
-            SubjectId = CurrentUser,
-            TargetId = videoId,
-        };
-        var resp = type switch
-        {
-            VoteType.Vote => await client.PostAsJsonAsync("/item/add", row, VoteJsonContext.Default.VoteRow),
-            VoteType.CancelVote => await client.PostAsJsonAsync("/item/delete", row, VoteJsonContext.Default.VoteRow),
-            _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
-        };
-        resp.EnsureSuccessStatusCode();
-    }
-
-    public async Task<IReadOnlyList<long>> VotedOfVideos(long[] videoIds)
-    {
-        if (videoIds.Length == 0 || CurrentUser == 0)
+        if (string.IsNullOrEmpty(Token) || videoIds.Count == 0)
         {
             return [];
         }
+        using var req = new HttpRequestMessage(HttpMethod.Post, "/graph/videos/likes");
+        req.Content = JsonContent.Create(new InQuery(videoIds), VoteJsonContext.Default.InQuery);
 
-        var req = new ExistsReq()
+        if (!string.IsNullOrEmpty(Token) && AuthenticationHeaderValue.TryParse(Token, out var auth))
         {
-            Type = "vote",
-            SubjectId = CurrentUser,
-            TargetIds = videoIds
-        };
-        var resp = await client.PostAsJsonAsync("/item/exists", req, VoteJsonContext.Default.ExistsReq);
+            req.Headers.Authorization = auth;
+        }
+
+
+        var resp = await client.SendAsync(req);
         resp.EnsureSuccessStatusCode();
-        var result = await resp.Content.ReadFromJsonAsync(VoteJsonContext.Default.ExistsResp) ?? new ExistsResp();
-        return result.Exists;
+
+        var result = await resp.Content.ReadFromJsonAsync(VoteJsonContext.Default.ListInt64) ?? [];
+        return result;
     }
 
-    public async Task<(long, IReadOnlyList<long>)> VotedVideos(long userId, long page, int size)
+    public async Task<(long?, IReadOnlyList<long>)> VotedVideos(long page, int size)
     {
-        var req = new ScanReq()
+
+        using var req = new HttpRequestMessage(HttpMethod.Get, $"/graph/videos?page={page}&size={size}");
+        if (!string.IsNullOrEmpty(Token) && AuthenticationHeaderValue.TryParse(Token, out var auth))
         {
-            Type = "vote",
-            SubjectId = userId,
-            Token = page,
-            Limit = size
-        };
-        var resp = await client.PostAsJsonAsync("/item/scan", req, VoteJsonContext.Default.ScanReq);
+            req.Headers.Authorization = auth;
+        }
+
+        var resp = await client.SendAsync(req);
+
         resp.EnsureSuccessStatusCode();
+
         var result = await resp.Content.ReadFromJsonAsync(VoteJsonContext.Default.ScanResp) ?? new ScanResp();
         return (result.NextToken, result.TargetIds);
     }
 
-    internal record VoteRow
-    {
-        public string Type { get; init; } = string.Empty;
-        public long SubjectId { get; init; }
-        public string TargetType { get; } = "video";
-        public long TargetId { get; init; }
-    }
-
-    internal record ExistsReq
-    {
-        public string Type { get; init; } = string.Empty;
-        public long SubjectId { get; init; }
-        public string TargetType { get; } = "video";
-        public long[] TargetIds { get; init; } = [];
-    }
-
-    internal record ExistsResp
-    {
-        public long[] Exists { get; init; } = [];
-    }
-
-    internal record ScanReq
-    {
-        public string Type { get; init; } = string.Empty;
-
-        public long SubjectId { get; init; }
-        public string TargetType { get; } = "video";
-        public long Token { get; init; } = long.MaxValue;
-        public int Limit { get; init; } = 10;
-    }
-
     internal record ScanResp
     {
-        public long[] TargetIds { get; init; } = [];
-        public long NextToken { get; init; }
+        public List<long> TargetIds { get; init; } = [];
+        public long? NextToken { get; init; }
     }
 }
 
+public record InQuery(List<long> ObjectIds);
+
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.SnakeCaseLower)]
-[JsonSerializable(typeof(VoteRepository.VoteRow))]
-[JsonSerializable(typeof(VoteRepository.ExistsReq))]
-[JsonSerializable(typeof(VoteRepository.ExistsResp))]
-[JsonSerializable(typeof(VoteRepository.ScanReq))]
 [JsonSerializable(typeof(VoteRepository.ScanResp))]
+[JsonSerializable(typeof(InQuery))]
 internal partial class VoteJsonContext : JsonSerializerContext;
 
 public static class Extension
 {
-    public static IServiceCollection AddVoteRepository(this IServiceCollection services) =>
-        services.AddScoped<IVoteRepository, VoteRepository>();
+    public static IServiceCollection AddVoteRepository(this IServiceCollection services, string baseAddress)
+    {
+        services.AddScoped<IVoteRepository, VoteRepository>(
+            sp => new VoteRepository(sp.GetRequiredService<IHttpClientFactory>().CreateClient("Vote")))
+        .AddHttpClient("Vote", client => client.BaseAddress = new Uri(baseAddress.TrimEnd('/')));
+        return services;
+    }
 
     public static IServiceCollection AddUserRepository(this IServiceCollection services) =>
         services.AddScoped<IUserRepository, UserRepository>();
@@ -258,27 +202,18 @@ public static class Extension
             sp.GetRequiredService<IConfiguration>().GetConnectionString("User") ??
             throw new InvalidOperationException(@"User connection string is null.")));
 
-    public static IServiceCollection AddVoteClient(this IServiceCollection services) =>
-        services.AddSingleton<HttpClient>(sp =>
-        {
-            var connectionString = sp.GetRequiredService<IConfiguration>().GetConnectionString("Vote") ??
-                                   throw new InvalidOperationException(@"Vote connection string is null.");
-            return new HttpClient
-            {
-                BaseAddress = new Uri(connectionString.TrimEnd('/')),
-            };
-        });
-
     public static IApplicationBuilder UseToken(this IApplicationBuilder app) =>
         app.Use(async (context, next) =>
         {
-            var userRepository = context.RequestServices.GetService<IUserRepository>() ??
-                                 throw new NullReferenceException();
-            userRepository.Token = context.Request.Headers.Authorization;
+            var userRepository = context.RequestServices.GetService<IUserRepository>();
+            ArgumentNullException.ThrowIfNull(userRepository, nameof(userRepository));
+            var authorization = context.Request.Headers.Authorization;
 
-            var voteRepository = context.RequestServices.GetService<IVoteRepository>() ??
-                                 throw new NullReferenceException();
-            voteRepository.CurrentUser = context.User.UserId();
+            userRepository.Token = authorization;
+
+            var voteRepository = context.RequestServices.GetService<IVoteRepository>();
+            ArgumentNullException.ThrowIfNull(voteRepository, nameof(voteRepository));
+            voteRepository.Token = authorization;
 
             await next.Invoke();
         });
