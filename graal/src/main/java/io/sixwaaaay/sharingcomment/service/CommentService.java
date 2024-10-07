@@ -71,9 +71,9 @@ public class CommentService {
      */
     public CommentResult getMainCommentList(Long belongTo, Long id, Integer size, Long userId) {
         DbContext.set(DbContextEnum.READ);  /* set read context */
-        var result = new CommentResult();
 
-        var mainComments = commentRepo.findByBelongToAndIdLessThanAndReplyToNullOrderByIdDesc(belongTo, id, Limit.of(size));
+        var limit = Limit.of(size);
+        var mainComments = commentRepo.findByBelongToAndIdLessThanAndReplyToNullOrderByIdDesc(belongTo, id, limit);
         /* for each main comment which has reply comments, get the latest 2 reply comments */
         mainComments.stream().filter(comment -> comment.getReplyCount() != 0).forEach(comment -> {
             var replyComments = commentRepo.findByBelongToAndReplyToAndIdGreaterThanOrderByIdAsc(belongTo, comment.getId(), 0L, Limit.of(2));
@@ -82,8 +82,10 @@ public class CommentService {
 
         composeComment(mainComments, userId);
 
+        var result = new CommentResult();
+
         result.setComments(mainComments);
-        if (mainComments.size() == size) {
+        if (mainComments.size() == limit.max()) {
             result.setNextPage(mainComments.getLast().getId());
         }
         return result;
@@ -104,13 +106,17 @@ public class CommentService {
      */
     public ReplyResult getReplyCommentList(Long belongTo, Long replyTo, Long id, Integer size, Long userId) {
         DbContext.set(DbContextEnum.READ); /* set read context */
-        var comments = commentRepo.findByBelongToAndReplyToAndIdGreaterThanOrderByIdAsc(belongTo, replyTo, id, Limit.of(size));
+        var limit = Limit.of(size);
+        var comments = commentRepo.findByBelongToAndReplyToAndIdGreaterThanOrderByIdAsc(belongTo, replyTo, id, limit);
+
         /* sort by id asc */
         comments.sort(Comparator.comparingLong(Comment::getId));
         composeComment(comments, userId);
+
         var result = new ReplyResult();
         result.setComments(comments);
-        if (comments.size() == size) {
+
+        if (comments.size() == limit.max()) {
             result.setNextPage(comments.getLast().getId());
         }
         return result;
