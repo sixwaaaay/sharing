@@ -158,6 +158,9 @@
                     <metadataRepository>
                         <enabled>true</enabled>
                     </metadataRepository>
+                    <buildArgs combine.children="append">
+                        <arg>-march=compatibility</arg>
+                    </buildArgs>
                 </configuration>
             </plugin>
             <plugin>
