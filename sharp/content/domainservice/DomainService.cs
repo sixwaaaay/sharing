@@ -33,17 +33,18 @@ public interface IDomainService
     Task<Pagination<VideoDto>> FindRecent(long page, int size);
     Task<Pagination<VideoDto>> VotedVideos(long userId, long page, int size);
     Task<Pagination<VideoDto>> DailyPopularVideos(long page, int size);
+    Task<IReadOnlyList<VideoDto>> FindSimilarVideos(long videoId);
     Task Save(Video video);
 }
 
-public class DomainService(IVideoRepository videoRepo, IUserRepository userRepo, IVoteRepository voteRepo)
+public class DomainService(IVideoRepository videoRepo, IUserRepository userRepo, IVoteRepository voteRepo, SearchClient searchClient)
     : IDomainService
 {
     public async Task<VideoDto> FindById(long id)
     {
         var video = await videoRepo.FindById(id);
         var videoToVideoDto = video.ToDto();
-        var (UserTask, VoteTask) = ( userRepo.FindById(video.UserId), voteRepo.VotedOfVideos([video.Id]));
+        var (UserTask, VoteTask) = (userRepo.FindById(video.UserId), voteRepo.VotedOfVideos([video.Id]));
         var user = await UserTask;
         var votedVideos = await VoteTask;
 
@@ -128,6 +129,8 @@ public class DomainService(IVideoRepository videoRepo, IUserRepository userRepo,
             NextPage = token.ToString()
         };
     }
+
+    public async Task<IReadOnlyList<VideoDto>> FindSimilarVideos(long videoId) => await FindAllByIds(await searchClient.SimilarSearch(videoId));
 }
 
 [Mapper]

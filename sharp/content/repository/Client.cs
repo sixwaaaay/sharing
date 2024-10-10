@@ -49,15 +49,11 @@ public interface IUserRepository
 {
     string? Token { get; set; }
 
-    /// <summary>
-    /// Find user information by id.
-    /// </summary>
+    /// <summary> Find user information by id. </summary>
     /// <param name="id"> User id. </param>
     /// <returns> User information. </returns>
     Task<User> FindById(long id);
-    /// <summary>
-    /// Find user information by id list.
-    /// </summary>
+    /// <summary> Find user information by id list. </summary>
     /// <param name="ids"> User id list. </param>
     /// <returns> User information list. </returns>
     Task<IReadOnlyList<User>> FindAllByIds(IEnumerable<long> ids);
@@ -109,17 +105,13 @@ public interface IVoteRepository
 {
     string? Token { get; set; }
 
-    /// <summary>
-    /// Get voted status of videos.
-    /// </summary>
+    /// <summary> Get voted status of videos. </summary>
     /// <param name="videoIds"> Video ids. </param>
     /// <returns> Voted status of videos. </returns>
     Task<IReadOnlyList<long>> VotedOfVideos(List<long> videoIds);
 
 
-    /// <summary>
-    /// Scan voted videos, which means paging through all voted videos.
-    /// </summary>
+    /// <summary> Scan voted videos, which means paging through all voted videos. </summary>
     /// <param name="userId"> User id. </param>
     /// <param name="page"> Page token. </param>
     /// <param name="size"> Page size. </param>
@@ -184,6 +176,41 @@ public record InQuery(List<long> ObjectIds);
 [JsonSerializable(typeof(InQuery))]
 internal partial class VoteJsonContext : JsonSerializerContext;
 
+public class SearchClient(IHttpClientFactory clientFactory)
+{
+
+    public async Task<IReadOnlyList<long>> SimilarSearch(long videoId)
+    {
+        using var client = clientFactory.CreateClient("Search");
+        var body = new RequestBody(videoId, ["id"]);
+        var content = JsonContent.Create(body, SearchContext.Default.RequestBody);
+        var req = new HttpRequestMessage(HttpMethod.Post, "/indexes/videos/similar") { Content = content };
+        var resp = await client.SendAsync(req);
+        resp.EnsureSuccessStatusCode();
+
+        var result = await resp.Content.ReadFromJsonAsync(SearchContext.Default.Response) ?? new Response();
+
+        return result.Hits.Select(h => h.Id).ToList();
+    }
+
+}
+public record RequestBody(
+    [property: JsonPropertyName("id")] long Id,
+    [property: JsonPropertyName("attributesToRetrieve")] string[] AttributesToRetrieve
+);
+
+public record Response
+{
+    [JsonPropertyName("hits")]
+    public IReadOnlyList<SimilarVideo> Hits { get; init; } = [];
+}
+
+public record SimilarVideo([property: JsonPropertyName("id")] long Id);
+
+[JsonSerializable(typeof(Response))]
+[JsonSerializable(typeof(RequestBody))]
+public partial class SearchContext : JsonSerializerContext;
+
 public static class Extension
 {
     public static IServiceCollection AddVoteRepository(this IServiceCollection services, string baseAddress)
@@ -191,6 +218,15 @@ public static class Extension
         services.AddScoped<IVoteRepository, VoteRepository>(
             sp => new VoteRepository(sp.GetRequiredService<IHttpClientFactory>().CreateClient("Vote")))
         .AddHttpClient("Vote", client => client.BaseAddress = new Uri(baseAddress.TrimEnd('/')));
+        return services;
+    }
+
+    public static IServiceCollection AddSearchClient(this IServiceCollection services, string baseAddress, string token)
+    {
+        services.AddScoped<SearchClient>().AddHttpClient("Search", client => {
+            client.BaseAddress = new Uri(baseAddress.TrimEnd('/'));
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        });
         return services;
     }
 

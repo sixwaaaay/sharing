@@ -86,6 +86,9 @@ builder.Services.AddGrpcUser().AddUserRepository();
 
 builder.Services.AddVoteRepository(builder.Configuration.GetConnectionString("Vote") ?? throw new InvalidOperationException("Vote connection string is null"));
 
+builder.Services.AddSearchClient(builder.Configuration.GetConnectionString("Search") ?? throw new InvalidOperationException("Search connection string is null"),
+    builder.Configuration["Token"] ?? throw new InvalidOperationException("Token is null"));
+
 builder.Services.AddDomainService().AddMessageDomain();
 
 var app = builder.Build();

@@ -162,6 +162,48 @@ public class ClientTest
         // Act & Assert
         await Assert.ThrowsAsync<HttpRequestException>(() => voteRepository.VotedVideos(page, size));
     }
+
+    [Fact]
+    public async Task SimilarSearch_ReturnsListOfVideoIds()
+    {
+        // Arrange
+        var videoId = 1;
+        var expectedResponse = new Response()
+        {
+            Hits = [
+                new SimilarVideo(2), new SimilarVideo(3) 
+            ]
+        };
+
+        var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
+        var mockFactory = new Mock<IHttpClientFactory>();
+        var client = new HttpClient(mockHttpMessageHandler.Object)
+        {
+            BaseAddress = new Uri("http://localhost:5151")
+        };
+        mockFactory.Setup(_ => _.CreateClient("Search")).Returns(client);
+
+        var searchClient = new SearchClient(mockFactory.Object);
+
+        mockHttpMessageHandler.Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>()
+            )
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = JsonContent.Create(expectedResponse, SearchContext.Default.Response)
+            });
+        
+        // Act
+        var result = await searchClient.SimilarSearch(videoId);
+
+        // Assert
+        Assert.Equal(expectedResponse.Hits.Select(h => h.Id).ToList(), result);
+
+    }
 }
 
 
@@ -173,4 +215,4 @@ public record ScanResp(long? NextToken, List<long> TargetIds);
 [JsonSerializable(typeof(List<long>))]
 [JsonSerializable(typeof(ScanResp))]
 [JsonSerializable(typeof(InQuery))]
-partial class VoteJsonContext: JsonSerializerContext;
+partial class VoteJsonContext : JsonSerializerContext;

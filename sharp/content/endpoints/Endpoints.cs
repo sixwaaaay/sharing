@@ -70,6 +70,9 @@ public static class Endpoints
         return service.VotedVideos(userId, page ?? long.MaxValue, size ?? 10);
     }
 
+    public static Task<IReadOnlyList<VideoDto>> SimilarVideos(IDomainService service, long id) =>
+        service.FindSimilarVideos(id);
+
     public static async Task CreateVideo(IDomainService service, IProbe probe, ClaimsPrincipal user,
         VideoRequest request, VideoRequestValidator validator)
     {
@@ -123,6 +126,7 @@ public static class Endpoints
         endpoints.MapGet("/users/{userId:long}/likes", Likes).WithName("getUserLikes");
         endpoints.MapGet("/videos", Videos).WithName("getVideos");
         endpoints.MapGet("/videos/{id:long}", FindVideoById).WithName("getVideo");
+        endpoints.MapGet("/videos/{id:long}/similar", SimilarVideos).WithName("getSimilarVideos");
         endpoints.MapPost("/videos/popular", DailyPopularVideos).WithName("getDailyPopularVideos");
         endpoints.MapPost("/videos", CreateVideo).RequireAuthorization().WithName("createVideo");
 

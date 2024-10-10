@@ -106,7 +106,9 @@ public class VideoRepository(MySqlDataSource dataSource) : IVideoRepository
                 Processed = result.GetInt16(11)
             });
         }
-
+        // reorder the videos by the ids
+        var mapOrder = ids.Select((id, index) => (id, index)).ToDictionary(p => p.id, p => p.index);
+        videos.Sort((a, b) => mapOrder[a.Id].CompareTo(mapOrder[b.Id]));
         return videos;
     }
 
@@ -127,9 +129,7 @@ public class VideoRepository(MySqlDataSource dataSource) : IVideoRepository
         return videos.ToList();
     }
 
-    /// <summary>
-    ///    Find the recent videos.
-    /// </summary>
+    /// <summary>  Find the recent videos. </summary>
     /// <param name="page">
     /// The page number.
     /// </param>
@@ -154,14 +154,10 @@ public class VideoRepository(MySqlDataSource dataSource) : IVideoRepository
         public long OrderNum { get; set; }
     };
 
-    /// <summary>
-    ///   Get the daily popular videos.
-    /// </summary>
+    /// <summary> Get the daily popular videos. </summary>
     /// <param name="page"> The page number.</param>
     /// <param name="size">  The size of the page. </param>
-    /// <returns>
-    ///  A tuple of the next page token and the list of videos.
-    /// </returns>
+    /// <returns> A tuple of the next page token and the list of videos. </returns>
     public async Task<(long, IReadOnlyList<Video>)> DailyPopularVideos(long page, int size)
     {
         IEnumerable<RankedVideo> ranks;
@@ -179,15 +175,9 @@ public class VideoRepository(MySqlDataSource dataSource) : IVideoRepository
         return (nextToken, videos);
     }
 
-    /// <summary>
-    ///  Save the video.
-    /// </summary>
-    /// <param name="video">
-    /// The video to save.
-    /// </param>
-    /// <returns>
-    /// The saved video.
-    /// </returns>
+    /// <summary> Save the video. </summary>
+    /// <param name="video"> The video to save. </param>
+    /// <returns> The saved video. </returns>
     public async Task<Video> Save(Video video)
     {
         await using var connection = await dataSource.OpenConnectionAsync();
@@ -211,35 +201,25 @@ public class VideoRepository(MySqlDataSource dataSource) : IVideoRepository
     }
 }
 
-/// <summary>
-///  The extensions for the video repository.
-/// </summary>
+/// <summary> The extensions for the video repository. </summary>
 public static class VideoRepositoryExtensions
 {
     public static IServiceCollection AddVideoRepository(this IServiceCollection services) =>
         services.AddSingleton<IVideoRepository, VideoRepository>();
 }
 
-/// <summary>
-/// Represents a SQL IN clause for a list of values of type T.
-/// </summary>
+/// <summary>  a SQL IN clause for a list of values of type T. </summary>
 /// <typeparam name="T">The type of the values in the IN clause.</typeparam>
 internal class InClause<T>(IEnumerable<T> values)
 {
-    /// <summary>
-    /// Gets the parameters for the IN clause, each with a unique name and a value.
-    /// </summary>
+    /// <summary>  the parameters for the IN clause, each with a unique name and a value. </summary>
     private IEnumerable<(string, T)> Parameters =>
         values.Select((value, index) => ($"p{index}", value));
 
-    /// <summary>
-    /// Gets the condition for the IN clause, which can be used in a SQL query.
-    /// </summary>
+    /// <summary>  the condition for the IN clause, which can be used in a SQL query. </summary>
     public string Condition => $"({string.Join(", ", Parameters.Select(p => $"@{p.Item1}"))})";
 
-    /// <summary>
-    /// Adds the parameters for the IN clause to the specified SQL command.
-    /// </summary>
+    /// <summary> Adds the parameters for the IN clause to the specified SQL command.</summary>
     /// <param name="command">The SQL command to which the parameters will be added.</param>
     /// <returns>The same SQL command, for chaining calls.</returns>
     public MySqlCommand BindParam(MySqlCommand command)
