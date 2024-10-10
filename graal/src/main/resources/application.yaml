@@ -47,6 +47,8 @@ management:
       service:
         name: sharing-comment
         version: 1.0.0-snapshot
+cache:
+  ttl: 5 # 10 seconds
 service:
   vote:
     enabled: true

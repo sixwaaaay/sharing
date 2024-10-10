@@ -16,6 +16,7 @@ package io.sixwaaaay.sharingcomment.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.sixwaaaay.sharingcomment.domain.Comment;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.cache.RedisCacheManagerBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,11 +30,13 @@ import java.util.List;
 @Configuration(proxyBeanMethods = false)
 public class CacheConfig {
     @Bean
-    public RedisCacheManagerBuilderCustomizer redisCacheManagerBuilderCustomizer(ObjectMapper objectMapper) {
+    public RedisCacheManagerBuilderCustomizer redisCacheManagerBuilderCustomizer(
+            ObjectMapper objectMapper,
+            @Value("${cache.ttl}") int seconds) {
         var type = objectMapper.getTypeFactory().constructCollectionType(List.class, Comment.class);
 
         var redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofMinutes(6))
+                .entryTtl(Duration.ofSeconds(seconds))
                 .disableCachingNullValues()
                 .serializeValuesWith(
                         RedisSerializationContext.SerializationPair.fromSerializer(

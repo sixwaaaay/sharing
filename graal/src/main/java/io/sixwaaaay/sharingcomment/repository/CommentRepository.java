@@ -35,7 +35,7 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
      * @param id       the id of the earliest comment in the previous page
      * @return page of comments
      */
-    @Cacheable(value = "comments-main", key = "#belongTo + '-' + #id + '-' + #limit.max()")
+    @Cacheable(value = "comments-main", key = "#belongTo + '-' + #id")
     List<Comment> findByBelongToAndIdLessThanAndReplyToNullOrderByIdDesc(Long belongTo, Long id, Limit limit);
 
 
@@ -51,7 +51,7 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
      * @param limit   the limit
      * @return the list of comments
      */
-    @Cacheable(value = "comments-reply", key = "#belongTo + '-' + #replyTo + '-' + #id + '-' + #limit.max()")
+    @Cacheable(value = "comments-reply", key = "#belongTo + '-' + #replyTo + '-' + #id")
     List<Comment> findByBelongToAndReplyToAndIdGreaterThanOrderByIdAsc(Long belongTo, Long replyTo, Long id, Limit limit);
 
 
