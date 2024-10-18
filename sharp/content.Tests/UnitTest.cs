@@ -14,7 +14,7 @@
 
 using content.repository;
 using JetBrains.Annotations;
-using MySqlConnector;
+using Npgsql;
 using Xunit.Abstractions;
 
 namespace content.Tests;
@@ -27,7 +27,7 @@ public class UnitTest(ITestOutputHelper testOutputHelper)
     [Fact(DisplayName = "Video Repository")]
     public async void Test1()
     {
-        await using var dataSource = new MySqlDataSource(_connectString);
+        await using var dataSource = NpgsqlDataSource.Create(_connectString);
         var videoRepository = (IVideoRepository)new VideoRepository(dataSource);
         var video = new Video
         {
@@ -40,8 +40,8 @@ public class UnitTest(ITestOutputHelper testOutputHelper)
             Duration = 1,
             ViewCount = 1,
             LikeCount = 1,
-            CreatedAt = DateTime.Now,
-            UpdatedAt = DateTime.Now,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
             Processed = 1
         };
         video = await videoRepository.Save(video);
@@ -79,7 +79,7 @@ public class UnitTest(ITestOutputHelper testOutputHelper)
     [Fact(DisplayName = "Command")]
     public async void TestInsert()
     {
-        await using var dataSource = new MySqlDataSource(_connectString);
+        await using var dataSource = NpgsqlDataSource.Create(_connectString);
         var videoRepository = (IVideoRepository)new VideoRepository(dataSource);
         var video = new Video
         {
@@ -92,8 +92,8 @@ public class UnitTest(ITestOutputHelper testOutputHelper)
             Duration = 1,
             ViewCount = 1,
             LikeCount = 1,
-            CreatedAt = DateTime.Now,
-            UpdatedAt = DateTime.Now,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
             Processed = 1
         };
         video = await videoRepository.Save(video);
@@ -105,7 +105,7 @@ public class UnitTest(ITestOutputHelper testOutputHelper)
     {
         var now = DateTime.Now;
         var tasks = new List<Task>();
-        await using var dataSource = new MySqlDataSource(_connectString);
+        await using var dataSource = NpgsqlDataSource.Create(_connectString);
         for (var i = 0; i < 10000; i++)
         {
             var videoRepository = new VideoRepository(dataSource);

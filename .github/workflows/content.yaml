@@ -59,7 +59,7 @@ jobs:
           dotnet test --collect "Code Coverage;Format=cobertura"
           dotnet-coverage merge -o merged.cobertura.xml -f cobertura TestResults/**/*.cobertura.xml
         env:
-          CONNECTION_STRING: "server=localhost;port=33306;database=content;user=mysql_user;password=mysql;SslMode=none;Max Pool Size=2;AllowPublicKeyRetrieval=True; "
+          CONNECTION_STRING: "Host=localhost; Port=5432; Username=postgres; Password=postgres; Database=postgres; Maximum Pool Size=25;"
           USER_STRING: "http://localhost:50051"
           VOTE_STRING: "http://localhost:8080"
           FFPROBE_PATH: "/usr/bin/ffprobe"
