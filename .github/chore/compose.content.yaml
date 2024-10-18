@@ -29,7 +29,7 @@ services:
       timeout: 20s
       retries: 10
   redis:
-    image: redis:7.2.3-alpine3.18
+    image: valkey/valkey:7.2.7-alpine3.20
     ports:
       - 6379:6379
     volumes:
@@ -41,7 +41,7 @@ services:
       - 50051:50051
       - 8088:8088
     depends_on:
-      mysql:
+      postgres:
         condition: service_healthy
       db1:
         condition: service_healthy
@@ -52,20 +52,19 @@ services:
     image: sixwaaaay/graph:v0.5.0
     ports:
       - 8080:8080
-  mysql:
-    image: mysql:8.2.0
+  postgres:
+    image: postgres:17.0-bookworm
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: content
-      MYSQL_USER: mysql_user
-      MYSQL_PASSWORD: mysql
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
     ports:
-      - 33306:3306
+      - 5432:5432
     volumes:
       - ./content.sql:/docker-entrypoint-initdb.d/content.sql
-      - mysql-data:/var/lib/mysql
+      - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      test: [ "CMD", "pg_isready", "-U", "postgres" ]
       timeout: 20s
       retries: 10
   jaeger:
@@ -75,6 +74,6 @@ services:
       - 16686:16686
 
 volumes:
-  mysql-data:
+  postgres-data:
   redis-data:
   db1-data:

@@ -13,7 +13,7 @@
  */
 
 using Dapper;
-using MySqlConnector;
+using Npgsql;
 
 namespace content.repository;
 
@@ -25,7 +25,7 @@ public record Message
     public string Content { get; init; } = string.Empty;
     public short Type { get; init; }
     public short Status { get; init; }
-    public DateTime CreatedAt { get; init; } = DateTime.Now;
+    public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
 }
 
 public interface INotificationRepository
@@ -36,7 +36,7 @@ public interface INotificationRepository
     ValueTask UpdateStatus(long userId, long id, short status);
 }
 
-public class NotificationRepository(MySqlDataSource dataSource) : INotificationRepository
+public class NotificationRepository(NpgsqlDataSource dataSource) : INotificationRepository
 {
     public async ValueTask<IReadOnlyList<Message>> FindByReceiverId(long receiverId, long page, int size,
         bool unreadOnly = false)
@@ -62,15 +62,11 @@ public class NotificationRepository(MySqlDataSource dataSource) : INotificationR
     public async ValueTask<Message> Save(Message notification)
     {
         await using var connection = await dataSource.OpenConnectionAsync();
-        var result = await connection.ExecuteAsync(
+        var id = await connection.QuerySingleAsync<long>(
             "INSERT INTO notifications (sender_id, receiver_id, content, type, status, created_at) " +
-            "VALUES (@SenderId, @ReceiverId, @Content, @Type, @Status, @CreatedAt)", notification);
-        if (result == 0)
-        {
-            throw new Exception("Insert notification failed");
-        }
-
-        notification.Id = await connection.QuerySingleAsync<long>("SELECT LAST_INSERT_ID()");
+            "VALUES (@SenderId, @ReceiverId, @Content, @Type, @Status, @CreatedAt) RETURNING id",
+            notification);
+        notification.Id = id;
         return notification;
     }
 

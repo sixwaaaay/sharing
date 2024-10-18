@@ -13,7 +13,7 @@
  */
 
 using Dapper;
-using MySqlConnector;
+using Npgsql;
 
 [module: DapperAot]
 
@@ -29,7 +29,6 @@ public record Video
 
     public string CoverUrl { get; init; } = string.Empty;
 
-
     public string VideoUrl { get; init; } = string.Empty;
 
     public int Duration { get; init; }
@@ -38,9 +37,9 @@ public record Video
 
     public int LikeCount { get; init; }
 
-    public DateTime CreatedAt { get; init; } = DateTime.Now; // todo
+    public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
 
-    public DateTime UpdatedAt { get; init; } = DateTime.Now; // todo
+    public DateTime UpdatedAt { get; init; } = DateTime.UtcNow;
 
     public short Processed { get; init; } = 1;
 }
@@ -55,7 +54,7 @@ public interface IVideoRepository
     Task<Video> Save(Video video);
 }
 
-public class VideoRepository(MySqlDataSource dataSource) : IVideoRepository
+public class VideoRepository(NpgsqlDataSource dataSource) : IVideoRepository
 {
     const string columns = "id, user_id, title, des, cover_url, video_url, duration, view_count, like_count, created_at, updated_at, processed";
 
@@ -67,12 +66,9 @@ public class VideoRepository(MySqlDataSource dataSource) : IVideoRepository
             new { id });
     }
 
-    /// <summary>
-    /// Find all the videos by the ids.
-    /// </summary>
+    /// <summary> Find all the videos by the ids. </summary>
     /// <param name="ids"> The ids of the videos. </param>
     /// <returns> The list of videos. </returns>
-    [DapperAot(false)]
     public async Task<IReadOnlyList<Video>> FindAllByIds(IReadOnlyList<long> ids)
     {
         if (ids.Count == 0)
@@ -80,41 +76,13 @@ public class VideoRepository(MySqlDataSource dataSource) : IVideoRepository
             return [];
         }
         await using var connection = await dataSource.OpenConnectionAsync();
-        var inClause = new InClause<long>(ids);
-
-        var query = $"SELECT {columns} FROM videos WHERE id in {inClause.Condition}";
-        var command = connection.CreateCommand();
-        command.CommandText = query;
-        inClause.BindParam(command);
-        var result = await command.ExecuteReaderAsync();
-        var videos = new List<Video>();
-        while (await result.ReadAsync())
-        {
-            videos.Add(new Video
-            {
-                Id = result.GetInt64(0),
-                UserId = result.GetInt64(1),
-                Title = result.GetString(2),
-                Des = result.GetString(3),
-                CoverUrl = result.GetString(4),
-                VideoUrl = result.GetString(5),
-                Duration = result.GetInt32(6),
-                ViewCount = result.GetInt32(7),
-                LikeCount = result.GetInt32(8),
-                CreatedAt = result.GetDateTime(9),
-                UpdatedAt = result.GetDateTime(10),
-                Processed = result.GetInt16(11)
-            });
-        }
-        // reorder the videos by the ids
-        var mapOrder = ids.Select((id, index) => (id, index)).ToDictionary(p => p.id, p => p.index);
-        videos.Sort((a, b) => mapOrder[a.Id].CompareTo(mapOrder[b.Id]));
-        return videos;
+        var videos = await connection.QueryAsync<Video>(
+            $"SELECT {columns} FROM videos WHERE id = ANY(@ids) ORDER BY array_position(@ids, id)",
+            new { ids });
+        return videos.ToList();
     }
 
-    /// <summary>
-    /// Find the videos by the user id.
-    /// </summary>
+    /// <summary>  Find the videos by the user id. </summary>
     /// <param name="userId"> The user id. </param>
     /// <param name="page"> The page number. </param>
     /// <param name="size"> The size of the page. </param>
@@ -123,26 +91,20 @@ public class VideoRepository(MySqlDataSource dataSource) : IVideoRepository
     {
         await using var connection = await dataSource.OpenConnectionAsync();
         var videos = await connection.QueryAsync<Video>(
-            $"SELECT {columns} FROM videos FORCE INDEX(user_created) " +
-            "WHERE processed = 1 AND  user_id = @userId AND id < @page ORDER BY id DESC LIMIT @size",
+            $"SELECT {columns} FROM videos WHERE processed = 1 AND user_id = @userId AND id < @page ORDER BY id DESC LIMIT @size",
             new { userId, page, size });
         return videos.ToList();
     }
 
-    /// <summary>  Find the recent videos. </summary>
-    /// <param name="page">
-    /// The page number.
-    /// </param>
-    /// <param name="size">
-    /// The size of the page.
-    /// </param>
+    /// <summary> Find the recent videos. </summary>
+    /// <param name="page"> The page number. </param>
+    /// <param name="size"> The size of the page. </param>
     /// <returns> The list of videos. </returns>
     public async Task<IReadOnlyList<Video>> FindRecent(long page, int size)
     {
         await using var connection = await dataSource.OpenConnectionAsync();
         var videos = await connection.QueryAsync<Video>(
-            $"SELECT {columns} FROM videos FORCE INDEX (processed) " +
-            "WHERE processed = 1 AND id < @page ORDER BY id DESC LIMIT @size",
+            $"SELECT {columns} FROM videos WHERE processed = 1 AND id < @page ORDER BY id DESC LIMIT @size",
             new { page, size });
         return videos.ToList();
     }
@@ -181,23 +143,12 @@ public class VideoRepository(MySqlDataSource dataSource) : IVideoRepository
     public async Task<Video> Save(Video video)
     {
         await using var connection = await dataSource.OpenConnectionAsync();
-        var result = await connection.QuerySingleAsync<long>(
-            "INSERT INTO videos (user_id, title, des, cover_url, video_url, duration, view_count, like_count, created_at, updated_at, processed) VALUES (@UserId, @Title, @Des, @CoverUrl, @VideoUrl, @Duration, @ViewCount, @LikeCount, @CreatedAt, @UpdatedAt, @Processed); SELECT LAST_INSERT_ID();",
-            new
-            {
-                video.UserId,
-                video.Title,
-                video.Des,
-                video.CoverUrl,
-                video.VideoUrl,
-                video.Duration,
-                video.ViewCount,
-                video.LikeCount,
-                video.CreatedAt,
-                video.UpdatedAt,
-                video.Processed
-            });
-        return await FindById(result);
+        var result = await connection.QuerySingleAsync<Video>(
+            "INSERT INTO videos (user_id, title, des, cover_url, video_url, duration, view_count, like_count, created_at, updated_at, processed) VALUES (@UserId, @Title, @Des, @CoverUrl, @VideoUrl, @Duration, @ViewCount, @LikeCount, @CreatedAt, @UpdatedAt, @Processed) " +
+            $"returning {columns}",
+            video
+        );
+        return result;
     }
 }
 
@@ -206,29 +157,4 @@ public static class VideoRepositoryExtensions
 {
     public static IServiceCollection AddVideoRepository(this IServiceCollection services) =>
         services.AddSingleton<IVideoRepository, VideoRepository>();
-}
-
-/// <summary>  a SQL IN clause for a list of values of type T. </summary>
-/// <typeparam name="T">The type of the values in the IN clause.</typeparam>
-internal class InClause<T>(IEnumerable<T> values)
-{
-    /// <summary>  the parameters for the IN clause, each with a unique name and a value. </summary>
-    private IEnumerable<(string, T)> Parameters =>
-        values.Select((value, index) => ($"p{index}", value));
-
-    /// <summary>  the condition for the IN clause, which can be used in a SQL query. </summary>
-    public string Condition => $"({string.Join(", ", Parameters.Select(p => $"@{p.Item1}"))})";
-
-    /// <summary> Adds the parameters for the IN clause to the specified SQL command.</summary>
-    /// <param name="command">The SQL command to which the parameters will be added.</param>
-    /// <returns>The same SQL command, for chaining calls.</returns>
-    public MySqlCommand BindParam(MySqlCommand command)
-    {
-        foreach (var (key, value) in Parameters)
-        {
-            command.Parameters.AddWithValue(key, value);
-        }
-
-        return command;
-    }
 }

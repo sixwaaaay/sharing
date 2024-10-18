@@ -13,8 +13,8 @@
  */
 
 
-using MySqlConnector;
 using content.repository;
+using Npgsql;
 
 namespace content.Tests.repository;
 public class NotificationRepositoryTests
@@ -23,7 +23,7 @@ public class NotificationRepositoryTests
 
     public NotificationRepositoryTests()
     {
-        var dataSource = new MySqlDataSource(Environment.GetEnvironmentVariable("CONNECTION_STRING") !);
+        var dataSource = NpgsqlDataSource.Create(Environment.GetEnvironmentVariable("CONNECTION_STRING") !);
         _repository = new NotificationRepository(dataSource);
     }
 

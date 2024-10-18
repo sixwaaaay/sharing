@@ -20,7 +20,7 @@ using content.endpoints;
 using content.repository;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using MySqlConnector;
+using Npgsql;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -51,7 +51,7 @@ var otelEndpoint = builder.Configuration.GetConnectionString("Otel_GrpcEndpoint"
 builder.Services.AddOpenTelemetry().WithTracing(tcb =>
 {
     tcb
-        .AddSource(serviceName).AddSource("MySqlConnector")
+        .AddSource(serviceName).AddNpgsql()
         .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(serviceName: serviceName))
         .AddHttpClientInstrumentation()
         .AddGrpcClientInstrumentation()
@@ -66,7 +66,7 @@ builder.Services.AddOpenTelemetry().WithTracing(tcb =>
 }).WithMetrics(mtb =>
 {
     mtb
-        .AddMeter("Microsoft.AspNetCore.Hosting", "Microsoft.AspNetCore.Server.Kestrel", "MySqlConnector")
+        .AddMeter("Microsoft.AspNetCore.Hosting", "Microsoft.AspNetCore.Server.Kestrel", "Npgsql")
         .AddAspNetCoreInstrumentation()
         .AddHttpClientInstrumentation()
         .AddPrometheusExporter();
@@ -78,7 +78,7 @@ builder.Services.AddSingleton<MessageRequestValidator>().AddSingleton<VideoReque
 builder.Services.AddAuthorization().AddProbe();
 builder.Services.AddProblemDetails().AddResponseCompression();
 
-builder.Services.AddMySqlDataSource(builder.Configuration.GetConnectionString("Default") ??
+builder.Services.AddNpgsqlDataSource(builder.Configuration.GetConnectionString("Default") ??
                                     throw new InvalidOperationException("Connection string is null"));
 builder.Services.AddVideoRepository().AddNotificationRepository();
 
