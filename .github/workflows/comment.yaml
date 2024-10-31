@@ -88,7 +88,7 @@ jobs:
           context: ./graal
           file: ./graal/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/sharing-comment:lastest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/sharing-comment:prerelease
 
   release:
     runs-on: ubuntu-latest

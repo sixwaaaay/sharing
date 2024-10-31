@@ -13,12 +13,15 @@
 
 package io.sixwaaaay.sharingcomment;
 
+import io.sixwaaaay.sharingcomment.config.ServiceConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.data.jdbc.repository.config.EnableJdbcRepositories;
 
 @SpringBootApplication
+@EnableConfigurationProperties(ServiceConfig.class)
 @EnableJdbcRepositories
 @EnableCaching
 public class SharingCommentApplication {

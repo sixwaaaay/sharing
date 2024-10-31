@@ -13,7 +13,6 @@
 
 package io.sixwaaaay.sharingcomment.config;
 
-import io.sixwaaaay.sharingcomment.request.Principal;
 import io.sixwaaaay.sharingcomment.util.TokenParser;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -28,7 +27,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 
 
 @AllArgsConstructor
