@@ -16,12 +16,13 @@ package io.sixwaaaay.sharingcomment.service;
 
 import io.sixwaaaay.sharingcomment.client.UserClient;
 import io.sixwaaaay.sharingcomment.client.VoteClient;
+import io.sixwaaaay.sharingcomment.config.ServiceConfig;
 import io.sixwaaaay.sharingcomment.domain.*;
 import io.sixwaaaay.sharingcomment.repository.CommentRepository;
 import io.sixwaaaay.sharingcomment.request.Principal;
 import io.sixwaaaay.sharingcomment.util.DbContext;
 import io.sixwaaaay.sharingcomment.util.DbContextEnum;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Limit;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +37,7 @@ import java.util.stream.Stream;
 import static java.util.function.Function.identity;
 
 @Service
+@AllArgsConstructor
 public class CommentService {
     private final CommentRepository commentRepo;
 
@@ -43,16 +45,7 @@ public class CommentService {
 
     private final UserClient userClient;
 
-    private final boolean enableVote;
-    private final boolean enableUser;
-
-    public CommentService(CommentRepository commentRepo, VoteClient voteClient, UserClient userClient, @Value("${service.vote.enabled}") boolean enableVote, @Value("${service.user.enabled}") boolean enableUser) {
-        this.commentRepo = commentRepo;
-        this.voteClient = voteClient;
-        this.userClient = userClient;
-        this.enableVote = enableVote;
-        this.enableUser = enableUser;
-    }
+    private final ServiceConfig config;
 
     /**
      * This method is used to get the main comment list.
@@ -71,9 +64,9 @@ public class CommentService {
      */
     public CommentResult getMainCommentList(Long belongTo, Long id, Integer size, Long userId) {
         DbContext.set(DbContextEnum.READ);  /* set read context */
-        var result = new CommentResult();
 
-        var mainComments = commentRepo.findByBelongToAndIdLessThanAndReplyToNullOrderByIdDesc(belongTo, id, Limit.of(size));
+        var limit = Limit.of(size);
+        var mainComments = commentRepo.findByBelongToAndIdLessThanAndReplyToNullOrderByIdDesc(belongTo, id, limit);
         /* for each main comment which has reply comments, get the latest 2 reply comments */
         mainComments.stream().filter(comment -> comment.getReplyCount() != 0).forEach(comment -> {
             var replyComments = commentRepo.findByBelongToAndReplyToAndIdGreaterThanOrderByIdAsc(belongTo, comment.getId(), 0L, Limit.of(2));
@@ -82,8 +75,10 @@ public class CommentService {
 
         composeComment(mainComments, userId);
 
+        var result = new CommentResult();
+
         result.setComments(mainComments);
-        if (mainComments.size() == size) {
+        if (mainComments.size() == limit.max()) {
             result.setNextPage(mainComments.getLast().getId());
         }
         return result;
@@ -104,13 +99,17 @@ public class CommentService {
      */
     public ReplyResult getReplyCommentList(Long belongTo, Long replyTo, Long id, Integer size, Long userId) {
         DbContext.set(DbContextEnum.READ); /* set read context */
-        var comments = commentRepo.findByBelongToAndReplyToAndIdGreaterThanOrderByIdAsc(belongTo, replyTo, id, Limit.of(size));
+        var limit = Limit.of(size);
+        var comments = commentRepo.findByBelongToAndReplyToAndIdGreaterThanOrderByIdAsc(belongTo, replyTo, id, limit);
+
         /* sort by id asc */
         comments.sort(Comparator.comparingLong(Comment::getId));
         composeComment(comments, userId);
+
         var result = new ReplyResult();
         result.setComments(comments);
-        if (comments.size() == size) {
+
+        if (comments.size() == limit.max()) {
             result.setNextPage(comments.getLast().getId());
         }
         return result;
@@ -153,7 +152,7 @@ public class CommentService {
      * @param comment the comment to be composed
      */
     private void composeSingleComment(Comment comment) {
-        if (enableUser) {
+        if (config.user().enabled()) {
             var token = Principal.currentToken();
             var user = userClient.getUser(comment.getUserId(), token);
             comment.setUser(user);
@@ -188,7 +187,7 @@ public class CommentService {
      * @return the map of user id to user info
      */
     private Map<Long, User> composeCommentAuthor(List<Comment> comments) {
-        if (!enableUser) {
+        if (!config.user().enabled()) {
             return Map.of();
         }
         // get user id list
@@ -208,7 +207,7 @@ public class CommentService {
      * @return the set of comment id which the user has voted
      */
     private Set<Long> composeCommentVoteStatus(List<Comment> comments, Long userId) {
-        if (!enableVote || userId == 0) {
+        if (!config.vote().enabled() || userId == 0) {
             return Set.of();
         }
         var commentIdList = flatComments(comments).map(Comment::getId).toList();

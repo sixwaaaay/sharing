@@ -30,8 +30,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Optional;
 
-import static io.sixwaaaay.sharingcomment.util.ShardEnum.transformId;
-
 @RestController
 @RequestMapping("/comments")
 @AllArgsConstructor
@@ -48,13 +46,13 @@ public class CommentController {
      */
     @GetMapping("/main")
     public CommentResult getMainCommentList(
-            @RequestParam("type") String type,
+            @RequestParam("type") ShardEnum.Shard type,
             @RequestParam("belong_to") Long belongTo,
             @RequestParam(value = "page") Optional<Long> id,
             @RequestParam(value = "size", defaultValue = "10") Integer size
     ) {
         var userId = Principal.currentUserId();
-        belongTo = transformId(belongTo, ShardEnum.getShard(type));
+        belongTo = type.transform(belongTo);
         return commentService.getMainCommentList(belongTo, id.orElse(Long.MAX_VALUE), size, userId);
     }
 
@@ -66,14 +64,14 @@ public class CommentController {
      */
     @GetMapping("/reply")
     public ReplyResult getReplyCommentList(
-            @RequestParam("type") String type,
+            @RequestParam("type") ShardEnum.Shard type,
             @RequestParam("belong_to") Long belongTo,
             @RequestParam("reply_to") Long replyTo,
             @RequestParam(value = "page", defaultValue = "0") long id,
             @RequestParam(value = "size", defaultValue = "10") Integer size
     ) {
         var userId = Principal.currentUserId();
-        belongTo = transformId(belongTo, ShardEnum.getShard(type));
+        belongTo = type.transform(belongTo);
         return commentService.getReplyCommentList(belongTo, replyTo, id, size, userId);
     }
 
@@ -83,11 +81,14 @@ public class CommentController {
      * @return the created comment
      */
     @PostMapping
-    public Comment createComment(@Valid @RequestBody CommentRequest request) {
+    public Comment createComment(
+            @Valid @RequestBody CommentRequest request
+    ) {
         var comment = new Comment();
         var id = Principal.currentUserId();
         comment.setUserId(id);
-        comment.setBelongTo(transformId(request.getBelongTo(), ShardEnum.getShard(request.getType())));
+        var belongTo = request.getType().transform(request.getBelongTo());
+        comment.setBelongTo(belongTo);
         comment.setContent(request.getContent());
         comment.setReferTo(request.getReferTo());
         comment.setReplyTo(request.getReplyTo());

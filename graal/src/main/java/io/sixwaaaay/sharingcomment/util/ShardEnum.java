@@ -13,35 +13,30 @@
 
 package io.sixwaaaay.sharingcomment.util;
 
-import lombok.Getter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ShardEnum {
-    // 最高位不使用， 次高位(62位) 到第60位(1位) 用于存储分片ID
-    // 共3位，八个分片
+    /*
+    the highest bit is not used,
+    the second-highest bit (62) to the 60th bit is used to store the shard ID.
+    in total, 3 bits, so there are at most 8 shards.
+    */
     public static final long Chore = 0L; // aka 0b000L << 60;
     public static final long SHARD_ID_0 = 0b001L << 60;
     public static final long SHARD_ID_1 = 0b010L << 60;
     public static final long SHARD_ID_2 = 0b011L << 60;
     public static final long SHARD_ID_3 = 0b100L << 60;
 
-    public static Shard getShard(String shard) {
-        return switch (shard) {
-            case "chore" -> Shard.ChoreShard;
-            case "default" -> Shard.SHARD_0;
-            case "video" -> Shard.Video;
-            case "post" -> Shard.post;
-            case "music" -> Shard.music;
-            default -> throw new IllegalArgumentException("Unknown shard: " + shard);
-        };
-    }
-
-
-    @Getter
     public enum Shard {
-        ChoreShard(Chore),
-        SHARD_0(SHARD_ID_0),
-        Video(SHARD_ID_1),
+        @JsonProperty("chore")
+        chore(Chore),
+        @JsonProperty("default")
+        SHARD(SHARD_ID_0),
+        @JsonProperty("video")
+        video(SHARD_ID_1),
+        @JsonProperty("post")
         post(SHARD_ID_2),
+        @JsonProperty("music")
         music(SHARD_ID_3);
 
         private final long shardId;
@@ -49,16 +44,15 @@ public class ShardEnum {
         Shard(long shardId) {
             this.shardId = shardId;
         }
-    }
 
-    /**
-     * transform id to shard id
-     *
-     * @param id   id
-     * @param shard shard
-     * @return the id embed shard id
-     */
-    public static long transformId(long id, Shard shard) {
-        return shard.getShardId() | id;
+        /**
+         * transform id to shard id
+         *
+         * @param id id
+         * @return the id embed shard id
+         */
+        public long transform(long id) {
+            return this.shardId | id;
+        }
     }
 }
