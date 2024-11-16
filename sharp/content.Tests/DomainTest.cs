@@ -13,23 +13,22 @@
  */
 
 using content.domainservice;
-
-using JetBrains.Annotations;
 using Moq;
 using content.repository;
 
 namespace content.Tests;
-[TestSubject(typeof(DomainService))]
+
 public class DomainTest
 {
+
+    private (Mock<IVideoRepository>, Mock<IUserRepository> userRepo, Mock<IVoteRepository> voteRepo, Mock<SearchClient> searchClient) Setup() =>
+        (new Mock<IVideoRepository>(), new Mock<IUserRepository>(), new Mock<IVoteRepository>(), new Mock<SearchClient>(null!));
+
     [Fact]
     public async Task FindById_ReturnsVideoDto_WhenVideoExists()
     {
         // Arrange
-        var mockVideoRepo = new Mock<IVideoRepository>();
-        var mockUserRepo = new Mock<IUserRepository>();
-        var mockVoteRepo = new Mock<IVoteRepository>();
-        var mockSearchClient = new Mock<SearchClient>(null);
+        var (mockVideoRepo, mockUserRepo, mockVoteRepo, mockSearchClient) = Setup();
         var video = new Video { Id = 1, UserId = 1 };
         var user = new User { Id = "1" };
         mockVideoRepo.Setup(repo => repo.FindById(1)).ReturnsAsync(video);
@@ -52,10 +51,7 @@ public class DomainTest
     public async Task FindAllByIds_ReturnsVideoDtos_WhenVideosExist()
     {
         // Arrange
-        var mockVideoRepo = new Mock<IVideoRepository>();
-        var mockUserRepo = new Mock<IUserRepository>();
-        var mockVoteRepo = new Mock<IVoteRepository>();
-        var mockSearchClient = new Mock<SearchClient>(null);
+        var (mockVideoRepo, mockUserRepo, mockVoteRepo, mockSearchClient) = Setup();
         var videos = new List<Video> { new() { Id = 1, UserId = 1 }, new() { Id = 2, UserId = 2 } };
         var users = new List<User> { new() { Id = "1" }, new() { Id = "2" } };
         mockVideoRepo.Setup(repo => repo.FindAllByIds(It.IsAny<IReadOnlyList<long>>())).ReturnsAsync(videos);
@@ -75,10 +71,7 @@ public class DomainTest
     public async Task Save_ReturnsSavedVideoDto_WhenVideoIsSaved()
     {
         // Arrange
-        var mockVideoRepo = new Mock<IVideoRepository>();
-        var mockUserRepo = new Mock<IUserRepository>();
-        var mockVoteRepo = new Mock<IVoteRepository>();
-        var mockSearchClient = new Mock<SearchClient>(null);
+        var (mockVideoRepo, mockUserRepo, mockVoteRepo, mockSearchClient) = Setup();
         var video = new Video { Id = 1, UserId = 1 };
         var user = new User { Id = "1" };
         mockVideoRepo.Setup(repo => repo.Save(It.IsAny<Video>())).ReturnsAsync(video);
@@ -93,10 +86,7 @@ public class DomainTest
     public async Task FindByUserId_ReturnsExpectedVideos()
     {
         // Arrange
-        var mockVideoRepo = new Mock<IVideoRepository>();
-        var mockUserRepo = new Mock<IUserRepository>();
-        var mockVoteRepo = new Mock<IVoteRepository>();
-        var mockSearchClient = new Mock<SearchClient>(null);
+        var (mockVideoRepo, mockUserRepo, mockVoteRepo, mockSearchClient) = Setup();
         var videos = new List<Video> { new() { Id = 1, UserId = 1 }, new() { Id = 2, UserId = 1 } };
         var user = new User { Id = "1" };
         var voteVideoIds = new List<long> { 1, 2 };
@@ -117,10 +107,7 @@ public class DomainTest
     public async Task FindRecent_ReturnsExpectedVideos()
     {
         // Arrange
-        var mockVideoRepo = new Mock<IVideoRepository>();
-        var mockUserRepo = new Mock<IUserRepository>();
-        var mockVoteRepo = new Mock<IVoteRepository>();
-        var mockSearchClient = new Mock<SearchClient>(null);
+        var (mockVideoRepo, mockUserRepo, mockVoteRepo, mockSearchClient) = Setup();
         var videos = new List<Video> { new() { Id = 1, UserId = 1 }, new() { Id = 2, UserId = 2 } };
         var users = new List<User> { new() { Id = "1" }, new() { Id = "2" } };
         var voteVideoIds = new List<long> { 1 };
@@ -141,10 +128,7 @@ public class DomainTest
     public async Task DailyPopularVideos_ReturnsExpectedVideos()
     {
         // Arrange
-        var mockVideoRepo = new Mock<IVideoRepository>();
-        var mockUserRepo = new Mock<IUserRepository>();
-        var mockVoteRepo = new Mock<IVoteRepository>();
-        var mockSearchClient = new Mock<SearchClient>(null);
+        var (mockVideoRepo, mockUserRepo, mockVoteRepo, mockSearchClient) = Setup();
         var videos = new List<Video> { new() { Id = 1, UserId = 1 }, new() { Id = 2, UserId = 2 } };
         var users = new List<User> { new() { Id = "1" }, new() { Id = "2" } };
         var voteVideoIds = new List<long> { 1 };
@@ -167,10 +151,7 @@ public class DomainTest
     public async Task VotedVideos_ReturnsExpectedVideos()
     {
         // Arrange
-        var mockVideoRepo = new Mock<IVideoRepository>();
-        var mockUserRepo = new Mock<IUserRepository>();
-        var mockVoteRepo = new Mock<IVoteRepository>();
-        var mockSearchClient = new Mock<SearchClient>(null);
+        var (mockVideoRepo, mockUserRepo, mockVoteRepo, mockSearchClient) = Setup();
         var videoIds = new long[] { 1, 2 };
         var videos = new List<Video> { new() { Id = 1, UserId = 1 }, new() { Id = 2, UserId = 2 } };
         var users = new List<User> { new() { Id = "1" }, new() { Id = "2" } };

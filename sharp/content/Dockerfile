@@ -17,7 +17,7 @@ RUN adduser -u 1000 --gecos "" --disabled-password appuser && chown -R appuser /
 USER appuser
 EXPOSE 5000
 
-FROM mcr.microsoft.com/dotnet/sdk:9.0.100-preview.7-alpine3.20 AS build
+FROM mcr.microsoft.com/dotnet/sdk:9.0.100-alpine3.20 AS build
 RUN apk update && apk upgrade && apk add --no-cache clang build-base zlib-dev grpc-plugins
 WORKDIR /src
 ARG RUNTIME_ID=linux-musl-x64

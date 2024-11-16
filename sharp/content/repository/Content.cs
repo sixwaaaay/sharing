@@ -122,19 +122,19 @@ public class VideoRepository(NpgsqlDataSource dataSource) : IVideoRepository
     /// <returns> A tuple of the next page token and the list of videos. </returns>
     public async Task<(long, IReadOnlyList<Video>)> DailyPopularVideos(long page, int size)
     {
-        IEnumerable<RankedVideo> ranks;
-        await using (var connection = await dataSource.OpenConnectionAsync())
-        {
-            ranks = await connection.QueryAsync<RankedVideo>(
-                "SELECT id, order_num FROM popular_videos WHERE order_num > @page ORDER BY order_num DESC LIMIT @size",
-                new { page, size });
-        }
-
+        var ranks = await queryRanks(page, size);
         var rankedVideos = ranks.ToList();
         var nextToken = rankedVideos.Count == size ? rankedVideos[^1].OrderNum : 0;
         var ids = rankedVideos.Select(r => r.Id).ToArray();
         var videos = await FindAllByIds(ids);
         return (nextToken, videos);
+        async ValueTask<IEnumerable<RankedVideo>> queryRanks(long page, int size)
+        {
+            await using var connection = await dataSource.OpenConnectionAsync();
+            return await connection.QueryAsync<RankedVideo>(
+                "SELECT id, order_num FROM popular_videos WHERE order_num > @page ORDER BY order_num DESC LIMIT @size",
+                new { page, size });
+        }
     }
 
     /// <summary> Save the video. </summary>

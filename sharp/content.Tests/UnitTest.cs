@@ -13,7 +13,6 @@
  */
 
 using content.repository;
-using JetBrains.Annotations;
 using Npgsql;
 using Xunit.Abstractions;
 
@@ -21,11 +20,10 @@ namespace content.Tests;
 
 public class UnitTest(ITestOutputHelper testOutputHelper)
 {
-    private readonly string _connectString = Environment.GetEnvironmentVariable("CONNECTION_STRING") !;
+    private readonly string _connectString = Environment.GetEnvironmentVariable("CONNECTION_STRING")!;
 
-    [TestSubject(typeof(VideoRepository))]
     [Fact(DisplayName = "Video Repository")]
-    public async void Test1()
+    public async Task Test1()
     {
         await using var dataSource = NpgsqlDataSource.Create(_connectString);
         var videoRepository = (IVideoRepository)new VideoRepository(dataSource);
@@ -77,7 +75,7 @@ public class UnitTest(ITestOutputHelper testOutputHelper)
     }
 
     [Fact(DisplayName = "Command")]
-    public async void TestInsert()
+    public async Task TestInsert()
     {
         await using var dataSource = NpgsqlDataSource.Create(_connectString);
         var videoRepository = (IVideoRepository)new VideoRepository(dataSource);
