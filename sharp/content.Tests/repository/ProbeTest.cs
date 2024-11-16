@@ -12,18 +12,17 @@
  * 
  */
 using content.repository;
-using JetBrains.Annotations;
 using Xunit.Abstractions;
 
 namespace content.Tests.repository;
 
-[TestSubject(typeof(Probe))]
+
 public class ProbeTest(ITestOutputHelper testOutputHelper)
 {
     private readonly string _executablePath = Environment.GetEnvironmentVariable("FFPROBE_PATH") !;
 
     [Fact]
-    public async void Method()
+    public async Task Method()
     {
         // Arrange
         var peg = new Probe(_executablePath);
@@ -36,7 +35,7 @@ public class ProbeTest(ITestOutputHelper testOutputHelper)
     }
 
     [Fact(DisplayName = "Empty executable path")]
-    public async void EmptyExecutablePath()
+    public async Task EmptyExecutablePath()
     {
         // Arrange
         var peg = new Probe(string.Empty);
@@ -52,17 +51,17 @@ public class ProbeTest(ITestOutputHelper testOutputHelper)
     }
 
     [Fact(DisplayName = "empty url")]
-    public async void EmptyUrl()
+    public async Task EmptyUrl()
     {
         // Arrange
         var peg = new Probe(_executablePath);
         // Act && Assert
-        await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+        await Assert.ThrowsAsync<ArgumentException>(async () =>
             await peg.GetVideoDuration(string.Empty));
     }
 
     [Fact(DisplayName = "resolution")]
-    public async void Resolution()
+    public async Task Resolution()
     {
         // Arrange
         var peg = new Probe(_executablePath);
@@ -75,7 +74,7 @@ public class ProbeTest(ITestOutputHelper testOutputHelper)
     }
     
     [Fact(DisplayName = "not a video")]
-    public async void NotAVideo()
+    public async Task NotAVideo()
     {
         // Arrange
         var peg = new Probe(_executablePath);

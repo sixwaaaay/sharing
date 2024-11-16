@@ -15,10 +15,6 @@
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text.Json.Serialization;
-using Grpc.Core;
-using Grpc.Core.Interceptors;
-using Grpc.Net.Client;
-using Riok.Mapperly.Abstractions;
 
 namespace content.repository;
 
@@ -37,14 +33,6 @@ public class User
     public int Followers { get; init; }
 }
 
-[Mapper]
-public static partial class UserExtension
-{
-    public static partial User ProtoToUser(this GrpcUser.User user);
-
-    public static partial IReadOnlyList<User> ProtoToUser(this IReadOnlyList<GrpcUser.User> users);
-}
-
 public interface IUserRepository
 {
     string? Token { get; set; }
@@ -53,53 +41,41 @@ public interface IUserRepository
     /// <param name="id"> User id. </param>
     /// <returns> User information. </returns>
     Task<User> FindById(long id);
+
     /// <summary> Find user information by id list. </summary>
     /// <param name="ids"> User id list. </param>
     /// <returns> User information list. </returns>
     Task<IReadOnlyList<User>> FindAllByIds(IEnumerable<long> ids);
 }
 
-public class UserRepository : IUserRepository
+public class UserRepository(HttpClient client) : IUserRepository
 {
-    private readonly GrpcUser.UserService.UserServiceClient _client;
-
-    public UserRepository(ChannelBase channel)
-    {
-        _client = new GrpcUser.UserService.UserServiceClient(channel.Intercept(Func));
-    }
-
-    private Metadata Func(Metadata metadata)
-    {
-        if (!string.IsNullOrEmpty(Token))
-        {
-            metadata.Add("Authorization", Token);
-        }
-
-        return metadata;
-    }
-
     public string? Token { get; set; }
 
     public async Task<User> FindById(long id)
     {
-        var request = new GrpcUser.GetUserRequest()
-        {
-            UserId = id
-        };
-        var reply = await _client.GetUserAsync(request);
-        return reply.User.ProtoToUser();
+        var req = new HttpRequestMessage(HttpMethod.Get, $"/users/{id}");
+        req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", Token);
+        Console.WriteLine(client.BaseAddress);
+        var resp = await client.SendAsync(req);
+        resp.EnsureSuccessStatusCode();
+        return await resp.Content.ReadFromJsonAsync(UserJsonContext.Default.User) ?? new();
     }
 
     public async Task<IReadOnlyList<User>> FindAllByIds(IEnumerable<long> ids)
     {
-        var request = new GrpcUser.GetUsersRequest()
-        {
-            UserIds = { ids.Distinct() }
-        };
-        var reply = await _client.GetUsersAsync(request);
-        return reply.Users.ProtoToUser();
+        var req = new HttpRequestMessage(HttpMethod.Get,
+            $"/users?{string.Join("&", ids.Distinct().Select(id => $"ids={id}"))}");
+        req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", Token);
+        var resp = await client.SendAsync(req);
+        resp.EnsureSuccessStatusCode();
+        return await resp.Content.ReadFromJsonAsync(UserJsonContext.Default.IReadOnlyListUser) ?? [];
     }
 }
+
+[JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.SnakeCaseLower)]
+[JsonSerializable(typeof(IReadOnlyList<User>))]
+public partial class UserJsonContext : JsonSerializerContext;
 
 public interface IVoteRepository
 {
@@ -112,7 +88,6 @@ public interface IVoteRepository
 
 
     /// <summary> Scan voted videos, which means paging through all voted videos. </summary>
-    /// <param name="userId"> User id. </param>
     /// <param name="page"> Page token. </param>
     /// <param name="size"> Page size. </param>
     /// <returns> Page token and voted videos. </returns>    
@@ -147,7 +122,6 @@ public class VoteRepository(HttpClient client) : IVoteRepository
 
     public async Task<(long?, IReadOnlyList<long>)> VotedVideos(long page, int size)
     {
-
         using var req = new HttpRequestMessage(HttpMethod.Get, $"/graph/videos?page={page}&size={size}");
         if (!string.IsNullOrEmpty(Token) && AuthenticationHeaderValue.TryParse(Token, out var auth))
         {
@@ -178,7 +152,6 @@ internal partial class VoteJsonContext : JsonSerializerContext;
 
 public class SearchClient(IHttpClientFactory clientFactory)
 {
-
     public async Task<IReadOnlyList<long>> SimilarSearch(long videoId)
     {
         using var client = clientFactory.CreateClient("Search");
@@ -192,17 +165,16 @@ public class SearchClient(IHttpClientFactory clientFactory)
 
         return result.Hits.Select(h => h.Id).ToList();
     }
-
 }
+
 public record RequestBody(
     [property: JsonPropertyName("id")] long Id,
-    [property: JsonPropertyName("attributesToRetrieve")] string[] AttributesToRetrieve
-);
+    [property: JsonPropertyName("attributesToRetrieve")] string[] AttributesToRetrieve,
+    [property: JsonPropertyName("limit")] int Limit = 10);
 
-public record Response
+public record Response()
 {
-    [JsonPropertyName("hits")]
-    public IReadOnlyList<SimilarVideo> Hits { get; init; } = [];
+    [JsonPropertyName("hits")] public IReadOnlyList<SimilarVideo> Hits { get; init; } = [];
 }
 
 public record SimilarVideo([property: JsonPropertyName("id")] long Id);
@@ -213,30 +185,29 @@ public partial class SearchContext : JsonSerializerContext;
 
 public static class Extension
 {
-    public static IServiceCollection AddVoteRepository(this IServiceCollection services, string baseAddress)
-    {
-        services.AddScoped<IVoteRepository, VoteRepository>(
-            sp => new VoteRepository(sp.GetRequiredService<IHttpClientFactory>().CreateClient("Vote")))
-        .AddHttpClient("Vote", client => client.BaseAddress = new Uri(baseAddress.TrimEnd('/')));
-        return services;
-    }
+    public static IServiceCollection AddVoteRepository(this IServiceCollection services) => services
+        .AddScoped<IVoteRepository, VoteRepository>(sp =>
+            new VoteRepository(sp.GetRequiredService<IHttpClientFactory>().CreateClient("Vote")))
+        .AddHttpClient("Vote",
+            (sp, client) => client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()
+                .GetConnectionString("Vote").EnsureNotNull("Vote connection string is null").TrimEnd('/'))).Services;
 
-    public static IServiceCollection AddSearchClient(this IServiceCollection services, string baseAddress, string token)
-    {
-        services.AddScoped<SearchClient>().AddHttpClient("Search", client => {
+    public static IServiceCollection AddSearchClient(this IServiceCollection services) => services
+        .AddScoped<SearchClient>().AddHttpClient("Search", (sp, client) =>
+        {
+            var baseAddress = sp.GetRequiredService<IConfiguration>().GetConnectionString("Search")
+                .EnsureNotNull("Search connection string is null");
+            var token = sp.GetRequiredService<IConfiguration>().GetConnectionString("Token");
             client.BaseAddress = new Uri(baseAddress.TrimEnd('/'));
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        });
-        return services;
-    }
+        }).Services;
 
     public static IServiceCollection AddUserRepository(this IServiceCollection services) =>
-        services.AddScoped<IUserRepository, UserRepository>();
-
-    public static IServiceCollection AddGrpcUser(this IServiceCollection services) =>
-        services.AddSingleton<ChannelBase>(sp => GrpcChannel.ForAddress(
-            sp.GetRequiredService<IConfiguration>().GetConnectionString("User") ??
-            throw new InvalidOperationException(@"User connection string is null.")));
+        services.AddScoped<IUserRepository, UserRepository>(
+            sp => new UserRepository(sp.GetRequiredService<IHttpClientFactory>().CreateClient("User"))
+        ).AddHttpClient("User",
+            (sp, client) => client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()
+                .GetConnectionString("User").EnsureNotNull("User connection string is null").TrimEnd('/'))).Services;
 
     public static IApplicationBuilder UseToken(this IApplicationBuilder app) =>
         app.Use(async (context, next) =>
@@ -258,5 +229,12 @@ public static class Extension
     {
         var id = user.Claims.FirstOrDefault(c => c.Type == "id")?.Value;
         return id == null ? 0 : long.Parse(id);
+    }
+
+    public static string EnsureNotNull(this string? value, string msg)
+    {
+        if (string.IsNullOrEmpty(value))
+            throw new InvalidOperationException(msg);
+        return value;
     }
 }

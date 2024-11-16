@@ -16,12 +16,10 @@ using content.domainservice;
 using content.endpoints;
 using content.repository;
 using FluentValidation;
-using JetBrains.Annotations;
 using Moq;
 using System.Security.Claims;
 
 namespace content.Tests.endpoints;
-[TestSubject(typeof(Endpoints))]
 public class EndpointsTests
 {
     private readonly Mock<IDomainService> _mockService = new();
@@ -61,7 +59,7 @@ public class EndpointsTests
 
         Assert.Equal(expectedVideos, result);
     }
-    
+
     [Fact]
     public async Task DailyPopularVideos_ReturnsExpectedVideos()
     {
@@ -76,7 +74,7 @@ public class EndpointsTests
 
         Assert.Equal(expectedVideos, result);
     }
-    
+
 
     [Fact]
     public async Task Likes_ReturnsExpectedVideos()
@@ -96,7 +94,7 @@ public class EndpointsTests
 
 
     [Fact]
-    public async void CreateVideo_CallsServiceWithExpectedVideo()
+    public async Task CreateVideo_CallsServiceWithExpectedVideo()
     {
         var request = new VideoRequest
         {
@@ -149,7 +147,7 @@ public class EndpointsTests
             Type = 1
         };
         var expectedMessage = new MessageDto
-            { Id = 1, ReceiverId = request.ReceiverId, Content = request.Content, Type = request.Type };
+        { Id = 1, ReceiverId = request.ReceiverId, Content = request.Content, Type = request.Type };
         _mockMessageDomain.Setup(s => s.Save(It.IsAny<Message>())).ReturnsAsync(expectedMessage);
 
         // Act

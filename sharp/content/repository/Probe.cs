@@ -17,40 +17,26 @@ namespace content.repository;
 
 public interface IProbe
 {
-    /// <summary>
-    ///  get the resolution of video from given url
-    /// </summary>
-    /// <param name="url">
-    ///  video url
-    /// </param>
-    /// <returns>
-    ///  resolution of video
-    /// </returns>
+    /// <summary> get the resolution of video from given url </summary>
+    /// <param name="url"> video url </param>
+    /// <returns> resolution of video </returns>
     public Task<string> GetVideoResolution(string url);
 
-    /// <summary>
-    /// get the duration of video from given url
-    /// </summary>
-    /// <param name="url">
-    /// video url
-    /// </param>
-    /// <returns>
-    /// duration of video
-    /// </returns>
+    /// <summary> get the duration of video from given url </summary>
+    /// <param name="url"> video url </param>
+    /// <returns> duration of video </returns>
     public Task<string> GetVideoDuration(string url);
 }
 
 /// <summary>
 ///  use ffprobe to get video info
 /// </summary>
-/// <param name="executablePath">
-/// ffprobe executable path
-/// </param>
+/// <param name="executablePath"> ffprobe executable path </param>
 public class Probe(string executablePath) : IProbe
 {
     public async Task<string> GetVideoResolution(string url)
     {
-        EnsureUrlExists(url);
+        ArgumentException.ThrowIfNullOrEmpty(url); /* ensure  url is not null or empty */
         if (string.IsNullOrEmpty(executablePath))
         {
             return string.Empty;
@@ -80,7 +66,7 @@ public class Probe(string executablePath) : IProbe
 
     public async Task<string> GetVideoDuration(string url)
     {
-        EnsureUrlExists(url);
+        ArgumentException.ThrowIfNullOrEmpty(url); /* ensure  url is not null or empty */
 
         if (string.IsNullOrWhiteSpace(executablePath))
         {
@@ -88,14 +74,6 @@ public class Probe(string executablePath) : IProbe
         }
 
         return await Process($"-v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 {url}");
-    }
-
-    private static void EnsureUrlExists(string url)
-    {
-        if (string.IsNullOrEmpty(url))
-        {
-            throw new ArgumentNullException(nameof(url));
-        }
     }
 }
 

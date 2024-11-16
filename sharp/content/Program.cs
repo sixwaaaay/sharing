@@ -54,7 +54,6 @@ builder.Services.AddOpenTelemetry().WithTracing(tcb =>
         .AddSource(serviceName).AddNpgsql()
         .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(serviceName: serviceName))
         .AddHttpClientInstrumentation()
-        .AddGrpcClientInstrumentation()
         .AddAspNetCoreInstrumentation()
         .AddOtlpExporter(o =>
         {
@@ -66,7 +65,7 @@ builder.Services.AddOpenTelemetry().WithTracing(tcb =>
 }).WithMetrics(mtb =>
 {
     mtb
-        .AddMeter("Microsoft.AspNetCore.Hosting", "Microsoft.AspNetCore.Server.Kestrel", "Npgsql")
+        .AddMeter("Npgsql")
         .AddAspNetCoreInstrumentation()
         .AddHttpClientInstrumentation()
         .AddPrometheusExporter();
@@ -78,16 +77,15 @@ builder.Services.AddSingleton<MessageRequestValidator>().AddSingleton<VideoReque
 builder.Services.AddAuthorization().AddProbe();
 builder.Services.AddProblemDetails().AddResponseCompression();
 
-builder.Services.AddNpgsqlDataSource(builder.Configuration.GetConnectionString("Default") ??
-                                    throw new InvalidOperationException("Connection string is null"));
+builder.Services.AddNpgsqlDataSource(builder.Configuration.GetConnectionString("Default").EnsureNotNull("Connection string is null"));
+
 builder.Services.AddVideoRepository().AddNotificationRepository();
 
-builder.Services.AddGrpcUser().AddUserRepository();
+builder.Services.AddUserRepository();
 
-builder.Services.AddVoteRepository(builder.Configuration.GetConnectionString("Vote") ?? throw new InvalidOperationException("Vote connection string is null"));
+builder.Services.AddVoteRepository();
 
-builder.Services.AddSearchClient(builder.Configuration.GetConnectionString("Search") ?? throw new InvalidOperationException("Search connection string is null"),
-    builder.Configuration["Token"] ?? throw new InvalidOperationException("Token is null"));
+builder.Services.AddSearchClient();
 
 builder.Services.AddDomainService().AddMessageDomain();
 
