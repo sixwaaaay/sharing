@@ -18,33 +18,31 @@ services:
     ports:
       - '18080:8080'
     environment:
-      - 'DB_HOST=mysql'
-      - 'DB_PORT=3306'
-      - 'DB_NAME=db'
-      - 'DB_USER=v1'
-      - 'DB_PASSWORD=ABCDEF'
-      - 'DB_OPTIONS=serverTimezone=Asia/Shanghai'
+      - 'DB_HOST=postgres'
+      - 'DB_PORT=5432'
+      - 'DB_NAME=postgres'
+      - 'DB_USER=postgres'
+      - 'DB_PASSWORD=postgres'
       - 'TRACING_PROBABILITY=0.1'
       - 'OTLP_ENDPOINT=http://jaeger:4318/v1/traces'
       - 'VOTE_SERVICE_BASE_URL=http://graph:8081'
       - 'USER_SERVICE_BASE_URL=http://shauser:5000'
     restart: 'always'
     depends_on:
-      mysql:
+      postgres:
         condition: service_healthy
-  mysql:
-    image: 'mysql:8.2.0'
+  postgres:
+    image: 'postgres:17.0-bookworm'
     environment:
-      - 'MYSQL_DATABASE=db'
-      - 'MYSQL_PASSWORD=ABCDEF'
-      - 'MYSQL_USER=v1'
-      - 'MYSQL_ROOT_PASSWORD=verysecret'
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
-      - '3306:3306'
+      - '5432:5432'
     healthcheck:
-      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      test: [ "CMD", "pg_isready", "-U", "postgres" ]
       timeout: 20s
       retries: 10
   redis:

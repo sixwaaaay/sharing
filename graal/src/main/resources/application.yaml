@@ -11,15 +11,15 @@ spring:
     virtual:
       enabled: true
   datasource:
-    username: ${DB_USER:v1}
-    password: ${DB_PASSWORD:ABCDEF}
-    url: jdbc:mysql://${DB_HOST:db}:${DB_PORT:3306}/${DB_NAME:comments}?${DB_OPTIONS:serverTimezone=UTC}
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+    url: jdbc:postgresql://${DB_HOST:db}:${DB_PORT:5432}/${DB_NAME:postgres}
+    driver-class-name: org.postgresql.Driver
   replica-datasource:
-    username: ${DB_USER:v1}
-    password: ${DB_PASSWORD:ABCDEF}
-    url: jdbc:mysql://${DB_HOST:db}:${DB_PORT:3306}/${DB_NAME:comments}?${DB_OPTIONS:serverTimezone=UTC}
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+    url: jdbc:postgresql://${DB_HOST:db}:${DB_PORT:5432}/${DB_NAME:postgres}
+    driver-class-name: org.postgresql.Driver
   data:
     redis:
       database: 0

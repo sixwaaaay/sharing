@@ -25,7 +25,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.data.jdbc.core.convert.*;
 import org.springframework.data.jdbc.core.mapping.JdbcMappingContext;
 import org.springframework.data.relational.core.dialect.Dialect;
-import org.springframework.data.relational.core.dialect.MySqlDialect;
+import org.springframework.data.relational.core.dialect.PostgresDialect;
 import org.springframework.data.relational.core.mapping.DefaultNamingStrategy;
 import org.springframework.data.relational.core.mapping.NamingStrategy;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
@@ -45,7 +45,6 @@ import java.util.Optional;
  * The routing between the data sources is done using a custom RoutingDataSource.
  * The JDBC operations are set up using the NamedParameterJdbcTemplate class from Spring JDBC.
  * The transaction manager is set up using the DataSourceTransactionManager class from Spring JDBC.
- * The dialect is MySQL.
  */
 @Configuration
 public class DataSourceConfig {
@@ -113,10 +112,10 @@ public class DataSourceConfig {
         return new DataSourceTransactionManager(dataSource);
     }
 
-    // sql dialect, which is MySQL
+    // sql dialect
     @Bean
     Dialect jdbcDialect() {
-        return MySqlDialect.INSTANCE;
+        return PostgresDialect.INSTANCE;
     }
 
     // custom conversions

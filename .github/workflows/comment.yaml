@@ -49,11 +49,10 @@ jobs:
           mvn -q test
         env:
           DB_HOST: localhost
-          DB_PORT: 3306
-          DB_NAME: db
-          DB_USER: v1
-          DB_PASSWORD: ABCDEF
-          DB_OPTIONS: serverTimezone=Asia/Shanghai
+          DB_PORT: 5432
+          DB_NAME: postgres
+          DB_USER: postgres
+          DB_PASSWORD: postgres
           TRACING_PROBABILITY: 0.1
           OTLP_ENDPOINT: http://localhost:4318/v1/traces
           VOTE_SERVICE_BASE_URL: http://localhost:5000
