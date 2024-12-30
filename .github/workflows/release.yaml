@@ -1,3 +1,16 @@
+#
+# Copyright (c) 2023-2024 sixwaaaay.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#     http://www.apache.org/licenses/LICENSE-2.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 name: Release
 on:
   push:
@@ -6,17 +19,51 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - context: ./cmd/shauser
+            file: ./cmd/shauser/Dockerfile
+            tag: shauser
+          - context: ./sharp/content
+            file: ./sharp/content/Dockerfile
+            tag: content
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Login to DockerHub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: ./cmd/shauser
-          file: ./cmd/shauser/Dockerfile
+          context: ${{ matrix.context }}
+          file: ${{ matrix.file }}
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME || 'app' }}/shauser:${{ github.ref_name }}
+          tags: ${{ secrets.DOCKERHUB_USERNAME || 'app' }}/${{ matrix.tag }}:${{ github.ref_name }}
+  graal:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./graal
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '21'
+          distribution: 'graalvm' # See 'Options' for all available distributions
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Native Image Build
+        run: mvn -Pnative spring-boot:build-image -DskipTests
+
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Push to Docker Hub
+        run: |
+          docker tag sharing-comment:0.0.1-SNAPSHOT ${{ secrets.DOCKERHUB_USERNAME }}/sharing-comment:${{ github.ref_name }}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/sharing-comment:${{ github.ref_name }}

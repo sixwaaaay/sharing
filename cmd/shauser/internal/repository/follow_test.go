@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 sixwaaaay.
+ * Copyright (c) 2023-2024 sixwaaaay.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,6 +15,7 @@ package repository
 
 import (
 	"context"
+	"math"
 	"os"
 	"testing"
 
@@ -55,16 +56,6 @@ func TestRelationFind(t *testing.T) {
 		assertions.NoError(err)
 	})
 
-	t.Run("FindFollowing success", func(t *testing.T) {
-		_, err := model.FindFollowing(context.TODO(), 1, 3, 1)
-		assertions.NoError(err)
-	})
-
-	t.Run("FindFollowers success", func(t *testing.T) {
-		_, err := model.FindFollowers(context.TODO(), 5, 1, 1)
-		assertions.NoError(err)
-	})
-
 	command := NewFollowCommand(gormDB)
 
 	t.Run("command", func(t *testing.T) {
@@ -86,4 +77,29 @@ func TestRelationFind(t *testing.T) {
 		err = command.Delete(context.Background(), 1, 2)
 		assertions.Error(err)
 	})
+
+	t.Run("FindFollowing success", func(t *testing.T) {
+
+		err := command.Insert(context.Background(), &Follow{
+			UserID: 1111,
+			Target: 2222,
+		})
+		assertions.NoError(err)
+
+		_, err = model.FindFollowing(context.TODO(), 1111, math.MaxInt64, 1)
+		assertions.NoError(err)
+	})
+
+	t.Run("FindFollowers success", func(t *testing.T) {
+
+		err := command.Insert(context.Background(), &Follow{
+			UserID: 3333,
+			Target: 4444,
+		})
+		assertions.NoError(err)
+
+		_, err = model.FindFollowers(context.TODO(), 4444, math.MaxInt64, 1)
+		assertions.NoError(err)
+	})
+
 }

@@ -1,0 +1,58 @@
+server:
+  shutdown: graceful
+jwt:
+  secret: "this is a secret string you should use"
+spring:
+  main:
+    keep-alive: true
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+  threads:
+    virtual:
+      enabled: true
+  datasource:
+    username: ${DB_USER:v1}
+    password: ${DB_PASSWORD:ABCDEF}
+    url: jdbc:mysql://${DB_HOST:db}:${DB_PORT:3306}/${DB_NAME:comments}?${DB_OPTIONS:serverTimezone=UTC}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  replica-datasource:
+    username: ${DB_USER:v1}
+    password: ${DB_PASSWORD:ABCDEF}
+    url: jdbc:mysql://${DB_HOST:db}:${DB_PORT:3306}/${DB_NAME:comments}?${DB_OPTIONS:serverTimezone=UTC}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  data:
+    redis:
+      database: 0
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+      timeout: 60000
+logging:
+  level:
+    org:
+      springframework:
+        jdbc: INFO
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,prometheus"
+  tracing:
+    sampling:
+      probability: ${TRACING_PROBABILITY:1.0}
+  otlp:
+    tracing:
+      endpoint: ${OTLP_ENDPOINT:http://collector:4318/v1/traces}
+  opentelemetry:
+    resource-attributes:
+      service:
+        name: sharing-comment
+        version: 1.0.0-snapshot
+cache:
+  ttl: 5 # 10 seconds
+service:
+  vote:
+    enabled: true
+    base-url: ${VOTE_SERVICE_BASE_URL:http://graph:8081}
+  user:
+    enabled: true
+    base-url: ${USER_SERVICE_BASE_URL:http://shauser:8082}

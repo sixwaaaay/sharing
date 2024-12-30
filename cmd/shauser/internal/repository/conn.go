@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 sixwaaaay.
+ * Copyright (c) 2023-2024 sixwaaaay.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -37,6 +37,7 @@ func NewDB(config *config.Config) (*gorm.DB, error) {
 	options := &gorm.Config{
 		SkipDefaultTransaction: true,
 		QueryFields:            true,
+		PrepareStmt: true,
 	}
 	open := mysql.Open(config.MySQL.DSN)
 	db, err := gorm.Open(open, options)

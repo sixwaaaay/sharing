@@ -1,31 +1,45 @@
+/*
+ * Copyright (c) 2024 sixwaaaay.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package main
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"flag"
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
+	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/sixwaaaay/must"
 	"github.com/spf13/viper"
 )
 
 type Request struct {
-	Kind string `json:"kind"`
+	Name string `json:"name"`
 }
 
 func (req *Request) Validate() error {
-	if req.Kind != "img" && req.Kind != "avatar" && req.Kind != "video" {
-		return errors.New("unsupported kind of asserts")
+	if req.Name == "" || len(req.Name) > 255 {
+		return echo.NewHTTPError(http.StatusBadRequest, "name can not be empty or exceed 255 characters")
 	}
 	return nil
 }
@@ -44,25 +58,11 @@ func main() {
 	must.RunE(viper.ReadInConfig())
 	must.RunE(viper.Unmarshal(&config))
 
-	client := must.Must(NewMinioClient(config.Minio))
+	handler := must.Must(NewHandler(config.Minio))
+
 	e := newServer()
 
-	e.POST("/assets/new", func(c echo.Context) error {
-		var req Request
-		if err := json.NewDecoder(c.Request().Body).Decode(&req); err != nil {
-			return err
-		}
-
-		if err := req.Validate(); err != nil {
-			return err
-		}
-
-		presignedURL, err := GeneratePresignedURL(c.Request().Context(), client, req)
-		if err != nil {
-			return err
-		}
-		return c.JSON(http.StatusOK, Reply{presignedURL})
-	})
+	e.POST("/assert/new", handler.NewAssert)
 
 	svr := &http.Server{Addr: config.ListenOn, Handler: e}
 
@@ -80,17 +80,79 @@ func main() {
 	must.RunE(svr.Shutdown(ctx))
 }
 
-func GeneratePresignedURL(ctx context.Context, client *minio.Client, req Request) (string, error) {
-	random, err := uuid.NewRandom()
+// Handler is a struct that encapsulates a MinIO client and a bucket name.
+// It is used to interact with MinIO storage, performing operations on the specified bucket.
+//
+// Fields:
+// - client: A pointer to a MinIO client instance used for communicating with the MinIO server.
+// - bucket: A string representing the name of the bucket to perform operations on.
+type Handler struct {
+	client *minio.Client
+	bucket string
+}
+
+func NewHandler(config MinioConfig) (*Handler, error) {
+	client, err := NewMinioClient(config)
+	if err != nil {
+		return nil, err
+	}
+	return &Handler{
+		client: client,
+	}, nil
+}
+
+// GeneratePresignedURL generates a presigned URL for uploading an object to a specified bucket.
+// The URL is valid for 24 hours.
+//
+// Parameters:
+//
+//	ctx - The context for the request.
+//	req - The request containing the name of the object to be uploaded.
+//
+// Returns:
+//
+//	A string containing the presigned URL, or an error if the URL could not be generated.
+func (h *Handler) GeneratePresignedURL(ctx context.Context, req Request) (string, error) {
+	random, err := uuid.NewV7()
 	if err != nil {
 		return "", err
 	}
-	s := random.String()
-	presignedURL, err := client.PresignedPutObject(ctx, req.Kind, s, time.Hour*24)
+	hex := strings.ReplaceAll(random.String(), "-", "")
+	name := hex + "_" + req.Name
+
+	presignedURL, err := h.client.PresignedPutObject(ctx, h.bucket, name, time.Hour*24)
 	if err != nil {
 		return "", err
 	}
 	return presignedURL.String(), nil
+}
+
+// NewAssert handles the creation of a new assertion. It binds the request data,
+// validates it, generates a presigned URL, and returns the URL in the response.
+//
+// Parameters:
+//
+//	ctx - the Echo context containing the request and response objects.
+//
+// Returns:
+//
+//	An error if any step in the process fails, otherwise it returns a JSON response
+//	with the presigned URL.
+func (h *Handler) NewAssert(ctx echo.Context) error {
+	var req Request
+	if err := ctx.Bind(&req); err != nil {
+		return err
+	}
+
+	if err := req.Validate(); err != nil {
+		return err
+	}
+
+	presignedURL, err := h.GeneratePresignedURL(ctx.Request().Context(), req)
+	if err != nil {
+		return err
+	}
+	return ctx.JSON(http.StatusOK, Reply{presignedURL})
 }
 
 type Conf struct {
@@ -99,14 +161,10 @@ type Conf struct {
 }
 
 func NewMinioClient(config MinioConfig) (*minio.Client, error) {
-	client, err := minio.New(config.Endpoint, &minio.Options{
+	return minio.New(config.Endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(config.AccessKey, config.SecretKey, ""),
 		Secure: config.UseSSL,
 	})
-	if err != nil {
-		return nil, err
-	}
-	return client, nil
 }
 
 type MinioConfig struct {
@@ -114,6 +172,7 @@ type MinioConfig struct {
 	AccessKey string
 	SecretKey string
 	UseSSL    bool
+	Bucket    string
 }
 
 func newServer() *echo.Echo {
@@ -121,7 +180,6 @@ func newServer() *echo.Echo {
 	e.HideBanner = true
 	e.HidePort = true
 	e.Logger.SetLevel(log.INFO)
-	middleware.RequestID()
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
@@ -134,3 +192,9 @@ func newServer() *echo.Echo {
 	}
 	return e
 }
+
+/*
+
+$env:GIT_COMMITTER_DATE="Fri Apr 12 21:38:14 2024 +0800"
+git commit --amend --date "Fri Apr 12 21:38:14 2024 +0800"
+*/
