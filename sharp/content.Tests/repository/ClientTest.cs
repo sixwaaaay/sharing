@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 using content.repository;
 using Moq;
 using Moq.Protected;
+using StackExchange.Redis;
 
 namespace content.Tests.repository;
 
@@ -183,7 +184,7 @@ public class ClientTest
         };
         mockFactory.Setup(_ => _.CreateClient("Search")).Returns(client);
 
-        var searchClient = new SearchClient(mockFactory.Object);
+        var searchClient = new SearchClient(mockFactory.Object, ConnectionMultiplexer.Connect("localhost").GetDatabase());
 
         mockHttpMessageHandler.Protected()
             .Setup<Task<HttpResponseMessage>>(
@@ -203,6 +204,12 @@ public class ClientTest
         // Assert
         Assert.Equal(expectedResponse.Hits.Select(h => h.Id).ToList(), result);
 
+
+        // Again
+        result = await searchClient.SimilarSearch(videoId);
+
+        // Assert
+        Assert.Equal(expectedResponse.Hits.Select(h => h.Id).ToList(), result);
     }
 }
 

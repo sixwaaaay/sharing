@@ -14,7 +14,9 @@
 
 using System.Net.Http.Headers;
 using System.Security.Claims;
+using System.Text.Json;
 using System.Text.Json.Serialization;
+using StackExchange.Redis;
 
 namespace content.repository;
 
@@ -57,7 +59,7 @@ public class UserRepository(HttpClient client) : IUserRepository
         var req = new HttpRequestMessage(HttpMethod.Get, $"/users/{id}");
         req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", Token);
         Console.WriteLine(client.BaseAddress);
-        var resp = await client.SendAsync(req);
+        using var resp = await client.SendAsync(req);
         resp.EnsureSuccessStatusCode();
         return await resp.Content.ReadFromJsonAsync(UserJsonContext.Default.User) ?? new();
     }
@@ -67,7 +69,7 @@ public class UserRepository(HttpClient client) : IUserRepository
         var req = new HttpRequestMessage(HttpMethod.Get,
             $"/users?{string.Join("&", ids.Distinct().Select(id => $"ids={id}"))}");
         req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", Token);
-        var resp = await client.SendAsync(req);
+        using var resp = await client.SendAsync(req);
         resp.EnsureSuccessStatusCode();
         return await resp.Content.ReadFromJsonAsync(UserJsonContext.Default.IReadOnlyListUser) ?? [];
     }
@@ -113,7 +115,7 @@ public class VoteRepository(HttpClient client) : IVoteRepository
         }
 
 
-        var resp = await client.SendAsync(req);
+        using var resp = await client.SendAsync(req);
         resp.EnsureSuccessStatusCode();
 
         var result = await resp.Content.ReadFromJsonAsync(VoteJsonContext.Default.ListInt64) ?? [];
@@ -128,7 +130,7 @@ public class VoteRepository(HttpClient client) : IVoteRepository
             req.Headers.Authorization = auth;
         }
 
-        var resp = await client.SendAsync(req);
+        using var resp = await client.SendAsync(req);
 
         resp.EnsureSuccessStatusCode();
 
@@ -150,20 +152,29 @@ public record InQuery(List<long> ObjectIds);
 [JsonSerializable(typeof(InQuery))]
 internal partial class VoteJsonContext : JsonSerializerContext;
 
-public class SearchClient(IHttpClientFactory clientFactory)
+public class SearchClient(IHttpClientFactory clientFactory, IDatabase db)
 {
     public async Task<IReadOnlyList<long>> SimilarSearch(long videoId)
     {
+        var cache = await db.StringGetAsync($"similar:{videoId}");
+        if (cache.HasValue)
+        {
+            return JsonSerializer.Deserialize(cache!, SearchContext.Default.ListInt64) ?? [];
+        }
+
         using var client = clientFactory.CreateClient("Search");
         var body = new RequestBody(videoId, ["id"]);
         var content = JsonContent.Create(body, SearchContext.Default.RequestBody);
         var req = new HttpRequestMessage(HttpMethod.Post, "/indexes/videos/similar") { Content = content };
-        var resp = await client.SendAsync(req);
+        using var resp = await client.SendAsync(req);
         resp.EnsureSuccessStatusCode();
 
         var result = await resp.Content.ReadFromJsonAsync(SearchContext.Default.Response) ?? new Response();
 
-        return result.Hits.Select(h => h.Id).ToList();
+        var ids = result.Hits.Select(h => h.Id).ToList();
+        await db.StringSetAsync($"similar:{videoId}", JsonSerializer.Serialize(ids, SearchContext.Default.ListInt64), TimeSpan.FromSeconds(60));
+
+        return ids;
     }
 }
 
@@ -179,8 +190,10 @@ public record Response()
 
 public record SimilarVideo([property: JsonPropertyName("id")] long Id);
 
+
 [JsonSerializable(typeof(Response))]
 [JsonSerializable(typeof(RequestBody))]
+[JsonSerializable(typeof(List<long>))]
 public partial class SearchContext : JsonSerializerContext;
 
 public static class Extension
@@ -193,11 +206,13 @@ public static class Extension
                 .GetConnectionString("Vote").EnsureNotNull("Vote connection string is null").TrimEnd('/'))).Services;
 
     public static IServiceCollection AddSearchClient(this IServiceCollection services) => services
+        .AddSingleton<IConnectionMultiplexer>(sp => ConnectionMultiplexer.Connect(sp.GetRequiredService<IConfiguration>().GetConnectionString("Redis").EnsureNotNull("Redis connection string is null")))
+        .AddSingleton(sp => sp.GetRequiredService<IConnectionMultiplexer>().GetDatabase())
         .AddScoped<SearchClient>().AddHttpClient("Search", (sp, client) =>
         {
             var baseAddress = sp.GetRequiredService<IConfiguration>().GetConnectionString("Search")
                 .EnsureNotNull("Search connection string is null");
-            var token = sp.GetRequiredService<IConfiguration>().GetConnectionString("Token");
+            var token = sp.GetRequiredService<IConfiguration>()["Token"];
             client.BaseAddress = new Uri(baseAddress.TrimEnd('/'));
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }).Services;
