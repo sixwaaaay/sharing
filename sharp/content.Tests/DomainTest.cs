@@ -22,7 +22,7 @@ public class DomainTest
 {
 
     private (Mock<IVideoRepository>, Mock<IUserRepository> userRepo, Mock<IVoteRepository> voteRepo, Mock<SearchClient> searchClient) Setup() =>
-        (new Mock<IVideoRepository>(), new Mock<IUserRepository>(), new Mock<IVoteRepository>(), new Mock<SearchClient>(null!));
+        (new Mock<IVideoRepository>(), new Mock<IUserRepository>(), new Mock<IVoteRepository>(), new Mock<SearchClient>(null!,null!));
 
     [Fact]
     public async Task FindById_ReturnsVideoDto_WhenVideoExists()
