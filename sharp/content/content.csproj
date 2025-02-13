@@ -27,7 +27,7 @@
 
   <ItemGroup>
     <PackageReference Include="Dapper" Version="2.1.24" />
-    <PackageReference Include="Dapper.AOT" Version="1.0.31" />
+    <PackageReference Include="Dapper.AOT" Version="1.0.45" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
     <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" Version="9.0.0">
