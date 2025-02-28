@@ -34,13 +34,6 @@ public class VideoRequest
     public string VideoUrl { get; set; } = string.Empty;
 }
 
-public class MessageRequest
-{
-    public long ReceiverId { get; set; }
-    public string Content { get; set; } = string.Empty;
-    public short Type { get; set; }
-}
-
 public static class Endpoints
 {
     public static Task<Pagination<VideoDto>> UserVideos(IDomainService service, long userId, long? page, int? size)
@@ -53,6 +46,18 @@ public static class Endpoints
     {
         EnsurePageAndSize(page, size);
         return service.FindRecent(page ?? long.MaxValue, size ?? 10);
+    }
+
+    public static Task<Pagination<VideoDto>> RecommendVideos(HistoryService service, ClaimsPrincipal user, long? page, int? size)
+    {
+        EnsurePageAndSize(page, size);
+        return service.Recommendation(user.UserId(), (ulong?)page ?? 0, (ulong?)size ?? 10);
+    }
+
+    public static Task<Pagination<VideoDto>> HistoryVideos(HistoryService service,ClaimsPrincipal  user, long? page, int? size)
+    {
+        EnsurePageAndSize(page, size);
+        return service.GetHistory(user.UserId());
     }
 
     public static Task<VideoDto> FindVideoById(IDomainService service, long id) => service.FindById(id);
@@ -93,31 +98,10 @@ public static class Endpoints
     }
 
 
-    public static Task<Pagination<MessageDto>> FindMessages(IMessageDomain service, long receiverId, long? page,
-        int? size, bool unreadOnly)
-    {
-        EnsurePageAndSize(page, size);
-        return service.FindMessages(receiverId, page ?? 0, size ?? 10, unreadOnly);
+
+    public static Task AddHistory(HistoryService service,ClaimsPrincipal user , AddVideoHistory addVideo) {
+        return service.AddHistory(user.UserId(), addVideo.VideoId);
     }
-
-    public static async Task<MessageDto> Save(IMessageDomain service, MessageRequest request, ClaimsPrincipal user,
-        MessageRequestValidator validator)
-    {
-        await validator.ValidateAndThrowAsync(request);
-        var message = new Message
-        {
-            SenderId = user.UserId(),
-            ReceiverId = request.ReceiverId,
-            Content = request.Content,
-            Type = request.Type
-        };
-
-        return await service.Save(message);
-    }
-
-    public static Task MarkAsRead(IMessageDomain service, long id, ClaimsPrincipal user) =>
-        service.MarkAsRead(id, user.UserId());
-
 
     public static void MapEndpoints(this IEndpointRouteBuilder endpoints)
     {
@@ -125,15 +109,15 @@ public static class Endpoints
         // endpoints.MapGet("/users/{userId:long}/likes", Likes).RequireAuthorization().WithName("getUserLikes");
         endpoints.MapGet("/users/{userId:long}/likes", Likes).WithName("getUserLikes");
         endpoints.MapGet("/videos", Videos).WithName("getVideos");
+        // todo: user id
+        endpoints.MapGet("/videos/recommend", RecommendVideos).WithName("getRecommendVideos");
         endpoints.MapGet("/videos/{id:long}", FindVideoById).WithName("getVideo");
         endpoints.MapGet("/videos/{id:long}/similar", SimilarVideos).WithName("getSimilarVideos");
         endpoints.MapPost("/videos/popular", DailyPopularVideos).WithName("getDailyPopularVideos");
         endpoints.MapPost("/videos", CreateVideo).RequireAuthorization().WithName("createVideo");
+        endpoints.MapPost("/videos/history", AddHistory).RequireAuthorization().WithName("addVideoHistory");
+        endpoints.MapGet("/videos/history", HistoryVideos).RequireAuthorization().WithName("getVideoHistory");
 
-
-        endpoints.MapGet("/messages", FindMessages).RequireAuthorization().WithName("getMessages");
-        endpoints.MapPost("/messages", Save).RequireAuthorization().WithName("sendMessage");
-        endpoints.MapPost("/messages/{id:long}", MarkAsRead).RequireAuthorization().WithName("markAsRead");
     }
 
 
@@ -161,15 +145,5 @@ public class VideoRequestValidator : AbstractValidator<VideoRequest>
             .WithMessage("description is null or empty or length greater than 200");
         RuleFor(x => x.VideoUrl).NotEmpty().Must(x => Uri.IsWellFormedUriString(x, UriKind.Absolute))
             .WithMessage("video url is null or empty or not a valid url");
-    }
-}
-
-public class MessageRequestValidator : AbstractValidator<MessageRequest>
-{
-    public MessageRequestValidator()
-    {
-        RuleFor(x => x.Content).NotEmpty().MaximumLength(200)
-            .WithMessage("content is null or empty or length greater than 200");
-        RuleFor(x => x.ReceiverId).GreaterThan(0).WithMessage("receiver id is less than or equal to 0");
     }
 }

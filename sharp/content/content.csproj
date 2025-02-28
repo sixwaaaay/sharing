@@ -27,7 +27,7 @@
 
   <ItemGroup>
     <PackageReference Include="Dapper" Version="2.1.24" />
-    <PackageReference Include="Dapper.AOT" Version="1.0.31" />
+    <PackageReference Include="Dapper.AOT" Version="1.0.45" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
     <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" Version="9.0.0">
@@ -42,6 +42,7 @@
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.10.0" />
     <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.9.0" />
     <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.9.0" />
+    <PackageReference Include="Qdrant.Client" Version="1.13.0" />
     <PackageReference Include="Riok.Mapperly" Version="4.1.0" />
     <PackageReference Include="FluentValidation" Version="11.10.0" />
     <PackageReference Include="StackExchange.Redis" Version="2.8.24" />

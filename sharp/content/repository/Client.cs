@@ -54,16 +54,18 @@ public class UserRepository(HttpClient client) : IUserRepository
 {
     public string? Token { get; set; }
 
+    /// <summary> Find user information by id. </summary>
     public async Task<User> FindById(long id)
     {
         var req = new HttpRequestMessage(HttpMethod.Get, $"/users/{id}");
         req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", Token);
-        Console.WriteLine(client.BaseAddress);
         using var resp = await client.SendAsync(req);
         resp.EnsureSuccessStatusCode();
         return await resp.Content.ReadFromJsonAsync(UserJsonContext.Default.User) ?? new();
     }
 
+
+    /// <summary> Find user information by id list. </summary>
     public async Task<IReadOnlyList<User>> FindAllByIds(IEnumerable<long> ids)
     {
         var req = new HttpRequestMessage(HttpMethod.Get,
@@ -100,6 +102,7 @@ public class VoteRepository(HttpClient client) : IVoteRepository
 {
     public string? Token { get; set; }
 
+    /// <summary> Get voted status of videos. </summary>
     public async Task<IReadOnlyList<long>> VotedOfVideos(List<long> videoIds)
     {
         if (string.IsNullOrEmpty(Token) || videoIds.Count == 0)
@@ -122,6 +125,8 @@ public class VoteRepository(HttpClient client) : IVoteRepository
         return result;
     }
 
+
+    /// <summary> Scan voted videos, which means paging through all voted videos. </summary>
     public async Task<(long?, IReadOnlyList<long>)> VotedVideos(long page, int size)
     {
         using var req = new HttpRequestMessage(HttpMethod.Get, $"/graph/videos?page={page}&size={size}");
@@ -152,7 +157,7 @@ public record InQuery(List<long> ObjectIds);
 [JsonSerializable(typeof(InQuery))]
 internal partial class VoteJsonContext : JsonSerializerContext;
 
-public class SearchClient(IHttpClientFactory clientFactory, IDatabase db)
+public class SearchClient(HttpClient client, IDatabase db)
 {
     public async Task<IReadOnlyList<long>> SimilarSearch(long videoId)
     {
@@ -162,7 +167,6 @@ public class SearchClient(IHttpClientFactory clientFactory, IDatabase db)
             return JsonSerializer.Deserialize(cache!, SearchContext.Default.ListInt64) ?? [];
         }
 
-        using var client = clientFactory.CreateClient("Search");
         var body = new RequestBody(videoId, ["id"]);
         var content = JsonContent.Create(body, SearchContext.Default.RequestBody);
         var req = new HttpRequestMessage(HttpMethod.Post, "/indexes/videos/similar") { Content = content };
@@ -198,31 +202,32 @@ public partial class SearchContext : JsonSerializerContext;
 
 public static class Extension
 {
+
+    /// <summary> get connection string from configuration and ensure not null, trim end '/' </summary>
+    public static string ConnString(this IConfiguration config, string name)
+        => config.GetConnectionString(name).EnsureNotNull($"{name} connection string is null").TrimEnd('/');
+
+    /// <summary> get connection string from service provider </summary>
+    public static string GetConnString(this IServiceProvider sp, string name)
+        => sp.GetRequiredService<IConfiguration>().ConnString(name);
+
     public static IServiceCollection AddVoteRepository(this IServiceCollection services) => services
-        .AddScoped<IVoteRepository, VoteRepository>(sp =>
-            new VoteRepository(sp.GetRequiredService<IHttpClientFactory>().CreateClient("Vote")))
-        .AddHttpClient("Vote",
-            (sp, client) => client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()
-                .GetConnectionString("Vote").EnsureNotNull("Vote connection string is null").TrimEnd('/'))).Services;
+        .AddHttpClient<IVoteRepository, VoteRepository>("Vote",
+            (sp, client) => client.BaseAddress = new Uri(sp.GetConnString("Vote"))).Services;
 
     public static IServiceCollection AddSearchClient(this IServiceCollection services) => services
         .AddSingleton<IConnectionMultiplexer>(sp => ConnectionMultiplexer.Connect(sp.GetRequiredService<IConfiguration>().GetConnectionString("Redis").EnsureNotNull("Redis connection string is null")))
         .AddSingleton(sp => sp.GetRequiredService<IConnectionMultiplexer>().GetDatabase())
-        .AddScoped<SearchClient>().AddHttpClient("Search", (sp, client) =>
+        .AddHttpClient<SearchClient>("Search", (sp, client) =>
         {
-            var baseAddress = sp.GetRequiredService<IConfiguration>().GetConnectionString("Search")
-                .EnsureNotNull("Search connection string is null");
             var token = sp.GetRequiredService<IConfiguration>()["Token"];
-            client.BaseAddress = new Uri(baseAddress.TrimEnd('/'));
+            client.BaseAddress = new Uri(sp.GetConnString("Search"));
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }).Services;
 
     public static IServiceCollection AddUserRepository(this IServiceCollection services) =>
-        services.AddScoped<IUserRepository, UserRepository>(
-            sp => new UserRepository(sp.GetRequiredService<IHttpClientFactory>().CreateClient("User"))
-        ).AddHttpClient("User",
-            (sp, client) => client.BaseAddress = new Uri(sp.GetRequiredService<IConfiguration>()
-                .GetConnectionString("User").EnsureNotNull("User connection string is null").TrimEnd('/'))).Services;
+        services.AddHttpClient<IUserRepository, UserRepository>("User",
+            (sp, client) => client.BaseAddress = new Uri(sp.GetConnString("User"))).Services;
 
     public static IApplicationBuilder UseToken(this IApplicationBuilder app) =>
         app.Use(async (context, next) =>

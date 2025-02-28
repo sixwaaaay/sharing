@@ -72,14 +72,14 @@ builder.Services.AddOpenTelemetry().WithTracing(tcb =>
 });
 
 builder.Services.AddSingleton(TracerProvider.Default.GetTracer(serviceName));
-builder.Services.AddSingleton<MessageRequestValidator>().AddSingleton<VideoRequestValidator>();
+builder.Services.AddSingleton<VideoRequestValidator>();
 
 builder.Services.AddAuthorization().AddProbe();
 builder.Services.AddProblemDetails().AddResponseCompression();
 
 builder.Services.AddNpgsqlDataSource(builder.Configuration.GetConnectionString("Default").EnsureNotNull("Connection string is null"));
 
-builder.Services.AddVideoRepository().AddNotificationRepository();
+builder.Services.AddVideoRepository();
 
 builder.Services.AddUserRepository();
 
@@ -87,7 +87,9 @@ builder.Services.AddVoteRepository();
 
 builder.Services.AddSearchClient();
 
-builder.Services.AddDomainService().AddMessageDomain();
+builder.Services.AddDomainService();
+
+builder.Services.AddHistoryService();
 
 var app = builder.Build();
 
@@ -100,7 +102,6 @@ app.UseToken();
 
 app.MapPrometheusScrapingEndpoint();
 app.MapEndpoints();
-
 app.Run();
 
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.SnakeCaseLower)]
@@ -110,8 +111,6 @@ app.Run();
 [JsonSerializable(typeof(VideoDto))]
 [JsonSerializable(typeof(Pagination<VideoDto>))]
 [JsonSerializable(typeof(IReadOnlyList<VideoDto>))]
-[JsonSerializable(typeof(Pagination<MessageDto>))]
-[JsonSerializable(typeof(MessageDto))]
-[JsonSerializable(typeof(MessageRequest))]
 [JsonSerializable(typeof(long?))]
+[JsonSerializable(typeof(AddVideoHistory))]
 internal partial class AppJsonSerializerContext : JsonSerializerContext;
