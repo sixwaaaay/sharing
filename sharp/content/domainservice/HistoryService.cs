@@ -27,7 +27,7 @@ public class HistoryService(HistoryRepository history, QdrantClient client, IDom
     public async Task<Pagination<VideoDto>> Recommendation(long userId, ulong page = 0, ulong size = 10)
     {
         var historyList = await history.GetHistorys(userId, 0, 0);
-        var positiveVectors = historyList.Count != 0 ? new ReadOnlyMemory<Vector>(historyList.Select(x => new Vector(Enumerable.Range(1, 1024).Select(_ => (float)random.NextDouble()).ToArray())).ToArray()) : null;
+        var positiveVectors = historyList.Count == 0 ? new Vector[] { new(Enumerable.Range(1, 1024).Select(_ => (float)random.NextDouble()).ToArray()) } : null;
         var result = await client.RecommendAsync("videos", positive: historyList.Select(x => (ulong)x).ToList(), /* history */
             positiveVectors: positiveVectors, /* if empty positive point */
             limit: size, offset: page * size

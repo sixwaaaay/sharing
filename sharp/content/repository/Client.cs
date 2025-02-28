@@ -129,7 +129,8 @@ public class VoteRepository(HttpClient client) : IVoteRepository
     /// <summary> Scan voted videos, which means paging through all voted videos. </summary>
     public async Task<(long?, IReadOnlyList<long>)> VotedVideos(long page, int size)
     {
-        using var req = new HttpRequestMessage(HttpMethod.Get, $"/graph/videos?page={page}&size={size}");
+        var url = $"/graph/videos?page={page}&size={size}";
+        using var req = new HttpRequestMessage(HttpMethod.Get, url);
         if (!string.IsNullOrEmpty(Token) && AuthenticationHeaderValue.TryParse(Token, out var auth))
         {
             req.Headers.Authorization = auth;
@@ -212,8 +213,8 @@ public static class Extension
         => sp.GetRequiredService<IConfiguration>().ConnString(name);
 
     public static IServiceCollection AddVoteRepository(this IServiceCollection services) => services
-        .AddHttpClient<IVoteRepository, VoteRepository>("Vote",
-            (sp, client) => client.BaseAddress = new Uri(sp.GetConnString("Vote"))).Services;
+        .AddScoped<IVoteRepository, VoteRepository>(sp => new VoteRepository(sp.GetRequiredService<IHttpClientFactory>().CreateClient("Vote")))
+        .AddHttpClient("Vote", (sp, client) => client.BaseAddress = new Uri(sp.GetConnString("Vote"))).AddAsKeyed(ServiceLifetime.Scoped).Services;
 
     public static IServiceCollection AddSearchClient(this IServiceCollection services) => services
         .AddSingleton<IConnectionMultiplexer>(sp => ConnectionMultiplexer.Connect(sp.GetRequiredService<IConfiguration>().GetConnectionString("Redis").EnsureNotNull("Redis connection string is null")))
@@ -225,9 +226,9 @@ public static class Extension
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }).Services;
 
-    public static IServiceCollection AddUserRepository(this IServiceCollection services) =>
-        services.AddHttpClient<IUserRepository, UserRepository>("User",
-            (sp, client) => client.BaseAddress = new Uri(sp.GetConnString("User"))).Services;
+    public static IServiceCollection AddUserRepository(this IServiceCollection services) => services.
+        AddScoped<IUserRepository, UserRepository>(sp => new UserRepository(sp.GetRequiredService<IHttpClientFactory>().CreateClient("User"))).
+        AddHttpClient("User", (sp, client) => client.BaseAddress = new Uri(sp.GetConnString("User"))).Services;
 
     public static IApplicationBuilder UseToken(this IApplicationBuilder app) =>
         app.Use(async (context, next) =>
