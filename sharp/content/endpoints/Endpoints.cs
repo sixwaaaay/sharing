@@ -106,10 +106,8 @@ public static class Endpoints
     public static void MapEndpoints(this IEndpointRouteBuilder endpoints)
     {
         endpoints.MapGet("/users/{userId:long}/videos", UserVideos).WithName("getUserVideos");
-        // endpoints.MapGet("/users/{userId:long}/likes", Likes).RequireAuthorization().WithName("getUserLikes");
-        endpoints.MapGet("/users/{userId:long}/likes", Likes).WithName("getUserLikes");
+        endpoints.MapGet("/users/{userId:long}/likes", Likes).RequireAuthorization().WithName("getUserLikes");
         endpoints.MapGet("/videos", Videos).WithName("getVideos");
-        // todo: user id
         endpoints.MapGet("/videos/recommend", RecommendVideos).WithName("getRecommendVideos");
         endpoints.MapGet("/videos/{id:long}", FindVideoById).WithName("getVideo");
         endpoints.MapGet("/videos/{id:long}/similar", SimilarVideos).WithName("getSimilarVideos");
@@ -117,7 +115,6 @@ public static class Endpoints
         endpoints.MapPost("/videos", CreateVideo).RequireAuthorization().WithName("createVideo");
         endpoints.MapPost("/videos/history", AddHistory).RequireAuthorization().WithName("addVideoHistory");
         endpoints.MapGet("/videos/history", HistoryVideos).RequireAuthorization().WithName("getVideoHistory");
-
     }
 
 
