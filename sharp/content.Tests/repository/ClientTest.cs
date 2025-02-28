@@ -177,14 +177,13 @@ public class ClientTest
         };
 
         var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-        var mockFactory = new Mock<IHttpClientFactory>();
+
         var client = new HttpClient(mockHttpMessageHandler.Object)
         {
             BaseAddress = new Uri("http://localhost:5151")
         };
-        mockFactory.Setup(_ => _.CreateClient("Search")).Returns(client);
 
-        var searchClient = new SearchClient(mockFactory.Object, ConnectionMultiplexer.Connect("localhost").GetDatabase());
+        var searchClient = new SearchClient(client, ConnectionMultiplexer.Connect("localhost").GetDatabase());
 
         mockHttpMessageHandler.Protected()
             .Setup<Task<HttpResponseMessage>>(

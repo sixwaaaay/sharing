@@ -59,7 +59,6 @@ public class UserRepository(HttpClient client) : IUserRepository
     {
         var req = new HttpRequestMessage(HttpMethod.Get, $"/users/{id}");
         req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", Token);
-        Console.WriteLine(client.BaseAddress);
         using var resp = await client.SendAsync(req);
         resp.EnsureSuccessStatusCode();
         return await resp.Content.ReadFromJsonAsync(UserJsonContext.Default.User) ?? new();
