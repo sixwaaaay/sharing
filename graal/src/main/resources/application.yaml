@@ -49,6 +49,9 @@ management:
         version: 1.0.0-snapshot
 cache:
   ttl: 5 # 10 seconds
+springdoc:
+  api-docs:
+    path: /api-docs
 service:
   vote:
     enabled: true

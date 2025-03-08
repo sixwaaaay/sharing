@@ -69,7 +69,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Build Binary Executable
-        run: mvn clean &&  mvn -Pnative -Pproduction native:compile -DskipTests
+        run: mvn clean && mvn -Pnative -Pproduction native:compile -DskipTests -P!openapi
 
       - name: Upload build artifacts
         run: |

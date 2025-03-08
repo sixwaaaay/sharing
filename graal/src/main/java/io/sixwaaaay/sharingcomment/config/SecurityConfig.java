@@ -29,6 +29,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 public class SecurityConfig {
 
+
+    /**
+     * configure user detail service
+     *
+     * @return user detail service
+     */
     @Bean
     UserDetailsService emptyDetailsService() {
         return username -> {
@@ -37,6 +43,13 @@ public class SecurityConfig {
     }
 
 
+    /**
+     * configure security filter chain
+     *
+     * @param http        http security builder
+     * @param tokenParser token parser
+     * @return security filter chain
+     */
     @Bean
     @SneakyThrows
     public SecurityFilterChain filterChain(HttpSecurity http, TokenParser tokenParser) {
@@ -55,8 +68,12 @@ public class SecurityConfig {
                                 "/comments/main",
                                 "/comments/reply"
                         ).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api*")
+                        .permitAll()
                 ).addFilterBefore(new ServiceInterceptor(tokenParser), UsernamePasswordAuthenticationFilter.class)
+                /* disable default session management */
                 .sessionManagement(smc -> smc.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                /* disable default csrf protection */
                 .csrf(AbstractHttpConfigurer::disable);
         return http.build();
     }
