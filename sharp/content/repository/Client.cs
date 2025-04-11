@@ -54,7 +54,7 @@ public class UserRepository(HttpClient client) : IUserRepository
 {
     public string? Token { get; set; }
 
-    /// <summary> Find user information by id. </summary>
+    /// <inheritdoc />
     public async Task<User> FindById(long id)
     {
         var req = new HttpRequestMessage(HttpMethod.Get, $"/users/{id}");
@@ -65,7 +65,7 @@ public class UserRepository(HttpClient client) : IUserRepository
     }
 
 
-    /// <summary> Find user information by id list. </summary>
+    /// <inheritdoc />
     public async Task<IReadOnlyList<User>> FindAllByIds(IEnumerable<long> ids)
     {
         var req = new HttpRequestMessage(HttpMethod.Get,
@@ -102,7 +102,7 @@ public class VoteRepository(HttpClient client) : IVoteRepository
 {
     public string? Token { get; set; }
 
-    /// <summary> Get voted status of videos. </summary>
+    /// <inheritdoc />
     public async Task<IReadOnlyList<long>> VotedOfVideos(List<long> videoIds)
     {
         if (string.IsNullOrEmpty(Token) || videoIds.Count == 0)
@@ -126,7 +126,7 @@ public class VoteRepository(HttpClient client) : IVoteRepository
     }
 
 
-    /// <summary> Scan voted videos, which means paging through all voted videos. </summary>
+    /// <inheritdoc />
     public async Task<(long?, IReadOnlyList<long>)> VotedVideos(long page, int size)
     {
         var url = $"/graph/videos?page={page}&size={size}";
@@ -233,10 +233,10 @@ public static class Extension
     public static IApplicationBuilder UseToken(this IApplicationBuilder app) =>
         app.Use(async (context, next) =>
         {
-            var userRepository = context.RequestServices.GetService<IUserRepository>();
-            ArgumentNullException.ThrowIfNull(userRepository, nameof(userRepository));
             var authorization = context.Request.Headers.Authorization;
 
+            var userRepository = context.RequestServices.GetService<IUserRepository>();
+            ArgumentNullException.ThrowIfNull(userRepository, nameof(userRepository));
             userRepository.Token = authorization;
 
             var voteRepository = context.RequestServices.GetService<IVoteRepository>();

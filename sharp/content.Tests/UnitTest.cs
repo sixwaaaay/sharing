@@ -72,6 +72,7 @@ public class UnitTest(ITestOutputHelper testOutputHelper)
         var (_, videos4) = await videoRepository.DailyPopularVideos(0, 10);
         Assert.NotNull(videos4);
         Assert.NotEmpty(videos4);
+        await videoRepository.IncrementViewCount(1);
     }
 
     [Fact(DisplayName = "Command")]
