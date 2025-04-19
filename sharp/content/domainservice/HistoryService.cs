@@ -7,7 +7,7 @@ namespace content.domainservice;
 
 public record AddVideoHistory([property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)] long VideoId);
 
-public class HistoryService(HistoryRepository history, QdrantClient client, IDomainService domain)
+public class HistoryService(HistoryRepository history, QdrantClient client, IDomainService domain,IVideoRepository video)
 {
 
     public async Task<Pagination<VideoDto>> GetHistory(long userId, long page = 0, int size = 10)
@@ -19,6 +19,7 @@ public class HistoryService(HistoryRepository history, QdrantClient client, IDom
     public async Task<bool> AddHistory(long userId, long videoId)
     {
         await history.AddHistory(userId, videoId);
+        await video.IncrementViewCount(videoId);
         return true;
     }
 

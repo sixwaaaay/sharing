@@ -2,7 +2,6 @@ using content.domainservice;
 using content.repository;
 using Moq;
 using Qdrant.Client;
-using Qdrant.Client.Grpc;
 
 public class HistoryServiceTests
 {
@@ -13,6 +12,7 @@ public class HistoryServiceTests
         var mockHistoryRepo = new Mock<HistoryRepository>(null!);
         var mockClient = new Mock<QdrantClient>("localhost",default!,default!,default!,default!,default!);
         var mockDomainService = new Mock<IDomainService>();
+        var mockIVideoRepository = new Mock<IVideoRepository>();
         var userId = 1L;
         var historyList = new List<long> { 1L, 2L };
         var videoDtos = new List<VideoDto> { new VideoDto(), new VideoDto() };
@@ -20,7 +20,7 @@ public class HistoryServiceTests
         mockHistoryRepo.Setup(x => x.GetHistorys(userId, It.IsAny<long>(), It.IsAny<int>())).ReturnsAsync(historyList);
         mockDomainService.Setup(x => x.FindAllByIds(historyList)).ReturnsAsync(videoDtos);
 
-        var service = new HistoryService(mockHistoryRepo.Object, mockClient.Object, mockDomainService.Object);
+        var service = new HistoryService(mockHistoryRepo.Object, mockClient.Object, mockDomainService.Object, mockIVideoRepository.Object);
 
         // Act
         var result = await service.GetHistory(userId);
@@ -36,13 +36,13 @@ public class HistoryServiceTests
         var mockHistoryRepo = new Mock<HistoryRepository>(null!);
         var mockClient = new Mock<QdrantClient>("localhost",default!,default!,default!,default!,default!);
         var mockDomainService = new Mock<IDomainService>();
-
+        var mockIVideoRepository = new Mock<IVideoRepository>();
         var userId = 1L;
         var videoId = 2L;
 
         mockHistoryRepo.Setup(x => x.AddHistory(userId, videoId)).Returns(Task.FromResult(1L));
-
-        var service = new HistoryService(mockHistoryRepo.Object, mockClient.Object, mockDomainService.Object);
+        mockIVideoRepository.Setup(x => x.IncrementViewCount(videoId)).Returns(Task.CompletedTask);
+        var service = new HistoryService(mockHistoryRepo.Object, mockClient.Object, mockDomainService.Object, mockIVideoRepository.Object);
 
         // Act
         var result = await service.AddHistory(userId, videoId);

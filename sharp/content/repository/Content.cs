@@ -52,6 +52,7 @@ public interface IVideoRepository
     Task<IReadOnlyList<Video>> FindRecent(long page, int size);
     Task<(long, IReadOnlyList<Video>)> DailyPopularVideos(long page, int size);
     Task<Video> Save(Video video);
+    Task IncrementViewCount(long id);
 }
 
 public class VideoRepository(NpgsqlDataSource dataSource) : IVideoRepository
@@ -150,6 +151,16 @@ public class VideoRepository(NpgsqlDataSource dataSource) : IVideoRepository
         );
         return result;
     }
+
+    public async Task IncrementViewCount(long id)
+    {
+        await using var connection = await dataSource.OpenConnectionAsync();
+        await connection.ExecuteAsync(
+            "UPDATE videos SET view_count = view_count + 1 WHERE id = @id",
+            new { id }
+        );
+    }
+
 }
 
 /// <summary> The extensions for the video repository. </summary>
