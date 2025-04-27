@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.3.4</version>
+        <version>3.4.5</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>io.sixwaaaay</groupId>
@@ -27,7 +27,7 @@
     <name>sharing-comment</name>
     <description>sharing-comment</description>
     <properties>
-        <java.version>21</java.version>
+        <java.version>24</java.version>
         <resilience4jVersion>2.1.0</resilience4jVersion>
         <jjwtVersion>0.11.5</jjwtVersion>
     </properties>
@@ -96,7 +96,6 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.34</version>
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -145,11 +144,27 @@
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>0.8.11</version>
+                    <version>0.8.13</version>
                 </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </path>
+                        <path>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-configuration-processor</artifactId>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.graalvm.buildtools</groupId>
                 <artifactId>native-maven-plugin</artifactId>
@@ -159,6 +174,7 @@
                     </metadataRepository>
                     <buildArgs combine.children="append">
                         <arg>-march=compatibility</arg>
+                        <arg>--verbose</arg>
                     </buildArgs>
                 </configuration>
             </plugin>

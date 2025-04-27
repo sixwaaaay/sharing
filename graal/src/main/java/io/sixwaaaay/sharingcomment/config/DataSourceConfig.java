@@ -135,7 +135,7 @@ public class DataSourceConfig {
     // converter
     @Bean
     JdbcConverter jdbcConverter(JdbcMappingContext context, NamedParameterJdbcOperations operations, @Lazy RelationResolver relationResolver, JdbcCustomConversions conversions, Dialect dialect) {
-        var jdbcTypeFactory = new DefaultJdbcTypeFactory(operations.getJdbcOperations());
-        return new BasicJdbcConverter(context, relationResolver, conversions, jdbcTypeFactory, dialect.getIdentifierProcessing());
+        // return new BasicJdbcConverter(context, relationResolver, conversions, jdbcTypeFactory, dialect.getIdentifierProcessing());
+        return new MappingJdbcConverter(context, relationResolver);
     }
 }
