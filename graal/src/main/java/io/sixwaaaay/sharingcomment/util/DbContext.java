@@ -42,4 +42,11 @@ public class DbContext {
     public static DbContextEnum get() {
         return CONTEXT.get();
     }
+    
+    /**
+     * Clear the current context.
+     */
+    public static void clear() {
+        CONTEXT.remove();
+    }
 }
