@@ -186,7 +186,11 @@ public class SearchClient(HttpClient client, IDatabase db)
 public record RequestBody(
     [property: JsonPropertyName("id")] long Id,
     [property: JsonPropertyName("attributesToRetrieve")] string[] AttributesToRetrieve,
-    [property: JsonPropertyName("limit")] int Limit = 10);
+    [property: JsonPropertyName("limit")] int Limit = 10)
+{
+    [JsonPropertyName("embedder")] public string Embedder => "default";
+}
+
 
 public record Response()
 {
