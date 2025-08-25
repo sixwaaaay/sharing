@@ -1,0 +1,27 @@
+{
+  "replica": {
+    "server_id": 12333,
+    "connection_settings": {
+      "host": "somehost",
+      "port": 3306,
+      "user": "user",
+      "passwd": "password"
+    },
+    "only_schemas": [
+      "content",
+      "vote"
+    ],
+    "only_tables": [
+      "videos",
+      "graph"
+    ],
+    "blocking": true
+  },
+  "postgres": {
+    "database": "your_database",
+    "user": "your_username",
+    "password": "your_password",
+    "host": "your_host",
+    "port": "your_port"
+  }
+}
