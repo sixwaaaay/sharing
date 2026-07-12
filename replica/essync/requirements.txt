@@ -3,7 +3,7 @@ certifi==2024.8.30
 elastic-transport==8.15.0
     # via elasticsearch
 elasticsearch==8.15.1
-mysql-replication==1.0.9
+mysql-replication==1.0.16
 packaging==24.1
     # via mysql-replication
 pymysql==1.1.1
